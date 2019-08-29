@@ -1,8 +1,10 @@
 <template>
 	<div>
-	   <div class="update" v-if="updateText=='有可用更新'">
+	   <div class="update">
+	     
 			<div class="bg">
 				<div class="edition">
+					{{updateText}}
 					<span v-text="updateInfo.version"></span>
 					<b>当前版本:<i v-text="currentVersion"></i></b>
 				</div>
