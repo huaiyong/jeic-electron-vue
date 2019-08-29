@@ -19,13 +19,6 @@ init:
 
 install:
   - ps: Install-Product node 8 x64
-  - npm install
-  - npm install increase-memory-limit -g
-  - npm install --save increase-memory-limit
-  - npm audit fix
-  - npm audit fix --force
-  - cd C:\projects\jeic-electron-vue
-  - increase-memory-limit
   - yarn
 
 build_script:
