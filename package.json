@@ -1,13 +1,13 @@
 {
-  "name": "electron-vue-jeic",
-  "version": "1.0.2",
+  "name": "jeic-electron-vue",
+  "version": "1.0.3",
   "author": "huaiyong <770393167@qq.com>",
   "description": "Easy invoicing system stand-alone desktop version,An electron-vue sqlite3 project",
   "license": "MIT",
   "main": "./dist/electron/main.js",
   "repository": {
     "type": "git",
-    "url": "https://github.com/huaiyong/electron-vue-jeic.git"
+    "url": "https://github.com/huaiyong/jeic-electron-vue.git"
   },
   "keywords": [
     "electron",
@@ -28,9 +28,9 @@
     "packageVersion": "echo $npm_package_version"
   },
   "build": {
-    "productName": "electron-vue-jeic",
+    "productName": "jeic-electron-vue",
     "copyright": "huaiyong",
-    "appId": "org.huaiyong.electron-vue-jeic",
+    "appId": "org.huaiyong.jeic-electron-vue",
     "directories": {
       "output": "build"
     },
