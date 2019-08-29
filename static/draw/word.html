@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en" class="no-js" ng-app="ppt">
+
+<head>
+    <meta charset="utf-8">
+    <title>捷成互动课堂智慧教学系统</title>
+    <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="full-screen" content="yes">
+    <meta name="x5-fullscreen" content="true">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <link href="./css/iconfont/iconfont.css" rel="stylesheet">
+    <script src="./js/jquery-1.8.2.min.js"></script> 
+		<script src="./js/socket.io.js"></script>
+    <script>
+        var resourceId = sessionStorage.getItem("resourceId"); //定义全局变量 从url中获取资源Id
+    </script>
+</head>
+<style>
+    #showWordsrc {
+        width: 100%;
+        height: 100%;
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgb(82, 86, 89) !important;
+    }
+
+    
+</style>
+
+<body>
+
+    <iframe src="" id="showWordsrc" frameborder="0" style="width:100%;height:100%;"></iframe>
+
+</body>
+
+</html>
+<script>
+var showWordsrc;
+        $.ajax({
+            type: "get"
+            , url: 'http://111.207.13.88:9061/edu-resource/a/resource/mrs_rmi/getById?token=29B5DF07F7FC514807CE5FBC12EA1506&id=' + this.resourceId
+            , async: false
+            , success: function (res) {
+                if (res.ret == 200) {
+                    showWordsrc = res.result.viewURL.officeView;
+                    console.log(res)
+                }
+            }
+        })
+		$("#showWordsrc").attr("src", showWordsrc);
+
+</script>

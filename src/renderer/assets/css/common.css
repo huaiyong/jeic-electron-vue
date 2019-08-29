@@ -1,0 +1,24 @@
+.commonTitle{
+		min-width: 36.5rem;
+		max-width: 54rem;
+		height: 5.8rem;
+		text-align: center;
+		line-height: 5.8rem;
+		color: #fff;
+		font-size: 2rem;
+		padding: 0 1.5rem;
+		background: rgba(45, 45, 45, .8);
+		border-radius: .6rem;
+		border: .1rem solid rgba(255, 255, 255, .15);
+		-webkit-box-shadow: 0 .2rem .3rem 0 rgba(0, 0, 0, .1) inset;
+		text-shadow: 0 .1rem .2rem rgba(0, 0, 0, .1);
+		-webkit-transition: all .2s;
+		position:fixed;
+		top:0;
+		right: 0;
+		left:0;
+		bottom: 0;
+		margin: auto;
+	  display: none;
+		z-index: 666;
+	}

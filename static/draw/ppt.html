@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en" class="no-js" ng-app="ppt">
+
+<head>
+    <meta charset="utf-8">
+    <title>捷成互动课堂智慧教学系统</title>
+    <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="full-screen" content="yes">
+    <meta name="x5-fullscreen" content="true">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <link href="./css/iconfont/iconfont.css" rel="stylesheet">
+    <script src="./js/jquery-1.8.2.min.js"></script> 
+	<script src="./js/socket.io.js"></script>
+    <script src="./js/swiper.min.js"></script>
+    <script src="./js/hammer.js" ></script>
+    <script src="./js/config.js" ></script>
+    <script>
+        var resourceId = sessionStorage.getItem("resourceId"); //定义全局变量 从url中获取资源Id
+    </script>
+</head>
+ <link rel="stylesheet" href="stylesheets/swiper.min.css">
+<style>
+    #pptsrc {
+        width: 100%;
+        height: 100%;
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgb(82, 86, 89) !important;
+    }
+
+    .caozuo {
+        position: fixed;
+    }
+
+	.page_btn{
+		position: fixed;
+		background: #f00;
+		width:100px;
+		height:100px;
+		top: 50%;
+		outline: none;
+		text-align: center;
+		padding: 0;
+		border-radius: 50%;
+		color: #fff;
+		opacity: .3;
+		background:#2d2c2c;
+	}
+	.page_btn>em{
+		font-size:60px;
+	}
+	.lastPage{
+		left: 0;
+	}
+
+	.nextPage{
+		right: 0;
+	}
+
+	.welcome_user {
+		width: 36.5rem;
+		height: 5.8rem;
+		margin-top: 2.5rem;
+		padding: 0 1.5rem;
+		background: #2d2d2d;
+		background: rgba(45, 45, 45, .8);
+		-moz-border-radius: .6rem;
+		-webkit-border-radius: .6rem;
+		border-radius: .6rem;
+		border: .1rem solid #3d3d3d;
+		border: .1rem solid rgba(255, 255, 255, .15);
+		-moz-box-shadow: 0 .2rem .3rem 0 rgba(0, 0, 0, .1) inset;
+		-webkit-box-shadow: 0 .2rem .3rem 0 rgba(0, 0, 0, .1) inset;
+		box-shadow: 0 .2rem .3rem 0 rgba(0, 0, 0, .1) inset;
+		font-family: 'PT Sans', Helvetica, Arial, sans-serif;
+		font-size: 2rem;
+		color: #fff;
+		text-shadow: 0 .1rem .2rem rgba(0, 0, 0, .1);
+		-o-transition: all .2s;
+		-moz-transition: all .2s;
+		-webkit-transition: all .2s;
+		line-height: 5.8rem;
+		position: fixed;
+		left: 0;
+		top: 0;
+		right: 0;
+		bottom: 0;
+		margin: auto;
+	}
+	thumbnail {
+	    z-index:1500
+	}
+
+
+     body {
+          background: #fff;
+          font-family: Helvetica Neue, Helvetica, Arial, sans-serif;
+          font-size: 14px;
+          color:#000;
+          margin: 0;
+          padding: 0;
+        }
+        .swiper-container {
+          width: 100%;
+          padding-top: 50px;
+          padding-bottom: 50px;
+        }
+        .swiper-slide {
+          background-position: center;
+          background-size: cover;
+          width: 300px;
+          height: 300px;
+
+        }
+
+    #padtanceng{
+        position: absolute;
+        top:0;
+        left:0;
+        bottom:0;
+        right:0;
+    }
+	
+	.yulanbtn{
+		width: 138px;
+		height: 52px;
+		border-color: #939393;
+		border-width: 1px;
+		border-radius: 30px;
+		margin: 20px;
+		background: #18171775;
+		color: #acacac;
+	}
+</style>
+
+<body>
+
+    <iframe src="" id="pptsrc" frameborder="0" style="width:100%;height:100%;"></iframe>
+
+</body>
+
+</html>
+<script>
+//判断是移动端还是pc端
+if ((navigator.userAgent.match(/(phone|pad|pod|ios|iPad|Android|Mobile|BlackBerry|IEMobile|MQQBrowser|JUC|Fennec|wOSBrowser|BrowserNG|WebOS|Symbian|Windows Phone)/i))) {
+	$(".yulanbtn").show();
+    $("#padtanceng").show();
+}else{
+	$(".yulanbtn").hide()
+    $("#padtanceng").hide();
+}
+
+
+
+</script>
+<script>
+var pptsrc;
+var pptImgList;
+        $.ajax({
+            type: "get"
+            , url: 'http://edu.jetsen.cn:9020/edu-resource/a/resource/mrs_rmi/getById?token=29B5DF07F7FC514807CE5FBC12EA1506&id=' + resourceId
+            , async: false
+            , success: function (res) {
+                if (res.ret == 200) {
+                    pptsrc = res.result.viewURL.officeView;
+                    console.log(pptsrc,0000)
+                    var data = res.result.viewURL.readfileList;
+
+                    $.each(data,function(i,va){
+                        data[i] = va.replace(/[0-9]+\./,(i+1)+".");
+                    })
+                    console.log(data);
+                    pptImgList = data;
+                }
+                else {
+                    pptsrc = "";
+                    pptImgList = [];
+                    alert("资源获取失败！")
+                }
+            }
+        })
+		$("#pptsrc").attr("src", pptsrc);
+
+</script>
+<script>
+    /*<![CDATA[*/
+    var totalPage = 0;
+    var pptNumber = null;
+    var moreAnim = null;
+    var startSync = 0;
+    var phoneLastPage = null;
+
+    //监测PC端ppt页数变化
+    var pcLoading = 0;
+    window.addEventListener('message', function (e) {
+        var origin = e.origin;
+
+        var pageinfo = JSON.parse(e.data);
+        var cmd = pageinfo.cmd;
+        if (cmd == 'slide' ) {
+            startSync = 0;
+        }
+        if (cmd == 'curpage' && pageinfo.page != null && pageinfo.moreAnim != null) {
+            pptNumber = parseInt(pageinfo.page) + 1;
+
+            moreAnim = parseInt(pageinfo.moreAnim);
+            totalPage = parseInt(pageinfo.totalPage);
+            if (pcLoading == 0) {
+                pcLoading++;
+            }
+			//最后一页播放完成时给提示
+            if (pageinfo.end) {
+                $(".welcome_user").css("display", "block");
+                setTimeout('$(".welcome_user").css("display","none");', 3000);
+            }
+            console.log('大屏端PPT页数发生变化 (页数: ' + pptNumber + '    动画数: ' + moreAnim + ')');
+        }
+    });
+    var syncPhonePageCount = 0;
+
+    function toPhonePage() {
+        if (pcLoading > 0 && phoneLastPage != null) {
+            $('#pageNumText').val(phoneLastPage);
+            $('#turnBtn').click();
+            clearInterval(syncPhonePageCount);
+        }
+    }
+
+    function debounce(fn, delay) {
+
+        // 定时器，用来 setTimeout
+        var timer
+
+        // 返回一个函数，这个函数会在一个时间区间结束后的 delay 毫秒时执行 fn 函数
+        return function () {
+
+            // 保存函数调用时的上下文和参数，传递给 fn
+            var context = this
+            var args = arguments
+
+            // 每次这个返回的函数被调用，就清除定时器，以保证不执行 fn
+            clearTimeout(timer)
+
+            // 当返回的函数被最后一次调用后（也就是用户停止了某个连续的操作），
+            // 再过 delay 毫秒就执行 fn
+            timer = setTimeout(function () {
+                fn.apply(context, args)
+            }, delay)
+        }
+    }
+
+    $(document).on('mousemove', debounce(function(e) {
+        if(flag==1){
+            $(".tanceng").hide();
+            $(".swiper-container").animate({left:"3000px"});
+            flag = 0;
+        }
+        console.log("触发去抖");
+    }, 6000))
+
+    $(document).on('click',"#tanceng", debounce(function(e) {
+        if(flag==1){
+            $(".tanceng").hide();
+            $(".swiper-container").animate({left:"3000px"});
+            flag = 0;
+        }
+        console.log("触发去抖");
+    }, 0))
+
+</script>
