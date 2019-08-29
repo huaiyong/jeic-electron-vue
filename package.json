@@ -82,6 +82,8 @@
   },
   "dependencies": {
     "babili-webpack-plugin": "^0.1.2",
+	"less": "^3.7.1",
+    "less-loader": "^4.1.0",
     "crypto": "^1.0.1",
     "exec": "^0.2.1",
     "ffi": "^2.3.0",
@@ -123,6 +125,7 @@
     "jquery": "^3.4.1",
     "js-md5": "^0.7.3",
     "less": "^3.7.1",
+    "less-loader": "^4.1.0",
     "log4js": "^4.5.1",
     "multispinner": "^0.2.1",
     "node-gyp": "^3.8.0",
