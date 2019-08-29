@@ -15,8 +15,8 @@
     "sqlite3"
   ],
   "scripts": {
-    "build": "node --max_old_space_size=8192 .electron-vue/build.js && electron-builder",
-    "build:ci": "node .electron-vue/build.js && electron-builder --publish always",
+    "build": "node -max-old-space-size=4096 .electron-vue/build.js && electron-builder",
+    "build:ci": "node -max-old-space-size=4096 .electron-vue/build.js && electron-builder --publish always",
     "build:dir": "node .electron-vue/build.js && electron-builder --dir",
     "build:clean": "cross-env BUILD_TARGET=clean node .electron-vue/build.js",
     "build:web": "cross-env BUILD_TARGET=web node .electron-vue/build.js",
