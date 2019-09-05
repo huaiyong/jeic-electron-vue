@@ -1,6 +1,6 @@
 {
   "name": "jeic-electron-vue",
-  "version": "1.0.1",
+  "version": "1.0.4",
   "author": "huaiyong <770393167@qq.com>",
   "description": "Easy invoicing system stand-alone desktop version,An electron-vue sqlite3 project",
   "license": "MIT",
