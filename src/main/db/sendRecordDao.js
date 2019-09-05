@@ -103,7 +103,17 @@ function getAnsweredUserBy(classRecordId,callback) {
   conn.queryData(sql,callback);
 }
 
+function getId(id,callback) {
+    var sql = "SELECT * FROM send_record as a WHERE a.id = '"+id+"'";
+    logger.info(sql);
+    conn.queryData(sql,callback);
+}
 
+function updateStopAnswer(id,callback) {
+    var sql = "update send_record set stop_answer = 1 WHERE id = '"+id+"'";
+    logger.info(sql);
+    conn.queryData(sql,callback);
+}
 
 module.exports.insertSendRecord = insertSendRecord
 module.exports.insertRecordStu = insertRecordStu
@@ -113,7 +123,8 @@ module.exports.insertAnswer2 = insertAnswer2
 module.exports.insertPadAnswer = insertPadAnswer
 module.exports.getRushAnswered = getRushAnswered
 module.exports.findSendRecord = findSendRecord
+module.exports.updateStopAnswer = updateStopAnswer
 
-
+module.exports.getId = getId
 module.exports.getAnsweredUser = getAnsweredUser
 module.exports.getAnsweredUserBy = getAnsweredUserBy

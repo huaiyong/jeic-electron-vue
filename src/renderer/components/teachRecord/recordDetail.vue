@@ -314,7 +314,18 @@
 						};
 					});
 				}else{
-					console.log('获取图片地址')
+					console.log('获取图片地址');
+					var that=this;
+					this.$http.get("http://localhost:3000/jeic/api/studentPad/getStudentBackPicture?stuId="+id+"&classRecordId="+this.classRecord+"&id="+this.eachRecordId).then(function(res){
+						console.log(res.data.data,'获取图片地址')						
+						if(res.data.ret==200){
+							if (res.data.data.length > 0) {
+								that.resourceUrl = res.data.data[0].resourceUrl;
+							} else {
+								that.resourceUrl = teacherImg;
+							};
+						};
+					});
 				}
 				
 

@@ -171,8 +171,10 @@
 			
 </script>
 <script>
+	var ip=sessionStorage.getItem("ip")
+	var socketip="http://"+ip+":3000"
     var svgNs = 'http://www.w3.org/2000/svg';
-    var socket = io.connect('http://198.9.6.203:3000');
+    var socket = io.connect(socketip);
     var svg = document.getElementById('svg0');
     var painter = new Painter('svg0');
     var arrPainter = [painter];//存储每个painter

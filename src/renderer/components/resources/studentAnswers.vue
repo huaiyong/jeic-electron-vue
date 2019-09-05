@@ -99,9 +99,9 @@
 						</thead>
 						<tbody>
 							<tr v-for="(i,index) in studentScore" :key="index">
-								<td v-text="i.datamark" :class="{'true':i.result==1,'error':i.result==0}"></td>
+								<td v-text="i.datamark" :class="{'true':i.result==1,'error':i.result==0 || i.result==null}"></td>
 								<td v-text="i.score"></td>
-								<td v-text="i.result==0?0:i.score"></td>
+								<td v-text="i.result==0 || i.result==null ?0:i.score"></td>
 								<td v-text="i.true_answer"></td>
 								<td v-text="i.answer"></td>
 							</tr>
@@ -216,7 +216,8 @@
 				sucessTitleState: false, //下发成功提示框
 				groupLeader: [], //选中的组长
 				allStudent: [], //选中的学生
-				studentScore: [], //学生成绩
+				studentScore: [], //学生成绩,
+				resourceName:"" //资源名字
 			}
 		},
 		computed: {
@@ -231,7 +232,8 @@
 				imgUrl:state => state.state.imgUrl,
 				imgType:state => state.state.imgType,
 				imgAnswer:state => state.state.imgAnswer,
-			})
+			}),
+			
 
 		},
 		sockets: {
@@ -271,10 +273,10 @@
 			datiInfo() {
 				this.lookSituation();
 			},
-			watchStudetail() {
+			watchStudetail(data) {
 				this.resultTable(data[0], data[1], data[2]);
 			},
-			closestrscrocewindow() {
+			closestrscorewindow() {
 				this.closeResult();
 			},
 			minimizeTest() {
@@ -314,6 +316,7 @@
 		methods: {
 			back() {
 				sessionStorage.removeItem("resourceId");
+			    clearInterval(this.timer);
 				this.$router.push({
 					"name": "Resourceslist"
 				});
@@ -543,10 +546,9 @@
 				$(".commonTitle").html(data).show();
 				setTimeout(function() {
 					$(".commonTitle").hide();
-				}, 1000);
+				}, 1000);	
 			},
 			lowerHair() { //下发
-
 				if (this.pattern) {
 					const that = this;
 					let userList = [];
@@ -567,7 +569,7 @@
 							"answer": this.textData.data,
 							"type": "1",
 							"classRecordId": this.classRecord,
-							"resourceName": "",
+							"resourceName": this.resourceName,
 							"ticount": this.textData.count,
 							"titotal": this.textData.total,
 							"sendType": 1
@@ -636,12 +638,14 @@
 			},
 			xiafaCommon(student) { //下发公用函数
 				const that = this;
+				let deviceArr=[];
 				let userList = [];
 				let jsondata = {};
 				for (var i = 0; i < student.length; i++) {
 					let studentobj = {};
 					studentobj.userId = student[i].id;
 					studentobj.deviceName = student[i].device;
+					deviceArr.push(student[i].device);
 					studentobj.realname = student[i].name;
 					userList.push(studentobj);
 				};
@@ -664,7 +668,7 @@
 						"answer": this.textData.data,
 						"type": "1",
 						"classRecordId": this.classRecord,
-						"resourceName": "",
+						"resourceName": this.resourceName,
 						"ticount": this.textData.count,
 						"titotal": this.textData.total,
 						"sendType": 2,
@@ -685,7 +689,7 @@
 						"answerType": answerType
 					};
 				};
-
+                console.log(jsondata)
 				this.$http.post("http://127.0.0.1:3000/jeic/api/sendRecord", {
 					jsonData: jsondata
 				}).then(function(res) { //下发
@@ -704,13 +708,24 @@
 						}, 1500);
 					};
 				});
+				var device=[];
 				this.timer = setInterval(function() { //查询有谁作答
 					that.$http.get("http://127.0.0.1:3000/jeic/api/sendRecord/getAnsweredList").then(function(res) {
 						if (res.data.ret == 200) {
-							that.signRemember = res.data.data;
+							var signRemember = res.data.data;
+							if(that.xiaFaMode==0){
+								for (var i=0;i<signRemember.length;i++){
+									if(deviceArr.indexOf(signRemember[i])!=-1){
+									    device.push(signRemember[i]);	
+									};
+								}
+								that.signRemember= device;
+							}else{
+								that.signRemember=signRemember;
+							};
 							that.$socket.emit('jeic', {
 								'name': "dati",
-								'data': res.data.data
+								'data': that.signRemember
 							});
 						};
 					});
@@ -766,7 +781,7 @@
 					id).then(function(res) {
 					if (res.data.ret == 200) {
 						that.studentScore = res.data.data.list;
-    
+                        console.log(that.studentScore)
 						that.studentResultState = true;
 					};
 				});
@@ -782,16 +797,17 @@
 		},
 
 		activated() {
-			if (!this.$route.meta.isBack || this.isFirstEnter) {
+			if (this.$route.meta.reload || this.isFirstEnter) {
+				this.resourceName=this.$route.params.resourceName;
+				this.textDataLength=1;
 				this.showIndex = 0;
 				this.lowerHairState = false;
 				this.checkedState = false;
-				clearInterval(this.timer);
 				this.signRemember = [];
 				this.getTextData();
 				this.getStudentList();
 			};
-			this.$route.meta.isBack = false;
+			this.$route.meta.reload =true;
 			this.isFirstEnter = false;
 
 		},
@@ -809,7 +825,7 @@
 	}
 </script>
 
-<style scoped="scoped">
+<style>
 	.zmj_answer {
 		width: 100%;
 		height: 100%;
@@ -854,8 +870,8 @@
     	margin: 0 auto;
     	
     }
-	.zmj_answerTest ul img {
-		max-width: 90%;
+	.zmj_answerTest img {
+		max-width: 80%;
 		height: auto;
 		cursor: pointer;
 	}
@@ -1041,7 +1057,9 @@
 		width: 100%;
 		pointer-events: none;
 	}
-
+    .zmj_answerWhole li p {
+    	pointer-events: none;
+    }
 	.minimizeResources {
 		position: absolute;
 		bottom: 0;
@@ -1192,6 +1210,7 @@
 		color: #fff;
 		text-align: center;
 		margin-top: .8rem;
+		pointer-events: none;
 	}
 
 

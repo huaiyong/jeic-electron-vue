@@ -1,10 +1,8 @@
 <template>
 	<div>
-	   <div class="update">
-	     
+	   <div class="update" v-if="updateState">
 			<div class="bg">
 				<div class="edition">
-					{{updateText}}
 					<span v-text="updateInfo.version"></span>
 					<b>当前版本:<i v-text="currentVersion"></i></b>
 				</div>
@@ -12,15 +10,15 @@
 			<div class="describe">
 				<div v-html="updateInfo.releaseNotes"></div>
 			</div>
-			<div class="btn clearfix">
+			<div class="btn clearfix" v-if="nowUpdateState==false">
 				<div class="cancelBtn" @click="cancel()">
-					取消
+					下次再说
 				</div>
-				<div class="sureBtn" @click="update()">
+				<div class="sureBtn" @click="updateFun()">
 					立即更新
 				</div>
 			</div>
-			<div class="progressBar" v-if="downloadInfo.percent !== null && updateState==true">
+			<div class="progressBar" v-if="downloadInfo.percent!=null && nowUpdateState==true">
 				<div class="progress" :style="{width:downloadInfo.percent+'%'}">
 
 				</div>
@@ -57,16 +55,21 @@
 					releaseDate: '',
 					version: '',
 				},
+				nowUpdateState:false,
 				updateState:false
 			};
 		},
 		methods: {
 			cancel() {
-				this.updateText = '';
+				this.updateState =false;
 			},
-			update(){
-				this.updateState=true;
+			updateFun(){
+				this.nowUpdateState=true;
 			},
+			showUpdateModal() {
+			    this.updateModalShow = true;
+				this.updateState=false;
+			 },
 			updateConfirm() {
 				this.updateModalShow = false;
 				this.$electron.ipcRenderer.send('update-now');
@@ -89,6 +92,8 @@
 							  break;*/
 						case 'update-available':
 							this.updateText = '有可用更新';
+							this.updateState=true;
+							this.$emit("changeUpdate",true);
 							this.updateInfo = {
 								releaseDate: new Date(data.releaseDate).getTime() - new Date().getTimezoneOffset() * 60 * 1000,
 								releaseName: data.releaseName,
@@ -98,6 +103,7 @@
 							break;
 						case 'update-not-available':
 							this.updateText = '已经是最新版';
+							this.$emit("changeUpdate",false);
 							break;
 						case 'download-progress':
 							this.updateText = '';
@@ -111,6 +117,7 @@
 							this.updateText = '';
 							this.downloadInfo = this.$options.data().downloadInfo;
 							this.showUpdateModal();
+							this.$emit("changeUpdate",true);
 							break;
 						default:
 							this.updateText = '';
@@ -121,6 +128,7 @@
 		},
 		created() {
 			this.update();
+			this.$emit("changeVersion",this.currentVersion);
 		},
 	};
 </script>
@@ -157,6 +165,7 @@
 		height: 24px;
 		text-align: center;
 		line-height: 24px;
+		font-size: 24px;
 		color: #fff;
 		border-radius: 16px;
 		background: #89bfff;

@@ -6,6 +6,7 @@ var Constants = {
     "message":{
         "success":"操作成功",
         "error":"操作失败"
-    }
+    },
+    classRecordId:""
 };
 module.exports = Constants;

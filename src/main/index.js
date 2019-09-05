@@ -33,7 +33,8 @@ function createWindow() {
 		//useContentSize: true,
 		resizable: false,
 		width: electron.screen.getPrimaryDisplay().workAreaSize.width,
-		height: electron.screen.getPrimaryDisplay().workAreaSize.height
+		height: electron.screen.getPrimaryDisplay().workAreaSize.height,
+		//webPreferences: {nodeIntegration: true,webSecurity:false}
 	});
 	mainWindow.loadURL(winURL);
 

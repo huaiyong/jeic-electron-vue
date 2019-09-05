@@ -62,7 +62,6 @@ export default {
     return {
       newBuild:[],     // 左侧新建数据
       ids:'',          //ID号
-      addId:0,         //添加分组的组数
       list:[],         //全班的学生
       groupName:'',   //组名
       newClassData:[], //左侧同学临时汇总数组，便于与右侧同学去重
@@ -82,17 +81,18 @@ export default {
     });
     // 新建
     if(this.$route.query.type == 'newBuilt'){
-      // 新建id
-      that.ids = '';
-      // 每小组的索引
-      that.addId = 1;
-      // 默认显示一组
-      that.newBuild = [{
-          name: that.addId +'组',
-          studentList:[],  //组员
-          groupLeader:{}, //组长
-        }
-      ];
+      if(that.newBuild.length == 0){
+        // 新建id
+        that.ids = '';
+        // 默认显示一组
+        that.newBuild = [{
+            name: (that.newBuild.length+1) +'组',
+            studentList:[],  //组员
+            groupLeader:{}, //组长
+          }
+        ];
+      }
+      
       // 分组标题
       var myDate = new Date();
       var y = myDate.getFullYear();
@@ -107,10 +107,6 @@ export default {
         that.newBuild = data.data.data.userGrouplist;
         that.groupName = data.data.data.name;
         that.ids = data.data.data.id;
-        console.log(that.newBuild)
-        console.log(that.groupName)
-        console.log(that.ids)
-        console.log(that.$route.query.type)
         that.removeName();
       });
     }
@@ -185,13 +181,11 @@ export default {
           this.list.push(arr.studentList[i])
         };
       }
-      // this.list = this.removal(this.list);
     },
     // 添加分组按钮
     addGroup(){
-      this.addId++;
       this.newBuild.push({
-        name:  this.addId + '组',
+        name:  (this.newBuild.length+1) + '组',
         studentList:[],  //组员
         groupLeader:{}, //组长
       })
@@ -231,7 +225,7 @@ export default {
       $(obj.target).css({'border':'.1rem solid #F2CB80'});
       this.targetObj = obj ;
     },
-    // 左侧任何地方取消高亮选中
+    // 点击左侧任何地方取消高亮选中
     mainL(e){
       let temporaryObj = $(this.targetObj.target);   // 设置目标区域
       if(!temporaryObj.is(e.target) && temporaryObj.has(e.target).length === 0){ // 判断是不是目标区域
@@ -263,7 +257,6 @@ export default {
       // 编辑页面
       if(this.$route.query.type == 'edit'){
         this.$http.put("http://127.0.0.1:3000/jeic/api/teachingGroup", { GroupData: this.LargeArr}).then(function(res){
-          console.log(res)
           that.$router.push({
             path:'/teachModel',
             query:{

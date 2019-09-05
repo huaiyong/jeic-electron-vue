@@ -126,6 +126,9 @@ router.get('/stopAnswer', function(req, res, next) {
 	}else {
 		returnMsgUtil.returnMsg(res,400,'没有学生答题！！',null);
 	}
+	sendRecordDB.updateStopAnswer(recordId,function (rows) {
+		
+	})
 	renderer.answerStop();
 });
 
@@ -232,17 +235,6 @@ router.get('/getAnsweredList', function(req, res, next) {
 
 
 
-
-
-router.get('/getAnsweredList', function(req, res, next) {
-  const answeredList = [];
-  var ans = global.answer;
-  for(var key in ans){
-    console.log("属性：" + key + "  ,值："+ ans[key]);
-    answeredList.push(key);
-  }
-  return res.json({err_code: 1, msg: answeredList, affectedRows: 0})
-});
 
 //开始抢答
 router.get('/startResponder', function(req, res, next) {

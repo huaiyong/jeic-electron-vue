@@ -73,9 +73,9 @@
 		                    <div>
 								<img v-if="successInfo.sex=='男'" src="../../assets/img/boy.png" alt="">
 								<img v-if="successInfo.sex=='女'" src="../../assets/img/girl.png" alt="">
-								<div class="guangrongbang" v-text="successInfo.groupName"></div>
+								<div class="guangrongbang" v-text="successInfo.groupName" v-if="successInfo.groupName!=undefined"></div>
 							</div>
-						   <p>恭喜<span v-text="successInfo.realname"></span>为<span v-text="successInfo.groupName"></span>抢得答题机会</p>
+						   <p v-if="successInfo.realname!=undefined">恭喜<span v-text="successInfo.realname"></span>为<span v-text="successInfo.groupName"></span>抢得答题机会</p>
 					</div>
 				</div>
 				<div class="responderBtn" @click="startResponder()">
@@ -204,14 +204,65 @@
 		},
 		sockets:{
 			showChuangti(data){
-			 this.$store.dispatch("getTestType",3);	
-			 this.$store.dispatch("getImgUrl",data[0]);
-			 this.$store.dispatch("getImgType",data[1]);
-			 this.$store.dispatch("getImgAnswer",data[2]);
-			 this.$router.push({
-				name: 'StudentAnswers'
+				 this.$store.dispatch("getTestType",3);	
+				 this.$store.dispatch("getImgUrl",data[0]);
+				 this.$store.dispatch("getImgType",data[1]);
+				 this.$store.dispatch("getImgAnswer",data[2]);
+				 this.$router.push({
+					name: 'StudentAnswers'
 			 });
 			},
+			toolsShow(){
+
+				this.toolsShow();
+			},
+			toolsHide(){
+				this.toolsHide();
+			},
+			Rollcall(){
+				this.callName();
+			},
+			search(){
+				this.search();
+			},
+			clock(){
+				this.countDownShow();
+			},
+			closeClock(){
+				this.countDownClose();
+			},
+			revokeAnnotation(){
+				this.restor();
+			},
+			closeAnnotation(){
+				this.closeAnnotationFrame();
+			},
+			showColor(){
+				this.showColor();
+			},
+			sizeAnnotation(data){
+				this.chooseSize(data[0],data[1]);
+			},
+			colorAnnotation(){
+				this.chooseColor(data[0],data[1]);
+			},
+			moretoolsClick(){
+				this.more();
+			},
+			qiangDa(){
+				this.responder();
+			},
+			startQuickResponseQuestion(){
+				this.startResponder();
+			},
+			closeqiangda(){
+				this.closeResponder();
+			},
+			imageDuiBi(data){
+				this.$store.dispatch("getImgArr",data);
+				this.$router.push({name:"imgCompare"});
+				
+			}
 			
 			
 		},
@@ -267,6 +318,10 @@
 									if(res.data.ret==200){
 										if(JSON.stringify(res.data.data) != "{}"){
 											that.successInfo=res.data.data;
+											that.$socket.emit("jeic", {
+												"name": "QuickResponseQuestionData",
+												"data": res.data.data
+											});
 											$(".responderBtn").html("重新抢答");
 											$(".title-show").hide();
 											$(".successInfo").show();
@@ -285,7 +340,10 @@
 									if(res.data.ret==200){
 										if(JSON.stringify(res.data.data) != "{}"){
 											that.successInfo=res.data.data;
-											console.log(that.successInfo)
+											that.$socket.emit("jeic", {
+												"name": "QuickResponseQuestionData",
+												"data": res.data.data
+											});
 											$(".responderBtn").html("重新抢答");
 											$(".title-show").hide();
 											$(".successInfo").show();
@@ -419,6 +477,7 @@
 				};
 			},
 			callName(){ //点名
+			
 			    var arr=[];
 				if(this.pattern){
 					arr=this.remember.concat([]);
@@ -428,13 +487,14 @@
 						}); 
 					};
 					 $(".pos02").addClass("active").siblings().removeClass("active");
+					 console.log($(".callName").css("display"))
 					 if($(".callName").css("display")=="none"){
 						$(".callName").show();
 						this.startRollcall(arr);
 					 }; 
 				}else{
 					var that = this;
-					this.$http.get("http://127.0.0.1:3000/jeic/api/teachingGroup/e6ede400-b744-11e9-8c29-6b7ccf60b4df").then(function(
+					this.$http.get("http://127.0.0.1:3000/jeic/api/teachingGroup/"+this.groupId).then(function(
 						res) {
 						if (res.data.ret == 200) {
 							var student= res.data.data.userGrouplist;

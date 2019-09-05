@@ -21,19 +21,21 @@
 					<div class="about" >
 						<img src="../assets/img/companyLogo.png" alt="">
 						<p>捷成智慧课堂</p>
-						<p>Version 1.1.0</p>
-						<div>
+						<p>Version<span v-text="version"></span></p>
+						<div @click="updatePop()">
 							检查更新
-							<span></span>			
+							<span v-if="updateTitle"></span>			
 						</div>
 					</div>
 				</div>
 			</div>
 		</div>
+	    <update-version @changeUpdate="upgrade" @changeVersion="monitorVersion" v-show="updatePopState"></update-version> 
 	</div>
 </template>
 
 <script>
+	import UpdateVersion from "./resourceDetail/update"
 	export default {
 		name: "UserInfo",
 		data() {
@@ -42,7 +44,13 @@
 				userMobile: sessionStorage.getItem("userMobile"),
 				userEmail: sessionStorage.getItem("userEmail"),
 				index:0,  //tab下标
+				updateTitle:false,//提示升级
+				version:"" ,//当前版本号,
+				updatePopState:false //升级弹框
 			}
+		},
+		components:{
+			UpdateVersion
 		},
 		sockets:{
 		    closeTeacherInfo(){
@@ -56,6 +64,15 @@
 			},
 			changeIndex(i){   //切换
 				this.index=i;
+			},
+			updatePop(){
+				this.updatePopState=true;
+			},
+			upgrade(data){
+				this.updateTitle=data;
+			},
+			monitorVersion(data){
+				this.version=data;
 			}
 		}
 	}

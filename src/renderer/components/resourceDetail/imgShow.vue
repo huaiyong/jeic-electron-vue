@@ -54,6 +54,9 @@
 			},
 			imgRotate(){
 				this.revolve();
+			},
+			minimizeImg(){
+				this.min();
 			}
 		},
     methods: {

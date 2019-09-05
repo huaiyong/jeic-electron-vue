@@ -73,7 +73,6 @@
 				});
 			},
 			getGroupStudent(){
-				console.log(this.groupId)
 				var that=this;
 				this.$http.get("http://127.0.0.1:3000/jeic/api/teachingGroup/"+this.groupId).then(function(
 						res) {
@@ -87,14 +86,11 @@
 			},
 			signIn() { //请求签到学生
 				const that = this;
-				this.$http.get("http://localhost:3000/jeic/api/signin/signinStart").then(function(res) {
-					
-
-				});
-			this.timer = setInterval(function() {
-				that.$http.get("http://localhost:3000/jeic/api/signin/getSignin").then(function(res) {
+			   this.timer = setInterval(function() {
+				 that.$http.get("http://localhost:3000/jeic/api/signin/getSignin").then(function(res) {
 					if (res.data.ret == 200) {
 						that.signRemember = res.data.data;
+						console.log(that.signRemember)
 						that.$socket.emit('jeic', {
 							'name': "qiandao",
 							'data': res.data.data
@@ -113,13 +109,18 @@
 				groupId:state => state.state.groupId
 			})
 		},
-		created() {
-			this.getGroupStudent();
+		
+	    activated() {
+			if(!this.pattern){
+				this.getGroupStudent();
+			};
 			this.signIn();
 		},
-		destroyed() {
+		beforeRouteLeave(to, from , next){
 			clearInterval(this.timer);
+			next();
 		}
+	
 	}
 </script>
 
@@ -200,7 +201,6 @@
 		text-align: center;
 		margin-right: 1rem;
 		margin-bottom: 2rem;
-		overflow: hidden;
 		white-space: nowrap;
 		text-overflow: ellipsis;
 		display: inline-block;
@@ -224,6 +224,7 @@
 		font-size: 1.6rem;
 		color: #fff;
 		padding: 1.2rem;
+		border: none;
 	}
 	
 	.zmj_groupStudent ol {

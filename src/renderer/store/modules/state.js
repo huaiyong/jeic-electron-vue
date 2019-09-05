@@ -15,6 +15,7 @@ const state = {
   imgAnswer:"",//拍照创题 答案
   model:null , //1是全班 2是组长 3是全组
   groupId:'',   //组的id
+  imgArr:[],//拍照对比
 };
 const mutations = {
   getUserId(state, data) {
@@ -65,6 +66,9 @@ const mutations = {
   getImgAnswer(state, data) {
     state.imgAnswer = data;
   },
+  getImgArr(state, data) {
+    state.imgArr = data;
+  },
 };
 const actions = {
   getUserId(context, data) {
@@ -114,6 +118,9 @@ const actions = {
   },
   getImgAnswer(context, data) {
     context.commit('getImgAnswer', data);
+  },
+  getImgArr(context, data) {
+    context.commit('getImgArr', data);
   }
 };
 export default {

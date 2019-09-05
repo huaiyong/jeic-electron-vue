@@ -118,7 +118,22 @@
 				this.teachModel();
 			},
 			maximizeTest(){
-				this.testMax();
+				this.testPadMax();
+			},
+			maximizePpt(){
+				this.pptPadMax();
+			},
+			maximizeWord(){
+				this.wordPadMax();
+			},
+			maximizeExcel(){
+				this.excelPadMax();
+			},
+			maximizeImg(){
+				this.imgPadMax();
+			},
+			maximizePdf(){
+				this.pdfPadMax();
 			}
 		},
 		methods: {
@@ -196,8 +211,10 @@
 			},
 			pingtai() {
 				this.index = 7;
+				const that = this;
 				if (this.classroomState) {
-					ipcRenderer.send('open-pingtai', this.userId, this.cityId);
+					// ipcRenderer.send('open-pingtai', this.userId, this.cityId);
+					that.$socket.emit("jeic", {"name": "pingtai","userId":this.userId,"cityId":this.cityId});
 				} else {
 					this.error();
 				};
@@ -216,6 +233,16 @@
 					});
 				});
 			},
+			testPadMax() { //试题最大化
+					$(this).addClass("active").remove();
+					sessionStorage.removeItem("resourceId");
+					this.$router.push({
+						name: "StudentAnswers",
+						params: {
+							state: true
+						}
+					});
+			},
 			imgMax() { //图片最大化
 				const that = this;
 				$("body").on("click", "#imgMax", function() {
@@ -229,6 +256,40 @@
 					});
 				});
 			},
+			imgPadMax() { //图片最大化
+				const that = this;
+				$(this).addClass("active").remove();
+				that.$router.push({
+					name: "imgShow",
+					params: {
+						resourceImgId: sessionStorage.getItem("resourceImgId"),
+						imgsrc: sessionStorage.getItem("resourceImgUrl")
+					}
+				});
+			},
+			pdfMax() { //pdf最大化
+				const that = this;
+				$("body").on("click", "#pdfMax", function() {
+					$(this).addClass("active").remove();
+					that.$router.push({
+						name: "pdf",
+						params: {
+							resourcePdfId: sessionStorage.getItem("resourcePdfId"),
+							pdfsrc: sessionStorage.getItem("resourcePdfUrl")
+						}
+					});
+				});
+			},
+			pdfPadMax() { //pdf最大化
+					$(this).addClass("active").remove();
+					this.$router.push({
+						name: "pdf",
+						params: {
+							resourcePdfId: sessionStorage.getItem("resourcePdfId"),
+							pdfsrc: sessionStorage.getItem("resourcePdfUrl")
+						}
+					});
+			},
 			wordMax() { //word最大化
 				const that = this;
 				$("body").on("click", "#wordMax", function() {
@@ -240,6 +301,15 @@
 						}
 					});
 				});
+			},
+			wordPadMax() { //word最大化
+					$(this).addClass("active").remove();
+					this.$router.push({
+						name: "word",
+						params: {
+							resourcewordId: sessionStorage.getItem("resourcewordId")
+						}
+					});
 			},
 			excelMax() { //excel最大化
 				const that = this;
@@ -255,6 +325,16 @@
 					});
 				});
 			},
+			excelPadMax() { //excel最大化
+					$(this).addClass("active").remove();
+					this.$router.push({
+						name: "excel",
+						params: {
+							resourceexcelId: sessionStorage.getItem("resourceexcelId"),
+							showexcelsrc: sessionStorage.getItem("resourceexcelUrl")
+						}
+					});
+			},
 			pptMax() { //ppt最大化
 				const that = this;
 				$("body").on("click", "#pptMax", function() {
@@ -266,6 +346,15 @@
 						}
 					});
 				});
+			},
+			pptPadMax() { //ppt最大化
+					$(this).addClass("active").remove();
+					this.$router.push({
+						name: "ppt",
+						params: {
+							resourceexcelId: sessionStorage.getItem("resourcepptId")
+						}
+					});
 			},
 			error: function() {
 				$(".commonTitle").html("请先上课").show();
@@ -281,6 +370,7 @@
 			this.wordMax();
 			this.excelMax();
 			this.pptMax();
+			this.pdfMax();
 		}
 	};
 </script>

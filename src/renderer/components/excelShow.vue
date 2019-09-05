@@ -1,6 +1,6 @@
 <template>
 	<div style="width:100%;height:100%;" class="resouceBg">
-	    <iframe src="/static/draw/excel.html" frameborder="0" style="width:100%;height:100%;"></iframe>
+	    <iframe src="static/draw/excel.html" frameborder="0" style="width:100%;height:100%;"></iframe>
 		<span class="closefullscreen fr" @click="closeWordtc">
         <em class="iconfont icon-guanbi1 exitResTc"></em>
       </span>
@@ -17,6 +17,14 @@
 		data(){
 			return {
             resourceId: this.$route.params.resourceId,
+			}
+		},
+		sockets: {
+			minimizeExcel() {
+				this.min();
+			},
+			closeexceltc() {
+				this.closeWordtc()
 			}
 		},
 		methods:{

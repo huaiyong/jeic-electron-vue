@@ -83,7 +83,7 @@ const routes = [
         path: '/pdf',
         component: resolve => require([ '@/components/resourceDetail/pdf' ], resolve),
         meta: {
-          keepAlive: false,
+          keepAlive: true,
         },
       },
 	  {
@@ -116,11 +116,11 @@ const routes = [
         component: resolve => require([ '@/components/resources/studentAnswers' ], resolve),
         meta: {
           keepAlive: true,
-          isBack: false,
+          reload:true,
         },
         beforeEnter(to, from, next) {
           if (from.name == 'AnswerStatistics' || from.name == 'picShow' || to.params.state == true) {
-            to.meta.isBack = true;
+            to.meta.reload = false;
           };
           next();
         },
@@ -131,11 +131,11 @@ const routes = [
         component: resolve => require([ '@/components/teachRecord/recordDetail' ], resolve),
         meta: {
           keepAlive: true,
-          isBack: false,
+          reload:true,
         },
         beforeEnter(to, from, next) {
           if (from.name == 'AnswerStatistics' || from.name == 'picShow' || to.params.state == true) {
-            to.meta.isBack = true;
+            to.meta.reload = false;
           };
           next();
         }
@@ -156,9 +156,16 @@ const routes = [
 	      keepAlive: false,
 	    },
 	  },{
-	    name: 'singleStatistics', //小红花页面
+	    name: 'singleStatistics', //小红花页面  getGroupStudentRange
 	    path: '/singleStatistics',
 	    component: resolve => require([ '@/components/statistics/singleStatistics' ], resolve),
+	    meta: {
+	      keepAlive: false,
+	    },
+	  },{
+	    name: 'getGroupStudentRange', //小红花小组成员页面  
+	    path: '/getGroupStudentRange',
+	    component: resolve => require([ '@/components/statistics/getGroupStudentRange' ], resolve),
 	    meta: {
 	      keepAlive: false,
 	    },
@@ -172,6 +179,16 @@ const routes = [
 	    name: 'showcase', //实物展台
 	    path: '/showcase',
 	    component: resolve => require([ '@/components/showcase' ], resolve),
+	  },
+	  {
+	    name: 'imgCompare', //拍照对比
+	    path: '/imgCompare',
+	    component: resolve => require([ '@/components/imgCompare' ], resolve),
+	  },
+	  {
+	    name: 'imgShowduibi', //拍照对比图片展示
+	    path: '/imgShowduibi',
+	    component: resolve => require([ '@/components/resourceDetail/imgShowduibi' ], resolve),
 	  },
     ],
   },

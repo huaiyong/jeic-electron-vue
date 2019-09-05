@@ -8,13 +8,13 @@
     </div>
     <div class="records_cont clearfix">
       <div class="records_type">
-        <ul class="clearfix" v-if="recordList.length">
+        <ul class="clearfix" v-if="recordList">
           <li v-for="(i,index) in recordList" :key="index" @click="showclassRecord(i.id,i.resourceId,i.resourceUrl,i.type,i.name)">
             <span :class="{'records_img':i.type==2,'records_img':i.type==3,'records_doc':i.type==1,'records_qita':i.type==null}"></span>
             <p class="filetext_title" v-text="i.name"></p>
           </li>
         </ul>
-        <div v-if="recordList.length==0" class="tipsall"> 
+        <div v-if="!recordList" class="tipsall"> 
         	<img src="../../assets/img/404.png" alt="" />
           <p class="tipscolor">没有查询到记录</p>
         </div>
@@ -59,7 +59,8 @@
     	},
       showclassRecord(eachRecordId,resourceId,resourceUrl,type,name) {
       	console.log(eachRecordId,'点击id')
-      	console.log(resourceId,'resourceId')
+      	console.log(resourceId,'resourceId');
+//    	this.$store.dispatch("recordId", eachRecordId);
         this.$router.push({
           name: 'recordDetail',
           params:{

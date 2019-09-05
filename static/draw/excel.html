@@ -14,6 +14,11 @@
 		<script src="./js/socket.io.js"></script>
     <script>
         var resourceId = sessionStorage.getItem("resourceId"); //定义全局变量 从url中获取资源Id
+        if(resourceId==''||resourceId==null || resourceId==undefined){
+        	var resourceUrl = window.location.search;
+    			var resourcePadId = resourceUrl.substr(12);
+        	var resourceId = resourcePadId;
+        }
     </script>
 </head>
 <style>
@@ -38,6 +43,13 @@
 </body>
 
 </html>
+<script>
+	//定义一些初始化数据
+    var ip=sessionStorage.getItem("ip")
+		var socketip="http://"+ip+":3000"
+//  var socket = io(socketip); //定义socket
+    var socket = io.connect(socketip);
+</script>
 <script>
 var excelsrc;
         $.ajax({

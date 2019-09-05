@@ -20,7 +20,7 @@
 				</div>
 				<div class="zmj_resourceTest" v-show="sideBarIndex==1">
 					<ul class="clearfix">
-						<li v-for="(i,index) in questionList" :key="index" @click="answer(i.resourceId,1)">
+						<li v-for="(i,index) in questionList" :key="index" @click="answer(i.resourceId,i.resourceName)">
 							<span class="wx_shiti"></span>
 							<p v-text="i.resourceName"></p>
 						</li>
@@ -62,26 +62,36 @@
 			},
 			showShiti(data) {
 				this.answer(data[0], data[1]);
+			},
+			showSingleResoce(data) {
+				this.showResoce(data[0], data[1]);
+			},
+			closeshowType(){
+				this.close();
 			}
 		},
 		methods: {
-			answer(resourceId, type) {
+			answer(resourceId,name) {
 				if (resourceId == sessionStorage.getItem("resourceId")) {
 					$(this.$parent.$refs.indexItem).find("#testMax").remove();
 					sessionStorage.removeItem("resourceId");
 					this.$router.push({
 						name: 'StudentAnswers',
 						params: {
-							state: true
+							state: true,
+							resourceName:name
 						}
 					});
 				} else if (sessionStorage.getItem("resourceId")) {
 					this.error("请先关闭最小化试题资源");
 				} else {
 					this.$store.dispatch("getResourceId", resourceId);
-					this.$store.dispatch("getTestType", type);
+					this.$store.dispatch("getTestType",1);
 					this.$router.push({
-						name: 'StudentAnswers'
+						name: 'StudentAnswers',
+						params:{
+							resourceName:name
+						}
 					});
 				};
 			},
@@ -144,14 +154,31 @@
 							}
 
 						} else if (resType == 4) { //PDF文档
-							that.pdfsrc = "/static/pdf/web/viewer.html?file=" + res.data.result.downloadUrl;
-							console.log(that.pdfsrc, 111113333)
-							that.$router.push({
-								name: 'pdf',
-								params: {
-									pdfsrc: that.pdfsrc
-								}
-							});
+							
+							if (resourceId == sessionStorage.getItem("resourcePdfId")) {
+								$(that.$parent.$refs.indexItem).find("#pdfMax").remove();
+								sessionStorage.removeItem("resourcePdfId");
+								that.pdfsrc = "static/pdf/web/viewer.html?file=" + res.data.result.downloadUrl;
+								that.$router.push({
+									name: 'pdf',
+									params: {
+										pdfsrc: that.pdfsrc,
+										resourceId: resourceId
+									}
+								})
+							} else if (sessionStorage.getItem("resourcePdfId")) {
+								that.error("请先关闭最小化pdf资源");
+							} else {
+								that.pdfsrc = "static/pdf/web/viewer.html?file=" + res.data.result.downloadUrl;
+								that.$router.push({
+									name: 'pdf',
+									params: {
+										pdfsrc: that.pdfsrc,
+										resourceId: resourceId
+									}
+								})
+							}
+							
 						} else if (resType == 5) { //ppt展示
 							sessionStorage.setItem("resourceId", resourceId);
 							if (resourceId == sessionStorage.getItem("resourcepptId")) {

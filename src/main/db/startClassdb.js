@@ -4,10 +4,12 @@ const querystring = require('querystring');
 var log4js = require('log4js');
 var logger = log4js.getLogger();
 const conn = require('./db');
+const Constants = require('../common/Constants');
 //开始上课保存上课信息
 function insertstartClass(req, callback) {
 //	var data = '';
 	var id = uuid.v1();
+	Constants.classRecordId = id;
 //	req.on('data', function(chunk) {
 //		// chunk 默认是一个二进制数据，和 data 拼接会自动 toString
 //		data += chunk;
@@ -46,7 +48,7 @@ function insertstartClass(req, callback) {
 		var stuList = jsonObj.userList;
 		console.log(stuList)
 		//插入学生数据信息
-		var sql = "INSERT OR IGNORE INTO student(id,name,sex,device,office_name,grade_name,class_id,class_name) VALUES (?,?,?,?,?,?,?,?)";
+		var sql = "Replace INTO student(id,name,sex,device,office_name,grade_name,class_id,class_name) VALUES (?,?,?,?,?,?,?,?)";
 		//遍历学生列表 获取学生信息
 		for(var i = 0; i < stuList.length; i++) {
 			console.log("执行中！！！！！！！！！！！！")
@@ -69,14 +71,4 @@ function insertstartClass(req, callback) {
 	callback(id);
 }
 
-//查询上课学生信息
-function findStuList(req,callback) {
-
-	var classId = req.param('classId')
-	console.log(" 班级ID>>>" + req.param('classId'));
-	var sql = "select * from student where class_Id='"+classId+"'";
-	logger.info(sql);
-	conn.queryData(sql,callback)
-}
 module.exports.insertstartClass = insertstartClass
-module.exports.findStuList = findStuList

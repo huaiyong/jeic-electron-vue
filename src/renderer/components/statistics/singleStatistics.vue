@@ -6,10 +6,36 @@
 				<div id="myChart" style="width:100%;height:60%;"></div>
 				<!--   选项人数  -->
 				<div class="wx_selectkuang" v-show="clickEcharts">
-					<p class="slectStrcolor">选择<span class="xuanxiangkuang" v-html="xuanxiang"></span>选项的同学：</p>
-					<ul class="xuanxiangullist">
-						<li v-for="stulist in stulists">{{stulist.realname}}</li>
-					</ul>
+					<div v-if="model==1"  class="stuList">
+						<p class="slectStrcolor"><span class="xuanxiangkuang" v-html="xuanxiang"></span>选项：</p>
+						<ul class="xuanxiangullist">
+							<li v-for="stulist in stulists">{{stulist.realname}}</li>
+						</ul>
+					</div>
+					<div v-if="model==3"  class="stuList">
+						<p class="slectStrcolor"><span class="xuanxiangkuang" v-html="xuanxiang"></span>选项：</p>
+						<ul class="xuanxiangullist">
+							<li v-for="stulist in stulists">
+								{{stulist.userGroupName}}
+								<ul style="display: inline-block;">
+									<li v-for="name in stulist.userList">{{name.realname}}</li>
+								</ul>
+							
+							</li>
+						</ul>
+					</div>
+					<div v-if="model==2" class="stuList">
+						<p class="slectStrcolor"><span class="xuanxiangkuang" v-html="xuanxiang"></span>选项：</p>
+						<ul class="xuanxiangullist">
+							<li v-for="stulist in stulists">
+								{{stulist.userGroupName}}
+								<!-- <ul style="display: inline-block;">
+									<li v-for="name in stulist.userList">{{name.realname}}</li>
+								</ul> -->
+							
+							</li>
+						</ul>
+					</div>
 				</div>
 			</div>
 
@@ -29,7 +55,7 @@
 					</div>
 				</div>
 
-				<div class="zmj_answerItem clearfix">
+				<div class="zmj_answerItem clearfix" style="position: fixed;bottom: 20px;font-size: 2rem;">
 					<div class="change">
 						<i class="iconfont icon-zuojiantou" @click="prevTest()" v-show="tihao>1"></i>
 						<span>第<i v-text="tihao"></i>题</span>
@@ -88,7 +114,55 @@
 				pattern: state => state.state.pattern,
 				recordId: state => state.state.recordId,
 				model: state => state.state.model,
+				groupId: state => state.state.groupId,
 			})
+		},
+		sockets: {
+			prevQuestionStatistics(){ //上一题
+				this.prevTest()
+			},
+			nextQuestionStatistics(){ //下一题
+				this.nextTest()
+			},
+			fanhui(){
+				this.back();
+			},
+			A(){
+				this.changOption("A")
+			},
+			B(){
+				this.changOption("B")
+			},
+			C(){
+				this.changOption("C")
+			},
+			D(){
+				this.changOption("D")
+			},
+			E(){
+				this.changOption("E")
+			},
+			F(){
+				this.changOption("F")
+			},
+			G(){
+				this.changOption("G")
+			},
+			H(){
+				this.changOption("H")
+			},
+			I(){
+				this.changOption("I")
+			},
+			J(){
+				this.changOption("J")
+			},
+			YES(){
+				this.changOption("YES")
+			},
+			NO(){
+				this.changOption("NO")
+			}
 		},
 		methods: {
 			back() {
@@ -99,164 +173,469 @@
 				var xdata = [];
 				var ydata = [];
 				console.log(this.model)
+				console.log(this.groupId)
 				// 获取单道试题的答题结果
 				this.$http.get("http://127.0.0.1:3000/jeic/api/answerResult/getDataByQuestionId?recordId=" + this.recordId + "&type="+this.model+"&datamark=" +
-					this.tihao).then(function(res) {
-					console.log("-----")
+					this.tihao+"&teachinggroupId="+this.groupId).then(function(res) {
+					console.log(that.model+"-----分组类型")
 					console.log(res)
 					that.optionNu = res.data.data.optionNu;
-					console.log(that.optionNu)
+					console.log(that.optionNu+"选项数量")
 					that.sttype = res.data.data.type;
 					if (that.sttype != "1") {
-						if (that.optionNu == 1) {
-							xdata = ["A"];
-							ydata[0] = res.data.data.optionInfo.optionA.count;
-							that.stulistsA=res.data.data.optionInfo.optionA.userList;
+						
+						if(that.model==1){//全班教学不分组模式下
+						
+							if (that.optionNu == 1) {
+								xdata = ["A"];
+								ydata[0] = res.data.data.optionInfo.optionA.count;
+								that.stulistsA=res.data.data.optionInfo.optionA.userList;
+								that.drawLine(xdata, ydata)
+							} else if (that.optionNu == 2) {
+								xdata = ["A", "B"];
+								ydata[0] = res.data.data.optionInfo.optionA.count;
+								ydata[1] = res.data.data.optionInfo.optionB.count;
+								that.stulistsA=res.data.data.optionInfo.optionA.userList;
+								that.stulistsB=res.data.data.optionInfo.optionB.userList;
+								that.drawLine(xdata, ydata)
+							} else if (that.optionNu == 3) {
+								xdata = ["A", "B", "C"];
+								ydata[0] = res.data.data.optionInfo.optionA.count;
+								ydata[1] = res.data.data.optionInfo.optionB.count;
+								ydata[2] = res.data.data.optionInfo.optionC.count;
+								that.stulistsA=res.data.data.optionInfo.optionA.userList;
+								that.stulistsB=res.data.data.optionInfo.optionB.userList;
+								that.stulistsC=res.data.data.optionInfo.optionC.userList;
+								that.drawLine(xdata, ydata)
+							} else if (that.optionNu == 4) {
+								xdata = ["A", "B", "C", "D"];
+								ydata[0] = res.data.data.optionInfo.optionA.count;
+								ydata[1] = res.data.data.optionInfo.optionB.count;
+								ydata[2] = res.data.data.optionInfo.optionC.count;
+								ydata[3] = res.data.data.optionInfo.optionD.count;
+								that.stulistsA=res.data.data.optionInfo.optionA.userList;
+								that.stulistsB=res.data.data.optionInfo.optionB.userList;
+								that.stulistsC=res.data.data.optionInfo.optionC.userList;
+								that.stulistsD=res.data.data.optionInfo.optionD.userList;
+								console.log(that.stulistsA)
+								that.drawLine(xdata, ydata)
+							} else if (that.optionNu == 5) {
+								xdata = ["A", "B", "C", "D", "E"];
+								ydata[0] = res.data.data.optionInfo.optionA.count;
+								ydata[1] = res.data.data.optionInfo.optionB.count;
+								ydata[2] = res.data.data.optionInfo.optionC.count;
+								ydata[3] = res.data.data.optionInfo.optionD.count;
+								ydata[4] = res.data.data.optionInfo.optionE.count;
+								that.stulistsA=res.data.data.optionInfo.optionA.userList;
+								that.stulistsB=res.data.data.optionInfo.optionB.userList;
+								that.stulistsC=res.data.data.optionInfo.optionC.userList;
+								that.stulistsD=res.data.data.optionInfo.optionD.userList;
+								that.stulistsE=res.data.data.optionInfo.optionE.userList;
+								that.drawLine(xdata, ydata)
+							} else if (that.optionNu == 6) {
+								xdata = ["A", "B", "C", "D", "E", "F"];
+								ydata[0] = res.data.data.optionInfo.optionA.count;
+								ydata[1] = res.data.data.optionInfo.optionB.count;
+								ydata[2] = res.data.data.optionInfo.optionC.count;
+								ydata[3] = res.data.data.optionInfo.optionD.count;
+								ydata[4] = res.data.data.optionInfo.optionE.count;
+								ydata[5] = res.data.data.optionInfo.optionF.count;
+								that.stulistsA=res.data.data.optionInfo.optionA.userList;
+								that.stulistsB=res.data.data.optionInfo.optionB.userList;
+								that.stulistsC=res.data.data.optionInfo.optionC.userList;
+								that.stulistsD=res.data.data.optionInfo.optionD.userList;
+								that.stulistsE=res.data.data.optionInfo.optionE.userList;
+								that.stulistsF=res.data.data.optionInfo.optionF.userList;
+								that.drawLine(xdata, ydata)
+							} else if (that.optionNu == 7) {
+								xdata = ["A", "B", "C", "D", "E", "F", "G"];
+								ydata[0] = res.data.data.optionInfo.optionA.count;
+								ydata[1] = res.data.data.optionInfo.optionB.count;
+								ydata[2] = res.data.data.optionInfo.optionC.count;
+								ydata[3] = res.data.data.optionInfo.optionD.count;
+								ydata[4] = res.data.data.optionInfo.optionE.count;
+								ydata[5] = res.data.data.optionInfo.optionF.count;
+								ydata[6] = res.data.data.optionInfo.optionG.count;
+								that.stulistsA=res.data.data.optionInfo.optionA.userList;
+								that.stulistsB=res.data.data.optionInfo.optionB.userList;
+								that.stulistsC=res.data.data.optionInfo.optionC.userList;
+								that.stulistsD=res.data.data.optionInfo.optionD.userList;
+								that.stulistsE=res.data.data.optionInfo.optionE.userList;
+								that.stulistsF=res.data.data.optionInfo.optionF.userList;
+								that.stulistsG=res.data.data.optionInfo.optionG.userList;
+								that.drawLine(xdata, ydata)
+							} else if (that.optionNu == 8) {
+								xdata = ["A", "B", "C", "D", "E", "F", "G", "H"];
+								ydata[0] = res.data.data.optionInfo.optionA.count;
+								ydata[1] = res.data.data.optionInfo.optionB.count;
+								ydata[2] = res.data.data.optionInfo.optionC.count;
+								ydata[3] = res.data.data.optionInfo.optionD.count;
+								ydata[4] = res.data.data.optionInfo.optionE.count;
+								ydata[5] = res.data.data.optionInfo.optionF.count;
+								ydata[6] = res.data.data.optionInfo.optionG.count;
+								ydata[7] = res.data.data.optionInfo.optionH.count;
+								that.stulistsA=res.data.data.optionInfo.optionA.userList;
+								that.stulistsB=res.data.data.optionInfo.optionB.userList;
+								that.stulistsC=res.data.data.optionInfo.optionC.userList;
+								that.stulistsD=res.data.data.optionInfo.optionD.userList;
+								that.stulistsE=res.data.data.optionInfo.optionE.userList;
+								that.stulistsF=res.data.data.optionInfo.optionF.userList;
+								that.stulistsG=res.data.data.optionInfo.optionG.userList;
+								that.stulistsH=res.data.data.optionInfo.optionH.userList;
+								that.drawLine(xdata, ydata)
+							} else if (that.optionNu == 9) {
+								xdata = ["A", "B", "C", "D", "E", "F", "G", "H", "I"];
+								ydata[0] = res.data.data.optionInfo.optionA.count;
+								ydata[1] = res.data.data.optionInfo.optionB.count;
+								ydata[2] = res.data.data.optionInfo.optionC.count;
+								ydata[3] = res.data.data.optionInfo.optionD.count;
+								ydata[4] = res.data.data.optionInfo.optionE.count;
+								ydata[5] = res.data.data.optionInfo.optionF.count;
+								ydata[6] = res.data.data.optionInfo.optionG.count;
+								ydata[7] = res.data.data.optionInfo.optionH.count;
+								ydata[8] = res.data.data.optionInfo.optionI.count;
+								that.stulistsA=res.data.data.optionInfo.optionA.userList;
+								that.stulistsB=res.data.data.optionInfo.optionB.userList;
+								that.stulistsC=res.data.data.optionInfo.optionC.userList;
+								that.stulistsD=res.data.data.optionInfo.optionD.userList;
+								that.stulistsE=res.data.data.optionInfo.optionE.userList;
+								that.stulistsF=res.data.data.optionInfo.optionF.userList;
+								that.stulistsG=res.data.data.optionInfo.optionG.userList;
+								that.stulistsH=res.data.data.optionInfo.optionH.userList;
+								that.stulistsI=res.data.data.optionInfo.optionI.userList;
+								that.drawLine(xdata, ydata)
+							} else if (that.optionNu == 10) {
+								xdata = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J"];
+								ydata[0] = res.data.data.optionInfo.optionA.count;
+								ydata[1] = res.data.data.optionInfo.optionB.count;
+								ydata[2] = res.data.data.optionInfo.optionC.count;
+								ydata[3] = res.data.data.optionInfo.optionD.count;
+								ydata[4] = res.data.data.optionInfo.optionE.count;
+								ydata[5] = res.data.data.optionInfo.optionF.count;
+								ydata[6] = res.data.data.optionInfo.optionG.count;
+								ydata[7] = res.data.data.optionInfo.optionH.count;
+								ydata[8] = res.data.data.optionInfo.optionI.count;
+								ydata[9] = res.data.data.optionInfo.optionJ.count;
+								that.stulistsA=res.data.data.optionInfo.optionA.userList;
+								that.stulistsB=res.data.data.optionInfo.optionB.userList;
+								that.stulistsC=res.data.data.optionInfo.optionC.userList;
+								that.stulistsD=res.data.data.optionInfo.optionD.userList;
+								that.stulistsE=res.data.data.optionInfo.optionE.userList;
+								that.stulistsF=res.data.data.optionInfo.optionF.userList;
+								that.stulistsG=res.data.data.optionInfo.optionG.userList;
+								that.stulistsH=res.data.data.optionInfo.optionH.userList;
+								that.stulistsI=res.data.data.optionInfo.optionI.userList;
+								that.stulistsJ=res.data.data.optionInfo.optionJ.userList;
+								that.drawLine(xdata, ydata)
+							}
+						}else if(that.model==2){ //分组教学--组长模式
+							if (that.optionNu == 1) {
+								xdata = ["A"];
+								ydata[0] = res.data.data.optionInfo.optionA.count;
+								that.stulistsA=res.data.data.optionInfo.optionA.userList;
+								that.drawLine(xdata, ydata)
+							} else if (that.optionNu == 2) {
+								xdata = ["A", "B"];
+								ydata[0] = res.data.data.optionInfo.optionA.count;
+								ydata[1] = res.data.data.optionInfo.optionB.count;
+								that.stulistsA=res.data.data.optionInfo.optionA.userList;
+								that.stulistsB=res.data.data.optionInfo.optionB.userList;
+								that.drawLine(xdata, ydata)
+							} else if (that.optionNu == 3) {
+								xdata = ["A", "B", "C"];
+								ydata[0] = res.data.data.optionInfo.optionA.count;
+								ydata[1] = res.data.data.optionInfo.optionB.count;
+								ydata[2] = res.data.data.optionInfo.optionC.count;
+								that.stulistsA=res.data.data.optionInfo.optionA.userList;
+								that.stulistsB=res.data.data.optionInfo.optionB.userList;
+								that.stulistsC=res.data.data.optionInfo.optionC.userList;
+								that.drawLine(xdata, ydata)
+							} else if (that.optionNu == 4) {
+								xdata = ["A", "B", "C", "D"];
+								ydata[0] = res.data.data.optionInfo.optionA.count;
+								ydata[1] = res.data.data.optionInfo.optionB.count;
+								ydata[2] = res.data.data.optionInfo.optionC.count;
+								ydata[3] = res.data.data.optionInfo.optionD.count;
+								that.stulistsA=res.data.data.optionInfo.optionA.userList;
+								that.stulistsB=res.data.data.optionInfo.optionB.userList;
+								that.stulistsC=res.data.data.optionInfo.optionC.userList;
+								that.stulistsD=res.data.data.optionInfo.optionD.userList;
+								that.drawLine(xdata, ydata)
+							} else if (that.optionNu == 5) {
+								xdata = ["A", "B", "C", "D", "E"];
+								ydata[0] = res.data.data.optionInfo.optionA.count;
+								ydata[1] = res.data.data.optionInfo.optionB.count;
+								ydata[2] = res.data.data.optionInfo.optionC.count;
+								ydata[3] = res.data.data.optionInfo.optionD.count;
+								ydata[4] = res.data.data.optionInfo.optionE.count;
+								that.stulistsA=res.data.data.optionInfo.optionA.userList;
+								that.stulistsB=res.data.data.optionInfo.optionB.userList;
+								that.stulistsC=res.data.data.optionInfo.optionC.userList;
+								that.stulistsD=res.data.data.optionInfo.optionD.userList;
+								that.stulistsE=res.data.data.optionInfo.optionE.userList;
+								that.drawLine(xdata, ydata)
+							} else if (that.optionNu == 6) {
+								xdata = ["A", "B", "C", "D", "E", "F"];
+								ydata[0] = res.data.data.optionInfo.optionA.count;
+								ydata[1] = res.data.data.optionInfo.optionB.count;
+								ydata[2] = res.data.data.optionInfo.optionC.count;
+								ydata[3] = res.data.data.optionInfo.optionD.count;
+								ydata[4] = res.data.data.optionInfo.optionE.count;
+								ydata[5] = res.data.data.optionInfo.optionF.count;
+								that.stulistsA=res.data.data.optionInfo.optionA.userList;
+								that.stulistsB=res.data.data.optionInfo.optionB.userList;
+								that.stulistsC=res.data.data.optionInfo.optionC.userList;
+								that.stulistsD=res.data.data.optionInfo.optionD.userList;
+								that.stulistsE=res.data.data.optionInfo.optionE.userList;
+								that.stulistsF=res.data.data.optionInfo.optionF.userList;
+								that.drawLine(xdata, ydata)
+							} else if (that.optionNu == 7) {
+								xdata = ["A", "B", "C", "D", "E", "F", "G"];
+								ydata[0] = res.data.data.optionInfo.optionA.count;
+								ydata[1] = res.data.data.optionInfo.optionB.count;
+								ydata[2] = res.data.data.optionInfo.optionC.count;
+								ydata[3] = res.data.data.optionInfo.optionD.count;
+								ydata[4] = res.data.data.optionInfo.optionE.count;
+								ydata[5] = res.data.data.optionInfo.optionF.count;
+								ydata[6] = res.data.data.optionInfo.optionG.count;
+								that.stulistsA=res.data.data.optionInfo.optionA.userList;
+								that.stulistsB=res.data.data.optionInfo.optionB.userList;
+								that.stulistsC=res.data.data.optionInfo.optionC.userList;
+								that.stulistsD=res.data.data.optionInfo.optionD.userList;
+								that.stulistsE=res.data.data.optionInfo.optionE.userList;
+								that.stulistsF=res.data.data.optionInfo.optionF.userList;
+								that.stulistsG=res.data.data.optionInfo.optionG.userList;
+								that.drawLine(xdata, ydata)
+							} else if (that.optionNu == 8) {
+								xdata = ["A", "B", "C", "D", "E", "F", "G", "H"];
+								ydata[0] = res.data.data.optionInfo.optionA.count;
+								ydata[1] = res.data.data.optionInfo.optionB.count;
+								ydata[2] = res.data.data.optionInfo.optionC.count;
+								ydata[3] = res.data.data.optionInfo.optionD.count;
+								ydata[4] = res.data.data.optionInfo.optionE.count;
+								ydata[5] = res.data.data.optionInfo.optionF.count;
+								ydata[6] = res.data.data.optionInfo.optionG.count;
+								ydata[7] = res.data.data.optionInfo.optionH.count;
+								that.stulistsA=res.data.data.optionInfo.optionA.userList;
+								that.stulistsB=res.data.data.optionInfo.optionB.userList;
+								that.stulistsC=res.data.data.optionInfo.optionC.userList;
+								that.stulistsD=res.data.data.optionInfo.optionD.userList;
+								that.stulistsE=res.data.data.optionInfo.optionE.userList;
+								that.stulistsF=res.data.data.optionInfo.optionF.userList;
+								that.stulistsG=res.data.data.optionInfo.optionG.userList;
+								that.stulistsH=res.data.data.optionInfo.optionH.userList;
+								that.drawLine(xdata, ydata)
+							} else if (that.optionNu == 9) {
+								xdata = ["A", "B", "C", "D", "E", "F", "G", "H", "I"];
+								ydata[0] = res.data.data.optionInfo.optionA.count;
+								ydata[1] = res.data.data.optionInfo.optionB.count;
+								ydata[2] = res.data.data.optionInfo.optionC.count;
+								ydata[3] = res.data.data.optionInfo.optionD.count;
+								ydata[4] = res.data.data.optionInfo.optionE.count;
+								ydata[5] = res.data.data.optionInfo.optionF.count;
+								ydata[6] = res.data.data.optionInfo.optionG.count;
+								ydata[7] = res.data.data.optionInfo.optionH.count;
+								ydata[8] = res.data.data.optionInfo.optionI.count;
+								that.stulistsA=res.data.data.optionInfo.optionA.userList;
+								that.stulistsB=res.data.data.optionInfo.optionB.userList;
+								that.stulistsC=res.data.data.optionInfo.optionC.userList;
+								that.stulistsD=res.data.data.optionInfo.optionD.userList;
+								that.stulistsE=res.data.data.optionInfo.optionE.userList;
+								that.stulistsF=res.data.data.optionInfo.optionF.userList;
+								that.stulistsG=res.data.data.optionInfo.optionG.userList;
+								that.stulistsH=res.data.data.optionInfo.optionH.userList;
+								that.stulistsI=res.data.data.optionInfo.optionI.userList;
+								that.drawLine(xdata, ydata)
+							} else if (that.optionNu == 10) {
+								xdata = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J"];
+								ydata[0] = res.data.data.optionInfo.optionA.count;
+								ydata[1] = res.data.data.optionInfo.optionB.count;
+								ydata[2] = res.data.data.optionInfo.optionC.count;
+								ydata[3] = res.data.data.optionInfo.optionD.count;
+								ydata[4] = res.data.data.optionInfo.optionE.count;
+								ydata[5] = res.data.data.optionInfo.optionF.count;
+								ydata[6] = res.data.data.optionInfo.optionG.count;
+								ydata[7] = res.data.data.optionInfo.optionH.count;
+								ydata[8] = res.data.data.optionInfo.optionI.count;
+								ydata[9] = res.data.data.optionInfo.optionJ.count;
+								that.stulistsA=res.data.data.optionInfo.optionA.userList;
+								that.stulistsB=res.data.data.optionInfo.optionB.userList;
+								that.stulistsC=res.data.data.optionInfo.optionC.userList;
+								that.stulistsD=res.data.data.optionInfo.optionD.userList;
+								that.stulistsE=res.data.data.optionInfo.optionE.userList;
+								that.stulistsF=res.data.data.optionInfo.optionF.userList;
+								that.stulistsG=res.data.data.optionInfo.optionG.userList;
+								that.stulistsH=res.data.data.optionInfo.optionH.userList;
+								that.stulistsI=res.data.data.optionInfo.optionI.userList;
+								that.stulistsJ=res.data.data.optionInfo.optionJ.userList;
+								that.drawLine(xdata, ydata)
+							}
+							
+						}else if(that.model==3){ //分组教学--全组模式
+						
+							if (that.optionNu == 1) {
+								xdata = ["A"];
+								ydata[0] = res.data.data.optionInfo.optionA.count;
+								that.stulistsA=res.data.data.optionInfo.optionA.usergroupList;
+								that.drawLine(xdata, ydata)
+							} else if (that.optionNu == 2) {
+								xdata = ["A", "B"];
+								ydata[0] = res.data.data.optionInfo.optionA.count;
+								ydata[1] = res.data.data.optionInfo.optionB.count;
+								that.stulistsA=res.data.data.optionInfo.optionA.usergroupList;
+								that.stulistsB=res.data.data.optionInfo.optionB.usergroupList;
+								that.drawLine(xdata, ydata)
+							} else if (that.optionNu == 3) {
+								xdata = ["A", "B", "C"];
+								ydata[0] = res.data.data.optionInfo.optionA.count;
+								ydata[1] = res.data.data.optionInfo.optionB.count;
+								ydata[2] = res.data.data.optionInfo.optionC.count;
+								that.stulistsA=res.data.data.optionInfo.optionA.usergroupList;
+								that.stulistsB=res.data.data.optionInfo.optionB.usergroupList;
+								that.stulistsC=res.data.data.optionInfo.optionC.usergroupList;
+								that.drawLine(xdata, ydata)
+							} else if (that.optionNu == 4) {
+								xdata = ["A", "B", "C", "D"];
+								ydata[0] = res.data.data.optionInfo.optionA.count;
+								ydata[1] = res.data.data.optionInfo.optionB.count;
+								ydata[2] = res.data.data.optionInfo.optionC.count;
+								ydata[3] = res.data.data.optionInfo.optionD.count;
+								that.stulistsA=res.data.data.optionInfo.optionA.usergroupList;
+								that.stulistsB=res.data.data.optionInfo.optionB.usergroupList;
+								that.stulistsC=res.data.data.optionInfo.optionC.usergroupList;
+								that.stulistsD=res.data.data.optionInfo.optionD.usergroupList;
+								console.log(that.stulistsA)
+								that.drawLine(xdata, ydata)
+							} else if (that.optionNu == 5) {
+								xdata = ["A", "B", "C", "D", "E"];
+								ydata[0] = res.data.data.optionInfo.optionA.count;
+								ydata[1] = res.data.data.optionInfo.optionB.count;
+								ydata[2] = res.data.data.optionInfo.optionC.count;
+								ydata[3] = res.data.data.optionInfo.optionD.count;
+								ydata[4] = res.data.data.optionInfo.optionE.count;
+								that.stulistsA=res.data.data.optionInfo.optionA.usergroupList;
+								that.stulistsB=res.data.data.optionInfo.optionB.usergroupList;
+								that.stulistsC=res.data.data.optionInfo.optionC.usergroupList;
+								that.stulistsD=res.data.data.optionInfo.optionD.usergroupList;
+								that.stulistsE=res.data.data.optionInfo.optionE.usergroupList;
+								that.drawLine(xdata, ydata)
+							} else if (that.optionNu == 6) {
+								xdata = ["A", "B", "C", "D", "E", "F"];
+								ydata[0] = res.data.data.optionInfo.optionA.count;
+								ydata[1] = res.data.data.optionInfo.optionB.count;
+								ydata[2] = res.data.data.optionInfo.optionC.count;
+								ydata[3] = res.data.data.optionInfo.optionD.count;
+								ydata[4] = res.data.data.optionInfo.optionE.count;
+								ydata[5] = res.data.data.optionInfo.optionF.count;
+								that.stulistsA=res.data.data.optionInfo.optionA.usergroupList;
+								that.stulistsB=res.data.data.optionInfo.optionB.usergroupList;
+								that.stulistsC=res.data.data.optionInfo.optionC.usergroupList;
+								that.stulistsD=res.data.data.optionInfo.optionD.usergroupList;
+								that.stulistsE=res.data.data.optionInfo.optionE.usergroupList;
+								that.stulistsF=res.data.data.optionInfo.optionF.usergroupList;
+								that.drawLine(xdata, ydata)
+							} else if (that.optionNu == 7) {
+								xdata = ["A", "B", "C", "D", "E", "F", "G"];
+								ydata[0] = res.data.data.optionInfo.optionA.count;
+								ydata[1] = res.data.data.optionInfo.optionB.count;
+								ydata[2] = res.data.data.optionInfo.optionC.count;
+								ydata[3] = res.data.data.optionInfo.optionD.count;
+								ydata[4] = res.data.data.optionInfo.optionE.count;
+								ydata[5] = res.data.data.optionInfo.optionF.count;
+								ydata[6] = res.data.data.optionInfo.optionG.count;
+								that.stulistsA=res.data.data.optionInfo.optionA.usergroupList;
+								that.stulistsB=res.data.data.optionInfo.optionB.usergroupList;
+								that.stulistsC=res.data.data.optionInfo.optionC.usergroupList;
+								that.stulistsD=res.data.data.optionInfo.optionD.usergroupList;
+								that.stulistsE=res.data.data.optionInfo.optionE.usergroupList;
+								that.stulistsF=res.data.data.optionInfo.optionF.usergroupList;
+								that.stulistsG=res.data.data.optionInfo.optionG.usergroupList;
+								that.drawLine(xdata, ydata)
+							} else if (that.optionNu == 8) {
+								xdata = ["A", "B", "C", "D", "E", "F", "G", "H"];
+								ydata[0] = res.data.data.optionInfo.optionA.count;
+								ydata[1] = res.data.data.optionInfo.optionB.count;
+								ydata[2] = res.data.data.optionInfo.optionC.count;
+								ydata[3] = res.data.data.optionInfo.optionD.count;
+								ydata[4] = res.data.data.optionInfo.optionE.count;
+								ydata[5] = res.data.data.optionInfo.optionF.count;
+								ydata[6] = res.data.data.optionInfo.optionG.count;
+								ydata[7] = res.data.data.optionInfo.optionH.count;
+								that.stulistsA=res.data.data.optionInfo.optionA.usergroupList;
+								that.stulistsB=res.data.data.optionInfo.optionB.usergroupList;
+								that.stulistsC=res.data.data.optionInfo.optionC.usergroupList;
+								that.stulistsD=res.data.data.optionInfo.optionD.usergroupList;
+								that.stulistsE=res.data.data.optionInfo.optionE.usergroupList;
+								that.stulistsF=res.data.data.optionInfo.optionF.usergroupList;
+								that.stulistsG=res.data.data.optionInfo.optionG.usergroupList;
+								that.stulistsH=res.data.data.optionInfo.optionH.usergroupList;
+								that.drawLine(xdata, ydata)
+							} else if (that.optionNu == 9) {
+								xdata = ["A", "B", "C", "D", "E", "F", "G", "H", "I"];
+								ydata[0] = res.data.data.optionInfo.optionA.count;
+								ydata[1] = res.data.data.optionInfo.optionB.count;
+								ydata[2] = res.data.data.optionInfo.optionC.count;
+								ydata[3] = res.data.data.optionInfo.optionD.count;
+								ydata[4] = res.data.data.optionInfo.optionE.count;
+								ydata[5] = res.data.data.optionInfo.optionF.count;
+								ydata[6] = res.data.data.optionInfo.optionG.count;
+								ydata[7] = res.data.data.optionInfo.optionH.count;
+								ydata[8] = res.data.data.optionInfo.optionI.count;
+								that.stulistsA=res.data.data.optionInfo.optionA.usergroupList;
+								that.stulistsB=res.data.data.optionInfo.optionB.usergroupList;
+								that.stulistsC=res.data.data.optionInfo.optionC.usergroupList;
+								that.stulistsD=res.data.data.optionInfo.optionD.usergroupList;
+								that.stulistsE=res.data.data.optionInfo.optionE.usergroupList;
+								that.stulistsF=res.data.data.optionInfo.optionF.usergroupList;
+								that.stulistsG=res.data.data.optionInfo.optionG.usergroupList;
+								that.stulistsH=res.data.data.optionInfo.optionH.usergroupList;
+								that.stulistsI=res.data.data.optionInfo.optionI.usergroupList;
+								that.drawLine(xdata, ydata)
+							} else if (that.optionNu == 10) {
+								xdata = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J"];
+								ydata[0] = res.data.data.optionInfo.optionA.count;
+								ydata[1] = res.data.data.optionInfo.optionB.count;
+								ydata[2] = res.data.data.optionInfo.optionC.count;
+								ydata[3] = res.data.data.optionInfo.optionD.count;
+								ydata[4] = res.data.data.optionInfo.optionE.count;
+								ydata[5] = res.data.data.optionInfo.optionF.count;
+								ydata[6] = res.data.data.optionInfo.optionG.count;
+								ydata[7] = res.data.data.optionInfo.optionH.count;
+								ydata[8] = res.data.data.optionInfo.optionI.count;
+								ydata[9] = res.data.data.optionInfo.optionJ.count;
+								that.stulistsA=res.data.data.optionInfo.optionA.usergroupList;
+								that.stulistsB=res.data.data.optionInfo.optionB.usergroupList;
+								that.stulistsC=res.data.data.optionInfo.optionC.usergroupList;
+								that.stulistsD=res.data.data.optionInfo.optionD.usergroupList;
+								that.stulistsE=res.data.data.optionInfo.optionE.usergroupList;
+								that.stulistsF=res.data.data.optionInfo.optionF.usergroupList;
+								that.stulistsG=res.data.data.optionInfo.optionG.usergroupList;
+								that.stulistsH=res.data.data.optionInfo.optionH.usergroupList;
+								that.stulistsI=res.data.data.optionInfo.optionI.usergroupList;
+								that.stulistsJ=res.data.data.optionInfo.optionJ.usergroupList;
+								that.drawLine(xdata, ydata)
+							}
+						}
+						
+						
+					} else {
+						
+						if(that.model==1 || that.model==2){
+							xdata = ["YES", "NO"];
+							ydata[0] = res.data.data.optionInfo.optionYES.count;
+							ydata[1] = res.data.data.optionInfo.optionNO.count;
+							that.stulistsYES=res.data.data.optionInfo.optionYES.userList;
+							that.stulistsNO=res.data.data.optionInfo.optionNO.userList;
 							that.drawLine(xdata, ydata)
-						} else if (that.optionNu == 2) {
-							xdata = ["A", "B"];
-							ydata[0] = res.data.data.optionInfo.optionA.count;
-							ydata[1] = res.data.data.optionInfo.optionB.count;
-							that.stulistsA=res.data.data.optionInfo.optionA.userList;
-							that.stulistsB=res.data.data.optionInfo.optionB.userList;
-							that.drawLine(xdata, ydata)
-						} else if (that.optionNu == 3) {
-							xdata = ["A", "B", "C"];
-							ydata[0] = res.data.data.optionInfo.optionA.count;
-							ydata[1] = res.data.data.optionInfo.optionB.count;
-							ydata[2] = res.data.data.optionInfo.optionC.count;
-							that.stulistsA=res.data.data.optionInfo.optionA.userList;
-							that.stulistsB=res.data.data.optionInfo.optionB.userList;
-							that.stulistsC=res.data.data.optionInfo.optionC.userList;
-							that.drawLine(xdata, ydata)
-						} else if (that.optionNu == 4) {
-							xdata = ["A", "B", "C", "D"];
-							ydata[0] = res.data.data.optionInfo.optionA.count;
-							ydata[1] = res.data.data.optionInfo.optionB.count;
-							ydata[2] = res.data.data.optionInfo.optionC.count;
-							ydata[3] = res.data.data.optionInfo.optionD.count;
-							that.stulistsA=res.data.data.optionInfo.optionA.userList;
-							that.stulistsB=res.data.data.optionInfo.optionB.userList;
-							that.stulistsC=res.data.data.optionInfo.optionC.userList;
-							that.stulistsD=res.data.data.optionInfo.optionD.userList;
-							console.log(that.stulistsA)
-							that.drawLine(xdata, ydata)
-						} else if (that.optionNu == 5) {
-							xdata = ["A", "B", "C", "D", "E"];
-							ydata[0] = res.data.data.optionInfo.optionA.count;
-							ydata[1] = res.data.data.optionInfo.optionB.count;
-							ydata[2] = res.data.data.optionInfo.optionC.count;
-							ydata[3] = res.data.data.optionInfo.optionD.count;
-							ydata[4] = res.data.data.optionInfo.optionE.count;
-							that.stulistsA=res.data.data.optionInfo.optionA.userList;
-							that.stulistsB=res.data.data.optionInfo.optionB.userList;
-							that.stulistsC=res.data.data.optionInfo.optionC.userList;
-							that.stulistsD=res.data.data.optionInfo.optionD.userList;
-							that.stulistsE=res.data.data.optionInfo.optionE.userList;
-							that.drawLine(xdata, ydata)
-						} else if (that.optionNu == 6) {
-							xdata = ["A", "B", "C", "D", "E", "F"];
-							ydata[0] = res.data.data.optionInfo.optionA.count;
-							ydata[1] = res.data.data.optionInfo.optionB.count;
-							ydata[2] = res.data.data.optionInfo.optionC.count;
-							ydata[3] = res.data.data.optionInfo.optionD.count;
-							ydata[4] = res.data.data.optionInfo.optionE.count;
-							ydata[5] = res.data.data.optionInfo.optionF.count;
-							that.stulistsA=res.data.data.optionInfo.optionA.userList;
-							that.stulistsB=res.data.data.optionInfo.optionB.userList;
-							that.stulistsC=res.data.data.optionInfo.optionC.userList;
-							that.stulistsD=res.data.data.optionInfo.optionD.userList;
-							that.stulistsE=res.data.data.optionInfo.optionE.userList;
-							that.stulistsF=res.data.data.optionInfo.optionF.userList;
-							that.drawLine(xdata, ydata)
-						} else if (that.optionNu == 7) {
-							xdata = ["A", "B", "C", "D", "E", "F", "G"];
-							ydata[0] = res.data.data.optionInfo.optionA.count;
-							ydata[1] = res.data.data.optionInfo.optionB.count;
-							ydata[2] = res.data.data.optionInfo.optionC.count;
-							ydata[3] = res.data.data.optionInfo.optionD.count;
-							ydata[4] = res.data.data.optionInfo.optionE.count;
-							ydata[5] = res.data.data.optionInfo.optionF.count;
-							ydata[6] = res.data.data.optionInfo.optionG.count;
-							that.stulistsA=res.data.data.optionInfo.optionA.userList;
-							that.stulistsB=res.data.data.optionInfo.optionB.userList;
-							that.stulistsC=res.data.data.optionInfo.optionC.userList;
-							that.stulistsD=res.data.data.optionInfo.optionD.userList;
-							that.stulistsE=res.data.data.optionInfo.optionE.userList;
-							that.stulistsF=res.data.data.optionInfo.optionF.userList;
-							that.stulistsG=res.data.data.optionInfo.optionG.userList;
-							that.drawLine(xdata, ydata)
-						} else if (that.optionNu == 8) {
-							xdata = ["A", "B", "C", "D", "E", "F", "G", "H"];
-							ydata[0] = res.data.data.optionInfo.optionA.count;
-							ydata[1] = res.data.data.optionInfo.optionB.count;
-							ydata[2] = res.data.data.optionInfo.optionC.count;
-							ydata[3] = res.data.data.optionInfo.optionD.count;
-							ydata[4] = res.data.data.optionInfo.optionE.count;
-							ydata[5] = res.data.data.optionInfo.optionF.count;
-							ydata[6] = res.data.data.optionInfo.optionG.count;
-							ydata[7] = res.data.data.optionInfo.optionH.count;
-							that.stulistsA=res.data.data.optionInfo.optionA.userList;
-							that.stulistsB=res.data.data.optionInfo.optionB.userList;
-							that.stulistsC=res.data.data.optionInfo.optionC.userList;
-							that.stulistsD=res.data.data.optionInfo.optionD.userList;
-							that.stulistsE=res.data.data.optionInfo.optionE.userList;
-							that.stulistsF=res.data.data.optionInfo.optionF.userList;
-							that.stulistsG=res.data.data.optionInfo.optionG.userList;
-							that.stulistsH=res.data.data.optionInfo.optionH.userList;
-							that.drawLine(xdata, ydata)
-						} else if (that.optionNu == 9) {
-							xdata = ["A", "B", "C", "D", "E", "F", "G", "H", "I"];
-							ydata[0] = res.data.data.optionInfo.optionA.count;
-							ydata[1] = res.data.data.optionInfo.optionB.count;
-							ydata[2] = res.data.data.optionInfo.optionC.count;
-							ydata[3] = res.data.data.optionInfo.optionD.count;
-							ydata[4] = res.data.data.optionInfo.optionE.count;
-							ydata[5] = res.data.data.optionInfo.optionF.count;
-							ydata[6] = res.data.data.optionInfo.optionG.count;
-							ydata[7] = res.data.data.optionInfo.optionH.count;
-							ydata[8] = res.data.data.optionInfo.optionI.count;
-							that.stulistsA=res.data.data.optionInfo.optionA.userList;
-							that.stulistsB=res.data.data.optionInfo.optionB.userList;
-							that.stulistsC=res.data.data.optionInfo.optionC.userList;
-							that.stulistsD=res.data.data.optionInfo.optionD.userList;
-							that.stulistsE=res.data.data.optionInfo.optionE.userList;
-							that.stulistsF=res.data.data.optionInfo.optionF.userList;
-							that.stulistsG=res.data.data.optionInfo.optionG.userList;
-							that.stulistsH=res.data.data.optionInfo.optionH.userList;
-							that.stulistsI=res.data.data.optionInfo.optionI.userList;
-							that.drawLine(xdata, ydata)
-						} else if (that.optionNu == 10) {
-							xdata = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J"];
-							ydata[0] = res.data.data.optionInfo.optionA.count;
-							ydata[1] = res.data.data.optionInfo.optionB.count;
-							ydata[2] = res.data.data.optionInfo.optionC.count;
-							ydata[3] = res.data.data.optionInfo.optionD.count;
-							ydata[4] = res.data.data.optionInfo.optionE.count;
-							ydata[5] = res.data.data.optionInfo.optionF.count;
-							ydata[6] = res.data.data.optionInfo.optionG.count;
-							ydata[7] = res.data.data.optionInfo.optionH.count;
-							ydata[8] = res.data.data.optionInfo.optionI.count;
-							ydata[9] = res.data.data.optionInfo.optionJ.count;
-							that.stulistsA=res.data.data.optionInfo.optionA.userList;
-							that.stulistsB=res.data.data.optionInfo.optionB.userList;
-							that.stulistsC=res.data.data.optionInfo.optionC.userList;
-							that.stulistsD=res.data.data.optionInfo.optionD.userList;
-							that.stulistsE=res.data.data.optionInfo.optionE.userList;
-							that.stulistsF=res.data.data.optionInfo.optionF.userList;
-							that.stulistsG=res.data.data.optionInfo.optionG.userList;
-							that.stulistsH=res.data.data.optionInfo.optionH.userList;
-							that.stulistsI=res.data.data.optionInfo.optionI.userList;
-							that.stulistsJ=res.data.data.optionInfo.optionJ.userList;
+						}else{
+							xdata = ["YES", "NO"];
+							ydata[0] = res.data.data.optionInfo.optionYES.count;
+							ydata[1] = res.data.data.optionInfo.optionNO.count;
+							that.stulistsYES=res.data.data.optionInfo.optionYES.usergroupList;
+							that.stulistsNO=res.data.data.optionInfo.optionNO.usergroupList;
 							that.drawLine(xdata, ydata)
 						}
-					} else {
-						xdata = ["YES", "NO"];
-						ydata[0] = res.data.data.optionInfo.optionYES.count;
-						ydata[1] = res.data.data.optionInfo.optionNO.count;
-						that.stulistsYES=res.data.data.optionInfo.optionYES.userList;
-						that.stulistsNO=res.data.data.optionInfo.optionNO.userList;
-						that.drawLine(xdata, ydata)
+						
 					}
 				});
 				
@@ -291,6 +670,37 @@
 				const that = this;
 				that.clickEcharts = false;
 				this.getResult()
+			},
+			changOption(params){
+				var that = this
+				that.xuanxiang = params.name
+				that.clickEcharts = true;
+				that.stulists = [];
+				if (params.name == "A") {
+					that.stulists=that.stulistsA;
+				} else if (params.name == "B") {
+					that.stulists=that.stulistsB;
+				} else if (params.name == "C") {
+					that.stulists=that.stulistsC;
+				} else if (params.name == "D") {
+					that.stulists=that.stulistsD;
+				} else if (params.name == "E") {
+					that.stulists=that.stulistsE;
+				} else if (params.name == "F") {
+					that.stulists=that.stulistsF;
+				} else if (params.name == "G") {
+					that.stulists=that.stulistsG;
+				} else if (params.name == "H") {
+					that.stulists=that.stulistsH;
+				} else if (params.name == "I") {
+					that.stulists=that.stulistsI;
+				} else if (params.name == "J") {
+					that.stulists=that.stulistsJ;
+				} else if (params.name == "YES") {
+					that.stulists=that.stulistsYES;
+				} else if (params.name == "NO") {
+					that.stulists=that.stulistsNO;
+				}
 			},
 			drawLine(x, y) {
 				// 基于准备好的dom，初始化echarts实例
@@ -355,34 +765,7 @@
 				const that = this;
 				myChart.on('click', function(params) {
 					console.log(params.name)
-					that.xuanxiang = params.name
-					that.clickEcharts = true;
-					that.stulists = [];
-					if (params.name == "A") {
-						that.stulists=that.stulistsA;
-					} else if (params.name == "B") {
-						that.stulists=that.stulistsB;
-					} else if (params.name == "C") {
-						that.stulists=that.stulistsC;
-					} else if (params.name == "D") {
-						that.stulists=that.stulistsD;
-					} else if (params.name == "E") {
-						that.stulists=that.stulistsE;
-					} else if (params.name == "F") {
-						that.stulists=that.stulistsF;
-					} else if (params.name == "G") {
-						that.stulists=that.stulistsG;
-					} else if (params.name == "H") {
-						that.stulists=that.stulistsH;
-					} else if (params.name == "I") {
-						that.stulists=that.stulistsI;
-					} else if (params.name == "J") {
-						that.stulists=that.stulistsJ;
-					} else if (params.name == "YES") {
-						that.stulists=that.stulistsYES;
-					} else if (params.name == "NO") {
-						that.stulists=that.stulistsNO;
-					}
+					that.changOption(params)
 					
 				});
 			}
@@ -417,6 +800,13 @@
 		background: rgb(82, 86, 89);
 		width: 100%;
 		height: 100%;
+	}
+	
+	.stuList{
+		    background: #ccd8cb;
+		    color: #000;
+		    padding: 10px;
+		    border-radius: 10px;
 	}
 
 	.zhutuabcd {

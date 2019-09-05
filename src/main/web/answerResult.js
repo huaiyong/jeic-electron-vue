@@ -25,7 +25,7 @@ router.get('/getAnswerByRecordId', function(req, res, next) {
 	//	answerResultParam.recordId = recordId;
 	anwerResultDB.findAnswerResultByUsergroupId(recordId, usergroupId, function(rows) {
 		if(rows.length > 0) {
-			if(type == 1 || type == 2) {
+			if(type == 1 || type == 2 || type == 3) {
 				for(var answerResult of rows) {
 					var resultMap = {};
 					var datamark = answerResult.datamark;
@@ -58,12 +58,6 @@ router.get('/getAnswerByRecordId', function(req, res, next) {
 				res.json({
 					data: list,
 					message: "获取答题器结果成功",
-					ret: 200
-				})
-			} else if(type == 3) {
-				res.json({
-					data: null,
-					message: "暂时空缺",
 					ret: 200
 				})
 			} else {
@@ -330,7 +324,7 @@ router.get('/getDataByQuestionId', function(req, res) {
 							}
 
 						}
-						userMap["count" + stuAnswerList[i]] = count;
+						userMap["count"] = count;
 						userMap["userList"] = userList;
 						optionInfo[stuAnswerOptionList[i]] = userMap;
 					}
@@ -495,7 +489,7 @@ router.get('/getDataByQuestionId', function(req, res) {
 							}
 
 						}
-						userMap["count" + stuAnswerList[i]] = count;
+						userMap["count"] = count;
 						userMap["userList"] = userList;
 						optionInfo[stuAnswerOptionList[i]] = userMap;
 					}
@@ -661,7 +655,7 @@ router.get('/getDataByQuestionId', function(req, res) {
 							}
 
 						}
-						userMap["count" + stuAnswerList[i]] = count;
+						userMap["count"] = count;
 						userMap["usergroupList"] = getUserListGroupByUsergroup(userList);
 						optionInfo[stuAnswerOptionList[i]] = userMap;
 					}

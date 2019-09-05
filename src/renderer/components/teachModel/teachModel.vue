@@ -9,8 +9,12 @@
       </div>
       <!-- 切换导航 -->
       <div class="subNav">
+        <router-link tag='span' @click.native="tabTeachModel(1)"  :to="{path:'',query:{classType:'all'}}" exact>全班教学模式</router-link>
+        <router-link tag='span' @click.native="tabTeachModel(2)"  :to="{path:'',query:{classType:'group'}}" exact>分组教学模式</router-link>
+        <!-- 
         <span @click="tabTeachModel(1)" :class="{'active':groupIndex == 1}">全班教学模式</span>
-        <span @click="tabTeachModel(2)" :class="{'active':groupIndex == 2}">分组教学模式</span>
+        <span @click="tabTeachModel(2)" :class="{'active':groupIndex == 2}">分组教学模式</span> 
+        -->
       </div>
       <!-- 主体内容 -->
       <div class="conent">
@@ -128,17 +132,17 @@ export default {
   name: "teachModel",
   data() {
     return {
-      groupIndex:1,                 //分组和全班教学模式的索引
-      groupTitle:'',                   //分组弹层的组title
+      groupIndex:1,                      //分组和全班教学模式的索引
+      groupTitle:'',                    //分组弹层的组title
       groupTeachData:[],               // 分组教学列表数据
       lookGroupData : [],             // 查看组的数据
       tabIndex:-1,                  // 分组列表切换索引
-      allClassMask: false,        // 添加分组弹层
+      allClassMask: false,         // 添加分组弹层
       chooseGroupMask: false,    // 选择分组弹层
       lookGroupMask: false,     // 查看分组弹层
       deleteGroupMask:false,   // 删除分组
-      deleGroupIndex:-1,       //删除分组列条的索引
-      msg:'',                  //分组或全班弹层文字提示
+      deleGroupIndex:-1,      //删除分组列条的索引
+      msg:'',                //分组或全班弹层文字提示
     };
   },
   //created函数中调用ajax获取页面初始化所需的数据
@@ -175,14 +179,15 @@ export default {
     },
     deleteConfirm(index){
       this.sure(index);
-      console.log(index)
+    },
+    completeTeacheModel(){
+      this.groupList();
     }
   },
   methods: {
     // 分组列表接口
     groupList(){
       const that = this;
-      // 分组列表接口
       this.$http.get('http://127.0.0.1:3000/jeic/api/teachingGroup?classId=' +  this.$store.state.state.classId + '&subjectId=' + this.$store.state.state.subjectId).then(function(data){
         that.groupTeachData = data.data.data;
       });

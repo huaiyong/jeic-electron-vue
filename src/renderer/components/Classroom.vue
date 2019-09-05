@@ -185,6 +185,9 @@
 																			that.$store.dispatch("getRemember", res.data.data);
 																		};
 																	});
+																	that.$http.get("http://localhost:3000/jeic/api/signin/signinStart").then(function(res) {
+																		
+																	});
 																	sessionStorage.setItem("subjectName",subjectName);
 																	that.$store.dispatch("getSubjectId", subjectId);
 																	that.$store.dispatch("getClassRecord", classRecord);
@@ -217,6 +220,7 @@
 			},
 			endClass() {
 				this.$store.dispatch("changeClassroomState", false);
+				this.$store.dispatch("getPattern", true);
 				sessionStorage.clear();
 				this.$router.push({
 					path: "/"

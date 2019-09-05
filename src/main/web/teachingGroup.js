@@ -261,6 +261,8 @@ router.get('/:id', function(req, res, next) {
 				        stuGrouplist.push(groupMap);
 					});	
 					teachingGroupMap["userGrouplist"]=stuGrouplist;
+				}else{
+					teachingGroupMap["userGrouplist"]=[];
 				}
 				res.json({
 					data: teachingGroupMap,			

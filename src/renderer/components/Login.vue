@@ -46,6 +46,8 @@
 			 var alias = iface[i];
 			if(alias.family === 'IPv4' && alias.address !== '127.0.0.1' && !alias.internal){
 				localIP = alias.address;
+				console.log(localIP)
+				sessionStorage.setItem("ip",localIP)
 			}
 		}
 	}

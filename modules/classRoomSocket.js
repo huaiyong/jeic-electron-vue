@@ -1,5 +1,6 @@
 var room = require("../modules/entity/Room.js")
 const screenshot = require('screenshot-desktop')
+var open = require("open");
 
 // 关闭系统防火墙
 var path = require('path');
@@ -49,6 +50,8 @@ chatSocket.Start = function Start(io) {
 		});
 
 		socket.on('jeic', function (data) {
+			console.log(data)
+			
 			if (typeof (data) == "string") {
 				data = JSON.parse(data)
 			} else {
@@ -86,29 +89,58 @@ chatSocket.Start = function Start(io) {
 				case "historyNextQuestion": //课堂记录  云试题下一题
 					io.emit("historyNextQuestion");
 					break;
+				case "showResoce": //点击单个资源查看资源
+					io.emit("showSingleResoce",data.resId, data.resType);
+					break;
 				case "closeimgtc": //关闭图片
 					io.emit("closeimgtc");
 					break;
+				case "closePpt": //关闭ppt,word以及excel
+					if (data.data == "ppt") {
+						io.emit("closeppttc");
+					} else if (data.data == "word") {
+						io.emit("closewordtc");
+					} else if (data.data == "excel") {
+						io.emit("closeexceltc");
+					};
+					break;
+				case "closePdf":
+					io.emit("closePdf"); //关闭pdf
+					break;
+				case "closeresdetail":
+					io.emit("closeresdetail"); //关闭音频视频
+					break;
 				case "imgBig":
-					io.emit("imgZoom",data.name); //图片放大
+					io.emit("imgZoom",data.picName); //图片放大  big
 					break;
 				case "imgSmall":
-					io.emit("imgZoom",data.name); //图片缩小
+					io.emit("imgZoom",data.picName); //图片缩小 small
 					break;
 				case "imgLeft":
-					io.emit("imgMove",data.name); //图片左移
+					io.emit("imgMove",data.picName); //图片左移 left
 					break;
 				case "imgRight":
-					io.emit("imgMove",data.name); //图片右移
+					io.emit("imgMove",data.picName); //图片右移  right
 					break;
 				case "imgTop":
-					io.emit("imgMove",data.name); //图片上移
+					io.emit("imgMove",data.picName); //图片上移  top
 					break;
 				case "imgBottom":
-					io.emit("imgMove",data.name); //图片下移
+					io.emit("imgMove",data.picName); //图片下移  bottom
 					break;
 				case "imgRotate":
 					io.emit("imgRotate"); //图片旋转
+					break;
+				case "PlayVideo": //视频播放
+					var playVideo = document.getElementById("my-video");
+					io.emit("PlayVideo");
+					break;
+				case "PauseVideo": //视频停止
+					var playVideo = document.getElementById("my-video");
+					io.emit("PlayVideo");
+					break;
+				case "closeshowType":
+					io.emit("closeshowType"); //关闭资源显示类型选项弹窗
 					break;
 				case "recordshiticlose": //关闭课堂试题详情页面
 					io.emit("recordshiticlose");
@@ -116,8 +148,14 @@ chatSocket.Start = function Start(io) {
 				case "checkJiluClass": //查看课堂记录柱状图
 					io.emit("checkJiluClass",data.text);
 					break;
+				case "clickStuPicture": //点击学生头像，查看学生上传的图片
+					io.emit("studentFileEvents",data.stuId);
+					break;
+				case "clickStuPicUrl": //点击学生头像，查看学生上传的图片
+					io.emit("showstuimgResoce",data.imgUrl);
+					break;
 				case "checkStuDeail":  //课堂记录点击学生头像查看答题情况
-					io.emit("checkStuDeail");
+					io.emit("checkStuDeail",data.stuId, data.stuName);
 					break;
 				case "changeClassroomState":  //点击上课或下课
 					io.emit("changeClassroomState");
@@ -141,7 +179,7 @@ chatSocket.Start = function Start(io) {
 					io.emit("restabSwitch", data.restabN);
 					break;
 				case "showShiti":  //查看云试题       参数改为两个 资源id和类型
-					io.emit("showShiti", data.shitiId, data.shitiType);
+					io.emit("showShiti", data.shitiId, data.shitiname);
 					break;
 				case "closeStudentAnswers": //关闭云试题
 					io.emit("closeStudentAnswers");
@@ -182,8 +220,8 @@ chatSocket.Start = function Start(io) {
 			    case "watchStudetail": //查看个人答题情况
 			         io.emit("watchStudetail",data.id,data.stuName,data.groupName); 
 			         break;
-			    case "closestrscrocewindow": //关闭查看个人答题情况
-			         io.emit("closestrscrocewindow"); 
+			    case "closestrscorewindow": //关闭查看个人答题情况
+			         io.emit("closestrscorewindow"); 
 			         break;
 				case "closeChooseStudent": //关闭小组弹框
 				      io.emit("closeChooseStudent"); 
@@ -217,14 +255,103 @@ chatSocket.Start = function Start(io) {
 			    	  break;											   							   
 				case "resourcesMinimize": //最小化资源		 
 					  if(data.data=="test"){   //云试题
-						io.emit("minimizeTest");   
+							io.emit("minimizeTest");   
+					  }else if(data.data=="ppt"){ //ppt
+					  	io.emit("minimizePpt"); 
+					  }else if(data.data=="word"){ //word
+					  	io.emit("minimizeWord"); 
+					  }else if(data.data=="excel"){ //excel
+					  	io.emit("minimizeExcel"); 
+					  }else if(data.data=="img"){ //img
+					  	io.emit("minimizeImg"); 
+					  }else if(data.data=="pdf"){ //pdf
+					  	io.emit("minimizePdf"); 
 					  };
 					  break;	   
 				case "resourcesMaximization": //最大化资源
 					  if(data.data=="test"){   //云试题
 						io.emit("maximizeTest");   
+					  }else if(data.data=="ppt"){ //ppt
+					  	io.emit("maximizePpt"); 
+					  }else if(data.data=="word"){ //word
+					  	io.emit("maximizeWord"); 
+					  }else if(data.data=="excel"){ //excel
+					  	io.emit("maximizeExcel"); 
+					  }else if(data.data=="img"){ //img
+					  	io.emit("maximizeImg"); 
+					  }else if(data.data=="pdf"){
+					  	io.emit("maximizePdf"); //pdf
 					  };
-					  break;		   
+                    break;
+				//小工具
+			 
+				case "toolsShow":  //小工具展开
+					  io.emit("toolsShow");
+					  break;
+				case "toolsHide":  //小工具缩小
+					  io.emit("toolsHide");
+					  break;	
+				case "Rollcall":  //点名
+					  io.emit("Rollcall");
+					  break;
+				case "search":  //搜索
+					  io.emit("search");
+					  break;	
+				case "clock":  //打开倒计时
+					  io.emit("clock");
+					  break;						 
+				case "closeClock":  //关闭倒计时
+					  io.emit("closeClock");
+					  break;
+				case "revokeAnnotation":  //撤销批注
+					  io.emit("revokeAnnotation");
+					  break;
+				case "closeAnnotation":  //关闭批注      新添
+					  io.emit("closeAnnotation");
+					  break;
+				case "showColor":  //批注选择颜色和大小托盘     新添
+					  io.emit("showColor");
+					  break;			
+			    case "sizeAnnotation":  //批注选择画笔粗细      index为下标 data为大小
+					  io.emit("sizeAnnotation",data.index,data.data);
+					  break;
+			    case "colorAnnotation":  //批注选择颜色      index为下标 data为颜色
+					  io.emit("colorAnnotation",data.index,data.data);
+					  break;	  
+				case "moretoolsClick":  //更多
+					  io.emit("moretoolsClick");
+					  break;
+				case "qiangDa":  //抢答
+					  io.emit("qiangDa");
+					  break;
+				 case "startQuickResponseQuestion":  //开始抢答
+					  io.emit("startQuickResponseQuestion");
+					  break;
+				case "closeqiangda":  //关闭抢答
+					  io.emit("closeqiangda");
+					  break;				   
+                case "imageDuiBi":  //拍照对比
+				     io.emit("imageDuiBi",data.data);
+				     break;			   
+				case "closeComper":  //关闭拍照对比
+					  io.emit("closeComper");
+					  break;
+				case "closeimgtc":  //关闭拍照对比二级页面
+					  io.emit("closeimgtc");
+					  break;						 
+				case "findImageByIndex": //拍照对比查看单张详细的图
+				      io.emit("findImageByIndex",data.index);
+					  break;				   
+				case "leftImage": //上一张图片
+					  io.emit("leftImage");
+					  break;
+				case "rightImage": //下一张图片
+					  io.emit("rightImage");
+					  break;				   		   
+                case "closeqiangda":  //关闭抢答
+                	  io.emit("closeqiangda");
+                	  break;
+
 				// 分组教学模块
 				case "teacheModel": //进入分组教学模块
 					io.emit("teacheModel");
@@ -258,6 +385,71 @@ chatSocket.Start = function Start(io) {
 					break;
 				case "deleteConfirm": //分组教学模式---删除按钮 (确认按钮)    
 					io.emit("deleteConfirm",data.position);
+					break;
+				case "completeTeacheModel": //分组教学模式---监测是否刷新分组接口    
+					io.emit("completeTeacheModel");
+					break;
+					
+					// 试题统计模块
+				case "showTable": //点击切换到统计表格页面
+					io.emit("showTable");
+					break;
+				case "tihao": //点击切换到统计表格页面	
+					io.emit("tihao",data.data);
+					break;
+				case "A": //切换柱状图ABCD选项
+					io.emit("A");
+					break;
+				case "B":
+					io.emit("B");
+					break;
+				case "C":
+					io.emit("C")
+					break;
+				case "D":
+					io.emit("D")
+					break;
+				case "E":
+					io.emit("E")
+					break;
+				case "F":
+					io.emit("F")
+					break;
+				case "G":
+					io.emit("G")
+					break;
+				case "H":
+					io.emit("H")
+					break;
+				case "I":
+					io.emit("I")
+					break;
+				case "J":
+					io.emit("J")
+					break;
+				case "YES":
+					io.emit("YES")
+					break;
+				case "NO":
+					io.emit("NO")
+					break;
+				case "prevQuestionStatistics": //查看班级答题情况上一题
+					io.emit("prevQuestionStatistics")
+					break;
+				case "nextQuestionStatistics": //查看班级答题情况下一题
+					io.emit("nextQuestionStatistics")
+					break;
+				case "fanhui": //查看班级答题情况下一题
+					io.emit("fanhui")
+					break;
+				case "closeInfoWindow": //关闭班级答题统计页面
+					io.emit("closeInfoWindow")
+					break;
+				case "watchStudetail": //打开小红花页面
+					io.emit("watchStudetail")
+					break;
+				case "closestrscroce": //关闭小红花统计页面
+					io.emit("closestrscroce")
 					break;
 			};
 
@@ -349,19 +541,36 @@ chatSocket.Start = function Start(io) {
 			} else {
 				io.to(room).emit('jeic', dataobj);
 			}
+			
+			if(data.name=="pingtai"){
+				var pingtaisrc="http://111.207.13.88:8881/jeuc/api/oauth/toClientUrl?clientId=1&userId="+data.userId+"&areaCode="+data.cityId
+				open(pingtaisrc, "chrome");
+			}
 
-
-			if (dataobj.name == "annotation") {
+			if (dataobj.name == "pptAnnotation") {
 				//截图
 				screenshot().then((img) => {
 					var imgsrc = img.toString('base64');
 					var imghost = '' + imgsrc
-					io.emit('jeic', { "name": "jieping", "data": imghost });
+					io.emit('jeic', { "name": "pptJieping", "data": imghost });
 					console.log(imghost)
 				}).catch((err) => {
 					throw err
 				})
 			}
+			
+			if (dataobj.name == "resAnnotation") {
+				//截图
+				screenshot().then((img) => {
+					var imgsrc = img.toString('base64');
+					var imghost = '' + imgsrc
+					io.emit('jeic', { "name": "resJieping", "data": imghost });
+					console.log(imghost)
+				}).catch((err) => {
+					throw err
+				})
+			}
+			
 		});
 
 		/*** 创建画板页面的socket.io连接*/

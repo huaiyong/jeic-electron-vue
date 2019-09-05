@@ -1,6 +1,6 @@
 <template>
 	<div style="width:100%;height:100%;" class="resouceBg">
-	    <iframe src="/static/draw/ppt.html" frameborder="0" style="width:100%;height:100%;"></iframe>
+	    <iframe src="static/draw/ppt.html" frameborder="0" style="width:100%;height:100%;"></iframe>
 		<span class="closefullscreen fr" @click="back">
         	<em class="iconfont icon-guanbi1 exitResTc"></em>
       	</span>
@@ -19,8 +19,16 @@
             resourceId: this.$route.params.resourceId,
 			}
 		},
+		sockets: {
+			minimizePpt() {
+				this.min();
+			},
+			closeppttc() {
+				this.back();
+			}
+		},
 		methods:{
-			back:function(){
+			back(){
 				this.$router.back();
 				sessionStorage.removeItem("resourceId");
 				sessionStorage.removeItem("resourcepptId")

@@ -9,12 +9,11 @@ class httpUtils{
      * @param body
      */
     static httpPostJSON(url,body) {
-
+    	
         var bodyString = JSON.stringify(body);
-
+		
         var headers = {
-            'Content-Type': 'application/json',
-            'Content-Length': bodyString.length
+            'Content-Type': 'application/json'
         };
 
         var options = {

@@ -15,13 +15,32 @@
 				</div>
 				<div class="menberight">
 					<!-- 班级答题统计 -->
-					<div class="pingjuntrue">
+					<div class="pingjuntrue" v-if="pattern&&model!=3">
 						<ul class="banjiuldati">
 							<li>测试平均正确率：
 								<p class="pingjunzitiset">{{averagelv2}}%</p>
 							</li>
-							<li>已答题人数：<span></span>{{haveTheAnswerCount}}人</li>
-							<li>未答题人数：<span></span>{{notTheAnswerCount}}人</li>
+							<li>已答题：<span></span>{{haveTheAnswerCount}}人</li>
+							<li>未答题：<span></span>{{notTheAnswerCount}}人</li>
+						</ul>
+					</div>
+					<div class="pingjuntrue" v-if="!pattern&&model!=3">
+						<ul class="banjiuldati">
+							<li>测试平均正确率：
+								<p class="pingjunzitiset">{{averagelv2}}%</p>
+							</li>
+							<li>已答题组数：<span></span>{{haveTheAnswerCount}}</li>
+							<li>未答题组数：<span></span>{{notTheAnswerCount}}</li>
+						</ul>
+					</div>
+					<!-- 班级答题统计 -->
+					<div class="pingjuntrue"   v-if="!pattern&&model==3">
+						<ul class="banjiuldati">
+							<li>测试平均正确率：
+								<p class="pingjunzitiset">{{averagelv2}}%</p>
+							</li>
+							<li>组内已答题：<span></span>{{haveTheAnswerCount}}人</li>
+							<li>组内未答题：<span></span>{{notTheAnswerCount}}人</li>
 						</ul>
 					</div>
 					<!--班级答题统计表格-->
@@ -100,16 +119,31 @@
 				groupId: state => state.state.groupId
 			})
 		},
+		sockets: {
+			showTable(){
+				this.switchTab()
+			},
+			tihao(data){
+				this.getQuestionNum(data)
+			},
+			closeInfoWindow(){
+				this.back()
+			},
+			watchStudetail(){
+				this.rankingStatistics()
+			}
+			
+		},
 		methods: {
 			back() {
 				this.$router.back();
 			},
-			addClass:function(index,id){
+			addClass:function(index,id){ //点击组
 				  this.cancelbtn=false;
 				  this.current=index;
 				  this.usergroupId=id;
 				  var that=this;
-				  this.$http.get("http://localhost:3000/jeic/api/answerResult/getAnswerByRecordId?recordId="+this.changeId+'&type=1'+'&usergroupId='+id).then(function(res) {
+				  this.$http.get("http://localhost:3000/jeic/api/answerResult/getAnswerByRecordId?recordId="+this.changeId+'&type=1'+'&teachinggroupId='+this.groupId+'&usergroupId='+id).then(function(res) {
 				  	console.log(res)
 				  	var tishuliangnum=[];
 				  	var banjibaifenbi=[];
@@ -124,8 +158,7 @@
 				  	that.averagelv2 = parseFloat(averagelv * 100 / chushu).toFixed(2)
 				  	that.displayChart(tishuliangnum,banjibaifenbi)
 				  });
-				  console.log(id)
-				  this.$http.get("http://127.0.0.1:3000/jeic/api/answerResult/getDataGroupByUser?recordId="+this.changeId+'&type='+this.model+'&usergroupId='+id).then(function(res) {
+				  this.$http.get("http://127.0.0.1:3000/jeic/api/answerResult/getDataGroupByUser?recordId="+this.changeId+'&type='+this.model+'&usergroupId='+id+'&teachinggroupId='+this.groupId).then(function(res) {
 				  	console.log(res,'已答题认识')
 				  	that.haveTheAnswerCount = res.data.data.haveTheAnswerCount
 				  	that.notTheAnswerCount = res.data.data.notTheAnswerCount
@@ -133,13 +166,12 @@
 				  
 			},
 			
-			allClass:function(id){
+			allClass:function(id){ //点击全部
 				this.cancelbtn=true;
 				this.current=-1;
 				this.usergroupId=id;
-				
 				var that=this;
-				this.$http.get("http://localhost:3000/jeic/api/answerResult/getAnswerByRecordId?recordId="+this.changeId+'&type=1').then(function(res) {
+				this.$http.get("http://localhost:3000/jeic/api/answerResult/getAnswerByRecordId?recordId="+this.changeId+'&type=1'+'&teachinggroupId='+this.groupId).then(function(res) {
 					console.log(res)
 					var tishuliangnum=[];
 					var banjibaifenbi=[];
@@ -154,13 +186,13 @@
 					that.averagelv2 = parseFloat(averagelv * 100 / chushu).toFixed(2)
 					that.displayChart(tishuliangnum,banjibaifenbi)
 				});
-				console.log(id)
-				this.$http.get("http://127.0.0.1:3000/jeic/api/answerResult/getDataGroupByUser?recordId="+this.changeId+'&type='+this.model).then(function(res) {
+				
+				// 获取已答题和未答题人数
+				this.$http.get("http://127.0.0.1:3000/jeic/api/answerResult/getDataGroupByUser?recordId="+this.changeId+'&type='+this.model+'&teachinggroupId='+this.groupId).then(function(res) {
 					console.log(res,'已答题认识')
 					that.haveTheAnswerCount = res.data.data.haveTheAnswerCount
 					that.notTheAnswerCount = res.data.data.notTheAnswerCount
 				});
-				
 				
 			},
 			
@@ -259,7 +291,7 @@
 				this.changeId = this.recordId;
 				console.log(this.changeId,'gaibian1')
 			}
-			this.$http.get("http://localhost:3000/jeic/api/answerResult/getAnswerByRecordId?recordId="+this.changeId+'&type=1').then(function(res) {
+			this.$http.get("http://localhost:3000/jeic/api/answerResult/getAnswerByRecordId?recordId="+this.changeId+'&type=1'+'&teachinggroupId='+this.groupId).then(function(res) {
 				console.log(res)
 				var tishuliangnum=[];
 				var banjibaifenbi=[];
@@ -285,7 +317,7 @@
 			});
 			
 			// 获取已答题和未答题人数
-			this.$http.get("http://127.0.0.1:3000/jeic/api/answerResult/getDataGroupByUser?recordId="+this.changeId+'&type='+this.model).then(function(res) {
+			this.$http.get("http://127.0.0.1:3000/jeic/api/answerResult/getDataGroupByUser?recordId="+this.changeId+'&type='+this.model+'&teachinggroupId='+this.groupId).then(function(res) {
 				console.log(res,'已答题认识')
 				that.haveTheAnswerCount = res.data.data.haveTheAnswerCount
 				that.notTheAnswerCount = res.data.data.notTheAnswerCount
@@ -327,7 +359,7 @@
 		border-radius: 10px;
 		box-shadow: 0px 1px 13px #5f5d5d;
 		font-size:1.2rem;
-		margin:6rem 0;
+		margin:3rem 0;
 	}
 	
 	.active{
@@ -423,21 +455,22 @@
 	.banjiuldati {
 		padding: 2%;
 		box-sizing: content-box;
-		font-size: 1.6rem;
+		font-size: 1.4rem;
 	}
 
 	.pingjunzitiset {
 		text-align: center;
-		font-size: 5.8rem;
+		font-size: 4.8rem;
 		font-weight: bold;
 		color: #FFC107;
 		margin: 2rem 0;
 	}
 
 	.classtableset {
-		width: 80%;
+		width: 79%;
 		height: 100%;
 		float: left;
+		margin-left: 1%;
 	}
 
 	.paichangetable {

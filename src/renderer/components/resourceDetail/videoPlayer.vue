@@ -60,6 +60,14 @@ export default {
       videoUrl:'' //地址
     }
   },
+  sockets:{
+		closeresdetail(){
+			this.closeVideotc();
+		},
+		PlayVideo() {
+			playAndPause();
+		}
+	},
   methods:{
     closeVideotc () {
       this.$router.push({"name": "Resourceslist"});
