@@ -93,18 +93,19 @@ router.get('/getDataGroupByUser', function(req, res) {
 					stuMap["trueCount"] = answer.trueCount; //正確統計
 					stuMap["falseCount"] = answer.falseCount //錯誤統計
 					stuMap["userId"] = answer.userId; //學生Id；
+					stuMap["redFlower"] = 0;
 					if(stuMap["trueCount"] == 0 && stuMap["falseCount"] == 0) {
 						notTheAnswerCount++;
 					} else {
 						haveTheAnswerCount++;
 					}
-					stuMap["accuracy"] = stuMap["trueCount"] / stuMap["Count"];
+					stuMap["accuracy"] = answer.trueCount / answer.Count;
 					answerResultList.push(stuMap);
 				}
 				resultMap["notTheAnswerCount"] = notTheAnswerCount; //未答題人數
 				resultMap["haveTheAnswerCount"] = haveTheAnswerCount;
 			}
-			resultMap["answerResultList"] = answerResultList;
+			resultMap["answerResultList"] = getRedFlower(answerResultList);
 			res.json({
 				data: resultMap,
 				message: "全班教學模式下 查詢答題情況詳情",
@@ -135,7 +136,7 @@ router.get('/getDataGroupByUser', function(req, res) {
 				resultMap["notTheAnswerCount"] = notTheAnswerCount;
 				resultMap["haveTheAnswerCount"] = haveTheAnswerCount;
 			}
-			resultMap["answerResultList"] = answerResultList;
+			resultMap["answerResultList"] = getRedFlower(answerResultList);
 			res.json({
 				data: resultMap,
 				message: "分組教學模式下 組長作答 查詢答題情況詳情",
@@ -847,6 +848,7 @@ function getUserListGroupByUsergroup1(userData){
 	            userGroupId: ai.userGroupId,
 	            userGroupName: ai.userGroupName,
 	            accuracy:ai.accuracy,
+	            redFlower:0,
 	            userList: [ai]
 	        });
 	        map[ai.userGroupId] = ai;
@@ -863,9 +865,35 @@ function getUserListGroupByUsergroup1(userData){
 	}
 	for(var j = 0; j < dest.length; j++){
         var dj = dest[j];
+        var dj2 = dest[2];
 		dj.accuracy = dj.accuracy/dj.userList.length;
+		
+		if(j<=2){
+			dj["redFlower"]=1;
+		}else{
+			if(dj["accuracy"]==dj2["accuracy"]){
+				dj["redFlower"]=1;
+			}
+		}
     }
 	return dest;
+}
+
+function getRedFlower(answerResultList){
+	var answerMap = {};
+	var answerMap2 = {};
+	for(i=0;i<answerResultList.length;i++){
+		answerMap = answerResultList[i];
+		answerMap2 = answerResultList[2];
+		if(i<=2){
+			answerMap["redFlower"]=1;
+		}else{
+			if(answerMap["accuracy"]==answerMap2["accuracy"]){
+				answerMap["redFlower"]=1;
+			}
+		}
+	}
+	return answerResultList;
 }
 
 /**

@@ -65,7 +65,10 @@ export default {
 			this.closeVideotc();
 		},
 		PlayVideo() {
-			playAndPause();
+			this.playAndPause();
+		},
+		PauseVideo() {
+			this.playAndPause();
 		}
 	},
   methods:{
@@ -78,6 +81,19 @@ export default {
       }else{
         this.videoUrl = this.configure.videoPlay + this.arrAudio;
       }
+    },
+    playAndPause() {
+    	var video = $("#my-video");
+    	if(video[0].paused || video[0].ended) {
+                video[0].play();
+                $('.play-btn').removeClass('stop').addClass('play');
+                $('.play-one').hide();
+            }
+            else {
+                video[0].pause();
+                $('.play-btn').removeClass('play').addClass('stop');
+                $('.play-one').show();
+            }
     }
   },
   mounted: function(){
@@ -261,17 +277,7 @@ export default {
     };
     //开始暂停
     function playAndPause() {
-            if(video[0].paused || video[0].ended) {
-                video[0].play();
-                $('.play-btn').removeClass('stop').addClass('play');
-                $('.play-one').hide();
-                playSpeed(videoSpeed);
-            }
-            else {
-                video[0].pause();
-                $('.play-btn').removeClass('play').addClass('stop');
-                $('.play-one').show();
-            }
+            this.playAndPause()
     }
     //播放速度
     function playSpeed(speed) {

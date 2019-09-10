@@ -1,6 +1,6 @@
 <template>
 	<div style="width:100%;height:100%;" class="resouceBg">
-	    <iframe src="static/draw/ppt.html" frameborder="0" style="width:100%;height:100%;"></iframe>
+	    <iframe :src="url" frameborder="0" style="width:100%;height:100%;"></iframe>
 		<span class="closefullscreen fr" @click="back">
         	<em class="iconfont icon-guanbi1 exitResTc"></em>
       	</span>
@@ -16,7 +16,9 @@
 		name:"pptShow",
 		data(){
 			return {
-            resourceId: this.$route.params.resourceId,
+			url: '',
+            resourceId: '',
+            isFirstEnter:false
 			}
 		},
 		sockets: {
@@ -28,22 +30,33 @@
 			}
 		},
 		methods:{
+			getRouterData(){
+				this.resourceId = this.$route.params.resourceId;
+				this.url = "http://localhost:3000/static/draw/ppt.html?resourceId="+this.$route.params.resourceId
+			},
 			back(){
 				this.$router.back();
 				sessionStorage.removeItem("resourceId");
-				sessionStorage.removeItem("resourcepptId")
+				sessionStorage.removeItem("resourcepptId");
+				this.isFirstEnter = true;
 			},
 			 min() {
-		  	    sessionStorage.setItem("resourcepptId",this.resourceId);		  	
+		  	    sessionStorage.setItem("resourcepptId",this.resourceId);
 		        $(this.$parent.$refs.indexItem).append("<li id='pptMax'><div><i class='iconfont icon-quanping'></i><p>ppt</p></div></li>");
 		        this.$router.push({"name":"Resourceslist"});
 		        this.isFirstEnter = false;
 		  	}
 		},
-		created(){
-			console.log(this.resourceId,1111222)
-		}
-	
+		created() {
+      this.isFirstEnter = true;
+    },
+    activated() {
+      if (this.isFirstEnter) {
+        this.getRouterData();
+      };
+      this.isFirstEnter = false;
+    }
+
 	}
 </script>
 
@@ -98,5 +111,5 @@
   .minimizeResources>em {
     font-size: 3rem;
     color: #1296db;
-  }  
+  }
 </style>

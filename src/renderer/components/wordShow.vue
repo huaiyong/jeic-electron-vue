@@ -1,6 +1,6 @@
 <template>
 	<div style="width:100%;height:100%;" class="resouceBg">
-		<iframe src="static/draw/word.html" frameborder="0" style="width:100%;height:100%;"></iframe>
+		<iframe :src="url" frameborder="0" style="width:100%;height:100%;"></iframe>
 		<span class="closefullscreen fr" @click="closeWordtc">
 			<em class="iconfont icon-guanbi1 exitResTc"></em>
 		</span>
@@ -16,7 +16,12 @@
 		name: "wordShow",
 		data() {
 			return {
-				resourceId: this.$route.params.resourceId,
+
+			    url: '',
+
+				resourceWId: '',
+				isFirstEnter: false
+
 			}
 		},
 		sockets: {
@@ -28,12 +33,18 @@
 			}
 		},
 		methods: {
+			getRouterData() {
+				this.resourceWId = this.$route.params.resourceWId;
+				console.log(this.resourceWId,'word id')
+				this.url = "http://localhost:3000/static/draw/word.html?resourceId="+this.$route.params.resourceWId;
+			},
 			closeWordtc() {
 				this.$router.push({
 					"name": "Resourceslist"
 				});
 				sessionStorage.removeItem("resourcewordId");
-				sessionStorage.removeItem("resourceId");
+				sessionStorage.removeItem("resourceWId");
+				this.isFirstEnter = true;
 			},
 			min() {
 				sessionStorage.setItem("resourcewordId", this.resourceId);
@@ -45,8 +56,14 @@
 			}
 		},
 		created() {
-			console.log(this.resourceId, 1111222)
-		}
+      this.isFirstEnter = true;
+    },
+    activated() {
+      if (this.isFirstEnter) {
+        this.getRouterData();
+      };
+      this.isFirstEnter = false;
+    }
 
 	}
 </script>

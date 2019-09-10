@@ -23,6 +23,42 @@ chatSocket.Start = function Start(io) {
 	var userSocketMap = {};
 
 	io.sockets.on('connection', function (socket) {
+		
+		
+		socket.on("padId",function(){
+			socket.emit('id', socket.id);
+			console.log('-- ' + socket.id + ' joined --');
+		})
+		socket.on('message', function (details) {
+		  var otherClient = io.sockets.connected[details.to];
+		
+		  if (!otherClient) {
+		    return;
+		  }
+		  console.log("转发给某个人"+JSON.stringify(details))
+		    delete details.to;
+		    details.from = socket.id;
+		    otherClient.emit('message', details);
+		});
+		
+		socket.on('readyToStream', function(options) {
+		  console.log('-- ' + socket.id + ' is ready to stream --');
+		
+		  // streams.addStream(socket.id, options.name);
+		});
+		
+		// socket.on('update', function(options) {
+		//   streams.update(socket.id, options.name);
+		// });
+		// 
+		// function leave() {
+		//   console.log('-- ' + socket.id + ' left --');
+		//   streams.removeStream(socket.id);
+		// }
+		
+		// socket.on('disconnect', leave);
+		// socket.on('leave', leave);
+		
 
 		//接收用户创建房间的指令
 		socket.on('cRoom', function (data) {
@@ -132,14 +168,12 @@ chatSocket.Start = function Start(io) {
 					io.emit("imgRotate"); //图片旋转
 					break;
 				case "PlayVideo": //视频播放
-					var playVideo = document.getElementById("my-video");
 					io.emit("PlayVideo");
 					break;
-				case "PauseVideo": //视频停止
-					var playVideo = document.getElementById("my-video");
-					io.emit("PlayVideo");
+				case "PauseVideo": //视频停止);
+					io.emit("PauseVideo");
 					break;
-				case "closeshowType":
+				case "closeWindow":
 					io.emit("closeshowType"); //关闭资源显示类型选项弹窗
 					break;
 				case "recordshiticlose": //关闭课堂试题详情页面
@@ -351,6 +385,16 @@ chatSocket.Start = function Start(io) {
                 case "closeqiangda":  //关闭抢答
                 	  io.emit("closeqiangda");
                 	  break;
+				case "zhantai": //实物展台
+					io.emit("zhantai",data.data);
+					// $(".zhantai").show();
+					// toolsHide();
+					// new PeerManager().peerInit(data.data)
+					break;
+				case "zhantaiClose": //实物展台
+					io.emit("zhantaiClose");
+					// closezhantaidetail()
+					break;
 
 				// 分组教学模块
 				case "teacheModel": //进入分组教学模块
@@ -393,6 +437,9 @@ chatSocket.Start = function Start(io) {
 					// 试题统计模块
 				case "showTable": //点击切换到统计表格页面
 					io.emit("showTable");
+					break;
+				case "showPic": //点击切换到统计表格页面
+					io.emit("showPic");
 					break;
 				case "tihao": //点击切换到统计表格页面	
 					io.emit("tihao",data.data);
@@ -450,6 +497,41 @@ chatSocket.Start = function Start(io) {
 					break;
 				case "closestrscroce": //关闭小红花统计页面
 					io.emit("closestrscroce")
+					break;
+			    //以下是滚动条
+				case "chengyuanScroll": //成员管理全班滚动条 
+				      io.emit("chengyuanScroll",data.data);
+					  break;
+			    case "chengyuangroupScroll": //成员管理分组滚动条
+			          io.emit("chengyuangroupScroll",data.data);
+			    	  break;
+				case "yunziyuanScroll": //云资源
+				      io.emit("yunziyuanScroll",data.data);
+					  break;
+				case "yunshitiScroll": //云试题
+				      io.emit("yunshitiScroll",data.data);
+					  break;
+				case "yunshitiziyuanScrollxia":	   //云试题左边 
+				      io.emit("yunshitiziyuanScrollxia");
+				      break;
+			     case "yunshitiziyuanScrollshang":	   //云试题左边
+			           io.emit("yunshitiziyuanScrollshang");
+			           break;		  
+			 	case "xueshengliebiaoScroll": //云试题 右边 学生列表滚动条						
+					  io.emit("xueshengliebiaoScroll",data.data);
+					  break;
+				case "gerenchengjiScroll":  //查看个人成绩
+					  io.emit("xueshengliebiaoScroll",data.data);
+					   break;
+				case "chakanzongchengjiScroll":
+					  io.emit("chakanzongchengjiScroll",data.data);
+					// var conheight5 = $(".paichangetable").height();
+					// $(".paichangetable").scrollTop(data.data * conheight5 / 1.8);
+					break;
+				case "shitijiangjieScroll"://试题讲解a-j
+					  io.emit("shitijiangjieScroll",data.data);
+					// var conheight9 = $(".tihaotcset").height();
+					// $(".tihaotcset").scrollTop(data.data * conheight9 / 0.1);
 					break;
 			};
 
@@ -546,31 +628,17 @@ chatSocket.Start = function Start(io) {
 				var pingtaisrc="http://111.207.13.88:8881/jeuc/api/oauth/toClientUrl?clientId=1&userId="+data.userId+"&areaCode="+data.cityId
 				open(pingtaisrc, "chrome");
 			}
-
-			if (dataobj.name == "pptAnnotation") {
-				//截图
+			//截图批注
+			if (dataobj.name == "pizhu") {
 				screenshot().then((img) => {
 					var imgsrc = img.toString('base64');
 					var imghost = '' + imgsrc
-					io.emit('jeic', { "name": "pptJieping", "data": imghost });
+					io.emit('jeic', { "name": "jieping", "data": imghost });
 					console.log(imghost)
 				}).catch((err) => {
 					throw err
 				})
 			}
-			
-			if (dataobj.name == "resAnnotation") {
-				//截图
-				screenshot().then((img) => {
-					var imgsrc = img.toString('base64');
-					var imghost = '' + imgsrc
-					io.emit('jeic', { "name": "resJieping", "data": imghost });
-					console.log(imghost)
-				}).catch((err) => {
-					throw err
-				})
-			}
-			
 		});
 
 		/*** 创建画板页面的socket.io连接*/

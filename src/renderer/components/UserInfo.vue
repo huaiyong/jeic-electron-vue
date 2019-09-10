@@ -72,6 +72,7 @@
 				this.updateTitle=data;
 			},
 			monitorVersion(data){
+				alert(data)
 				this.version=data;
 			}
 		}

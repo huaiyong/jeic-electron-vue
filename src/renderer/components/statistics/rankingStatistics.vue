@@ -16,7 +16,7 @@
 					</thead>
 					<tbody>
 						<tr v-for="name in names">
-							<td>{{name.realname}}</td>
+							<td><img class="redFlower" v-if="name.redFlower==1" src="../../assets/img/icon_xiaohonghua.png" alt="">{{name.realname}}</td>
 							<td>{{name.trueCount}}</td>
 							<td>{{name.falseCount}}</td>
 							<td>{{name.accuracy*100 | toFixed(2) }}%</td>
@@ -44,7 +44,7 @@
 					</thead>
 					<tbody>
 						<tr v-for="name in names">
-							<td>{{name.usergroupName}}</td>
+							<td><img class="redFlower" v-if="name.redFlower==1" src="../../assets/img/icon_xiaohonghua.png" alt="">{{name.usergroupName}}</td>
 							<td>{{name.trueCount}}</td>
 							<td>{{name.falseCount}}</td>
 							<td>{{name.accuracy*100 | toFixed(2) }}%</td>
@@ -138,8 +138,14 @@
 		sockets: {
 			closestrscroce(){
 				this.back();
+			},
+			getGroupStudentRange(data){
+				this.getGroupStudentRange(data);
+			},
+			xiaoHongHuaScroll(data){
+				var conheight = $(".studentResultTable").height();
+				$(".studentResultTable").scrollTop(data * conheight * 1.8);
 			}
-			
 		},
 		methods: {
 			back() {
@@ -313,7 +319,7 @@
 		background: #f7f8fa;
 	}
 
-	.studentResultPopup table tbody tr:nth-child(1) td:nth-child(1) {
+	/* .studentResultPopup table tbody tr:nth-child(1) td:nth-child(1) {
 		background: url(../../assets/img/icon_xiaohonghua.png) no-repeat 20px center;
 		background-size: 32px 28px;
 	}
@@ -326,6 +332,11 @@
 	.studentResultPopup table tbody tr:nth-child(3) td:nth-child(1) {
 		background: url(../../assets/img/icon_xiaohonghua.png) no-repeat 20px center;
 		background-size: 32px 28px;
+	} */
+	
+	.redFlower{
+		vertical-align: middle;
+		width: 3rem;
 	}
 
 	.closefullscreen {

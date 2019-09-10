@@ -118,22 +118,22 @@
 				this.teachModel();
 			},
 			maximizeTest(){
-				this.testPadMax();
+				this.testMax();
 			},
 			maximizePpt(){
-				this.pptPadMax();
+				this.pptMax();
 			},
 			maximizeWord(){
-				this.wordPadMax();
+				this.wordMax();
 			},
 			maximizeExcel(){
-				this.excelPadMax();
+				this.excelMax();
 			},
 			maximizeImg(){
-				this.imgPadMax();
+				this.imgMax();
 			},
 			maximizePdf(){
-				this.pdfPadMax();
+				this.pdfMax();
 			}
 		},
 		methods: {
@@ -221,20 +221,7 @@
 
 			},
 			testMax() { //试题最大化
-				const that = this;
-				$("body").on("click", "#testMax", function() {
-					$(this).addClass("active").remove();
-					sessionStorage.removeItem("resourceId");
-					that.$router.push({
-						name: "StudentAnswers",
-						params: {
-							state: true
-						}
-					});
-				});
-			},
-			testPadMax() { //试题最大化
-					$(this).addClass("active").remove();
+					$('#testMax').addClass("active").remove();
 					sessionStorage.removeItem("resourceId");
 					this.$router.push({
 						name: "StudentAnswers",
@@ -244,22 +231,8 @@
 					});
 			},
 			imgMax() { //图片最大化
-				const that = this;
-				$("body").on("click", "#imgMax", function() {
-					$(this).addClass("active").remove();
-					that.$router.push({
-						name: "imgShow",
-						params: {
-							resourceImgId: sessionStorage.getItem("resourceImgId"),
-							imgsrc: sessionStorage.getItem("resourceImgUrl")
-						}
-					});
-				});
-			},
-			imgPadMax() { //图片最大化
-				const that = this;
-				$(this).addClass("active").remove();
-				that.$router.push({
+				$('#imgMax').addClass("active").remove();
+				this.$router.push({
 					name: "imgShow",
 					params: {
 						resourceImgId: sessionStorage.getItem("resourceImgId"),
@@ -268,20 +241,7 @@
 				});
 			},
 			pdfMax() { //pdf最大化
-				const that = this;
-				$("body").on("click", "#pdfMax", function() {
-					$(this).addClass("active").remove();
-					that.$router.push({
-						name: "pdf",
-						params: {
-							resourcePdfId: sessionStorage.getItem("resourcePdfId"),
-							pdfsrc: sessionStorage.getItem("resourcePdfUrl")
-						}
-					});
-				});
-			},
-			pdfPadMax() { //pdf最大化
-					$(this).addClass("active").remove();
+					$('#pdfMax').addClass("active").remove();
 					this.$router.push({
 						name: "pdf",
 						params: {
@@ -291,19 +251,7 @@
 					});
 			},
 			wordMax() { //word最大化
-				const that = this;
-				$("body").on("click", "#wordMax", function() {
-					$(this).addClass("active").remove();
-					that.$router.push({
-						name: "word",
-						params: {
-							resourcewordId: sessionStorage.getItem("resourcewordId")
-						}
-					});
-				});
-			},
-			wordPadMax() { //word最大化
-					$(this).addClass("active").remove();
+					$('#wordMax').addClass("active").remove();
 					this.$router.push({
 						name: "word",
 						params: {
@@ -312,21 +260,7 @@
 					});
 			},
 			excelMax() { //excel最大化
-				const that = this;
-				$("body").on("click", "#excelMax", function() {
-					console.log(1)
-					$(this).addClass("active").remove();
-					that.$router.push({
-						name: "excel",
-						params: {
-							resourceexcelId: sessionStorage.getItem("resourceexcelId"),
-							showexcelsrc: sessionStorage.getItem("resourceexcelUrl")
-						}
-					});
-				});
-			},
-			excelPadMax() { //excel最大化
-					$(this).addClass("active").remove();
+					$("#excelMax").addClass("active").remove();
 					this.$router.push({
 						name: "excel",
 						params: {
@@ -336,19 +270,7 @@
 					});
 			},
 			pptMax() { //ppt最大化
-				const that = this;
-				$("body").on("click", "#pptMax", function() {
-					$(this).addClass("active").remove();
-					that.$router.push({
-						name: "ppt",
-						params: {
-							resourceexcelId: sessionStorage.getItem("resourcepptId")
-						}
-					});
-				});
-			},
-			pptPadMax() { //ppt最大化
-					$(this).addClass("active").remove();
+					$('#pptMax').addClass("active").remove();
 					this.$router.push({
 						name: "ppt",
 						params: {
@@ -365,12 +287,25 @@
 			}
 		},
 		mounted() {
-			this.testMax();
-			this.imgMax();
-			this.wordMax();
-			this.excelMax();
-			this.pptMax();
-			this.pdfMax();
+			const that = this;
+			$("body").on("click", "#testMax", function() {
+				that.testMax();
+			});
+			$("body").on("click", "#imgMax", function() {
+				that.imgMax();
+			});
+			$("body").on("click", "#wordMax", function() {
+				that.wordMax();
+			});
+			$("body").on("click", "#excelMax", function() {
+				that.excelMax();
+			});
+			$("body").on("click", "#pptMax", function() {
+				that.pptMax();
+			});
+			$("body").on("click", "#pdfMax", function() {
+				that.pdfMax();
+			});
 		}
 	};
 </script>

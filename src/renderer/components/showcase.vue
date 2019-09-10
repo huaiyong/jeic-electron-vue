@@ -16,6 +16,17 @@
 			back: function() {
 				this.$router.back();
 			}
+		},
+		computed: {
+			...mapState({
+				recordId: state => state.state.recordId,
+				model: state => state.state.model,
+				zhantai: state => state.state.zhantai
+			})
+		},
+		created() {
+			// console.log()
+			new PeerManager().peerInit(this.zhantai)
 		}
 	}
 </script>

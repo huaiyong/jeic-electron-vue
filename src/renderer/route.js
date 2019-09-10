@@ -134,7 +134,7 @@ const routes = [
           reload:true,
         },
         beforeEnter(to, from, next) {
-          if (from.name == 'AnswerStatistics' || from.name == 'picShow' || to.params.state == true) {
+          if (from.name == 'recordAnswerStatistics' || from.name == 'picShow' || to.params.state == true) {
             to.meta.reload = false;
           };
           next();
@@ -170,6 +170,36 @@ const routes = [
 	      keepAlive: false,
 	    },
 	  },
+	  {
+        name: 'recordAnswerStatistics', //查看课堂记录班级答题统计页面
+        path: '/recordAnswerStatistics',
+        component: resolve => require([ '@/components/teachRecord/allStatistics' ], resolve),
+        meta: {
+          keepAlive: false,
+        },
+      },
+	  {
+	    name: 'recordRankingStatistics', //课堂记录小红花页面
+	    path: '/recordRankingStatistics',
+	    component: resolve => require([ '@/components/teachRecord/rankingStatistics' ], resolve),
+	    meta: {
+	      keepAlive: false,
+	    },
+	  },{
+	    name: 'recordSingleStatistics', //课堂记录小红花页面  getGroupStudentRange
+	    path: '/recordSingleStatistics',
+	    component: resolve => require([ '@/components/teachRecord/singleStatistics' ], resolve),
+	    meta: {
+	      keepAlive: false,
+	    },
+	  },{
+	    name: 'recordGetGroupStudentRange', //课堂记录小红花小组成员页面  
+	    path: '/recordGetGroupStudentRange',
+	    component: resolve => require([ '@/components/teachRecord/getGroupStudentRange' ], resolve),
+	    meta: {
+	      keepAlive: false,
+	    },
+	  },
       {
         name: 'teachModel',
         path: '/teachModel',
@@ -197,6 +227,16 @@ const routes = [
     path: '/foundGroup',
     component: resolve => require([ '@/components/teachModel/foundGroup' ], resolve),
   },
+  {
+    name: 'chooseMode',
+    path: '/chooseMode',
+    component: resolve => require([ '@/components/voteItem/chooseMode' ], resolve),
+  },
+  {
+    name: 'customVote',
+    path: '/customVote',
+    component: resolve => require([ '@/components/voteItem/customVote' ], resolve),
+  }
 ];
 const router = new VueRouter({
   routes,

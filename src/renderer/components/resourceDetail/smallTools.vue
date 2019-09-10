@@ -52,6 +52,10 @@
 						<img src="../../assets/img/qiangdabtn.png" alt="">
 						<p>抢答</p>
 					</li>
+					<li @click="vote()">
+						<img src="../../assets/img/qiangdabtn.png" alt="">
+						<p>投票</p>
+					</li>
 				</ul>
 			</div>
 		</div>
@@ -199,6 +203,7 @@
 				userId: state => state.state.userId,
 				classId:state => state.state.classId,
 				groupId:state => state.state.groupId,
+				imgArr: state => state.state.imgArr
 				
 			})
 		},
@@ -260,8 +265,21 @@
 			},
 			imageDuiBi(data){
 				this.$store.dispatch("getImgArr",data);
-				this.$router.push({name:"imgCompare"});
-				
+				if(data.length==1){
+					this.$router.push({
+						name: "imgShow",
+						params: {
+							imgsrc:data[0].imgUrl,
+							resourceId:""
+						}
+					});
+				}else{
+					this.$router.push({name:"imgCompare"});
+				}
+			},
+			zhantai(data){
+				this.$store.dispatch("getZhantai",data);
+				this.$router.push({name:"showcase"});
 			}
 			
 			
@@ -296,6 +314,11 @@
 			responder(){  //点击抢答
 				$(".moreTools").hide();
 				$(".responderBox").show();
+			},
+			vote(){  //点击投票
+				$(".moreTools").hide();
+				$(".pos03").removeClass("active");
+				this.$router.push({name:"chooseMode"});
 			},
 			closeResponder(){ //关闭抢答
 				$(".responderBox").hide();
@@ -1277,4 +1300,5 @@
 	    background: #1296db;
 		cursor: pointer;
 	}
+	
 </style>

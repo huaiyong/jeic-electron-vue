@@ -50,8 +50,8 @@
 			</div>
 			<div class="zmj_answerStudentList">
 				<!--全班模式 start-->
-				<ul class="zmj_answerWhole" v-if="pattern">
-					<li v-for="(item,index) in remember" :key="index" :class="{'active':isStuActive.indexOf(item.id)!=-1,'stuActive':studentName==item.name}" @click="studentResult($event,item.id,item.name)">
+				<ul class="zmj_answerWhole" v-if="!isGroup">
+					<li v-for="(item,index) in remember" :key="index" :class="{'active':isStuActive.indexOf(item.id)!=-1,'stuActive':studentName==item.name}" @click="studentResult(item.id,item.name,'',$event)">
 						<img v-if="item.sex=='男'" src="../../assets/img/boy.png" alt="">
 						<img v-if="item.sex=='女'" src="../../assets/img/girl.png" alt="">
 						<p v-text="item.name"></p>
@@ -59,19 +59,19 @@
 				</ul>
 				<!--全班模式 end-->
 				<!--分组模式 start-->
-				<div v-if="!pattern" class="zmj_groupStudent">
+				<div v-if="isGroup" class="zmj_groupStudent">
 					<div v-for="i in groupStudent" :key="i.id" >
 						<p v-text="i.name"></p>
-						<div class="clearfix">
+						<div class="clearfix"> 
 							<ol class="fl clearfix">
-								<li :class="{'active':isStuActive.indexOf(i.groupLeader.id)!=-1,'stuActive':studentName==i.groupLeader.name}" @click="studentResult($event,i.groupLeader.id,i.groupLeader.name,i.name)">
+								<li :class="{'active':isStuActive.indexOf(i.groupLeader.id)!=-1,'stuActive':studentName==i.groupLeader.name}" @click="studentResult(i.groupLeader.id,i.groupLeader.name,i.name,$event)">
 									<img v-if="i.groupLeader.sex=='男'" src="../../assets/img/boy.png" alt="">
 									<img v-if="i.groupLeader.sex=='女'" src="../../assets/img/girl.png" alt="">
 									<p v-text="i.groupLeader.name"></p>
 								</li>
 							</ol>
 							<ul class=" fl clearfix">
-								<li v-for="item in i.studentList" :key="item.id" :class="{'active':isStuActive.indexOf(item.id)!=-1,'stuActive':studentName==item.name}"  @click="studentResult($event,item.id,item.name,i.name)">
+								<li v-for="item in i.studentList" :key="item.id" :class="{'active':isStuActive.indexOf(item.id)!=-1,'stuActive':studentName==item.name}"  @click="studentResult(item.id,item.name,i.name,$event)">
 									<img v-if="item.sex=='男'" src="../../assets/img/boy.png" alt="">
 									<img v-if="item.sex=='女'" src="../../assets/img/girl.png" alt="">
 									<p v-text="item.name"></p>
@@ -107,12 +107,14 @@
 				groupName:"", //组名
 				groupStudent: [], //分组学生
 				studentScore:[],//学生成绩
-				studentAnswer:false, //是否显示学生答案
 				resourceId: "", //下发记录ID
 				eachRecordId: this.$route.params.eachRecordId, //资源ID
 				isFirstEnter: false,
 				isStuActive:[],//判断已答题学生
 				type:this.$route.params.type, //类型 1:试题 2:图片
+				sendType:"", //1全班,2分組作答
+				answerType:"", //1組長作答,2全組作答
+				isGroup:false,//true 分組,false全班
 				resourceUrl:this.$route.params.resourceUrl, //获取img路径
 				teacherImg:'' //老师传的图片
 			}
@@ -160,8 +162,8 @@
 			checkJiluClass(data){
 				this.lookSituation(data[0])
 			},
-			checkStuDeail(){
-				this.studentResult()
+			checkStuDeail(data){
+				this.studentResult(data[0],data[1])
 			}
 		},
 		methods: {
@@ -172,6 +174,12 @@
 				this.studentName ="";
 				this.isStuActive =[];
 				this.studentScore = []
+			},
+			getTypeData() {
+				this.sendType = this.$route.params.sendType;
+				this.answerType = this.$route.params.answerType;
+				this.$store.dispatch("getSendType", this.sendType );
+				this.$store.dispatch("getAnswerType", this.answerType );
 			},
 			getTextData() { //获取试题
 				this.resourceId = this.$route.params.resourceId;
@@ -251,12 +259,13 @@
 			},
 			lookSituation(text) { //查看学生情况
 					this.$router.push({
-						"name": "AnswerStatistics",
+						"name": "recordAnswerStatistics",
 						params:{
 							text:text,
 							id:this.eachRecordId
 						}
 					});
+				
 			},
 			getStuAnswerList(){
 				this.eachRecordId = this.$route.params.eachRecordId;
@@ -291,26 +300,29 @@
 
 
 			},
-			studentResult(event, id, name, groupName) { //查看某个学生答题结果/
+			studentResult(id, name, groupName,event) { //查看某个学生答题结果/
+				if(!$(event.target).hasClass('active')){
+			  	console.log('no active');
+			  	this.error(name + "未答题");
+			  }else{
+			  	console.log('yes active');
+			  	this.resultDisplay(id, name, groupName);
+			  }	
+			},
+			resultDisplay(id,name,groupName){
 				this.eachRecordId = this.$route.params.eachRecordId;
-				console.log(event,id,name,groupName,this.eachRecordId,'参数打印')
+				console.log(id,name,groupName,this.eachRecordId,'参数打印')
 				this.studentName = name;
 				this.groupName=groupName;
 				if(this.type==1){
 					console.log('试题');
 					var that=this;
 					this.$http.get("http://localhost:3000/jeic/api/answerResult/getDataByUserId?recordId="+this.eachRecordId+"&userId="+id).then(function(res){
-						console.log(res.data.data.list,'学生答题情况11')
+						console.log(res,'学生答题情况11')
 						
 						if(res.data.ret==200){
-							if(res.data.data.list==undefined){
-								that.studentAnswer = false;
-							}else{
-								that.studentAnswer = true;
-								console.log(res,'返回数据')
-								that.studentScore=res.data.data.list;
-								console.log(that.studentScore,'hahahah')
-							}
+							  	that.studentScore=res.data.data.list;
+									console.log(that.studentScore,'hahahah')				
 						};
 					});
 				}else{
@@ -327,20 +339,27 @@
 						};
 					});
 				}
-				
-
 			}
 		},
 		activated() {
-			if (!this.$route.meta.isBack || this.isFirstEnter) {
+			if (this.$route.meta.reload || this.isFirstEnter) {
 				this.showIndex = 0;
 				this.getTextData();
-				this.getStudentList();
-				this.getStuAnswerList();
+				this.getTypeData();
+				console.log(this.sendType,'全班还是分组')
+				console.log(this.answerType,'组长还是全组')
+				if(this.sendType=='1'){
+					this.isGroup = false;
+					this.getStuAnswerList();
+				}else{
+					this.isGroup = true;
+					this.getStuAnswerList();
+					this.getStudentList();
+				}
 				console.log(this.type,this.resourceUrl,'传递的参数呀~~~~')
 				console.log(this.eachRecordId,'id~~~')
 			};
-			this.$route.meta.isBack = false;
+			this.$route.meta.reload =true;
 			this.isFirstEnter = false;
 
 		},

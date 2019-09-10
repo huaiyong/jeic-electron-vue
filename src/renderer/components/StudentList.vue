@@ -46,6 +46,7 @@
 </template>
 
 <script>
+	import $ from "jquery"
 	import {
 		mapState
 	} from "vuex";
@@ -62,6 +63,14 @@
 		sockets:{
 		  closeMemberAdmin(){
 			  this.close();
+		  },
+		  chengyuanScroll(data){
+			  var conheight = $(".zmj_rememberList ul").height();
+			  $(".zmj_rememberList ul").scrollTop(data* conheight * 1.1);
+		  },
+		  chengyuangroupScroll(data){
+			  var conheight = $(".zmj_groupStudent").height();
+			  $(".zmj_groupStudent").scrollTop(data* conheight * 1.1);
 		  }
 			
 		},
@@ -117,6 +126,7 @@
 			this.signIn();
 		},
 		beforeRouteLeave(to, from , next){
+			console.log(this.timer)
 			clearInterval(this.timer);
 			next();
 		}

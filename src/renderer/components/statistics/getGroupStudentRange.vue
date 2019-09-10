@@ -68,6 +68,23 @@
 					'&type=' + this.model + "&teachinggroupId=" + this.groupId+'&usergroupId='+routerParams).then(function(res) {
 					console.log(res)
 					that.names = res.data.data.answerResultList[0].userList;
+					that.names.forEach(function(i,v){
+						var ratio = parseFloat(i.accuracy * 100).toFixed(2);
+						console.log(ratio)
+						if (0 <= ratio && ratio < 20) {
+							i.star = 0;
+						} else if (20 <= ratio && ratio < 40) {
+							i.star = 1;
+						} else if (40 <= ratio && ratio < 60) {
+							i.star = 2;
+						} else if (60 <= ratio && ratio < 80) {
+							i.star = 3;
+						} else if (80 <= ratio && ratio < 100) {
+							i.star = 4;
+						} else if (ratio == 100) {
+							i.star = 5;
+						};
+					})
 				});
 			},
 		},

@@ -1,6 +1,6 @@
 <template>
 	<div style="width:100%;height:100%;position: relative;z-index: 2;">
-	    <iframe src="static/draw/draw.html" frameborder="0" style="width:100%;height:100%;"></iframe>
+	    <iframe src="http://localhost:3000/static/draw/draw.html" frameborder="0" style="width:100%;height:100%;"></iframe>
 		<span class="closefullscreen fr" @click="back">
         <em class="iconfont icon-guanbi1 exitResTc"></em>
       </span>
@@ -8,7 +8,7 @@
 </template>
 
 <script>
-	
+
 	export default{
 		name:"Draw",
 		methods:{
@@ -16,7 +16,7 @@
 				this.$router.back();
 			}
 		}
-	
+
 	}
 </script>
 

@@ -68,6 +68,14 @@
 			},
 			closeshowType(){
 				this.close();
+			},
+			yunziyuanScroll(data){
+				var conheight = $(".zmj_resourceType").height();
+				$(".zmj_resourceType").scrollTop(data.data * conheight * 1.1);
+			},
+			yunshitiScroll(data){
+				var conheight = $(".zmj_resourceTest").height();
+				$(".zmj_resourceTest").scrollTop(data.data * conheight * 1.1);
 			}
 		},
 		methods: {
@@ -204,7 +212,7 @@
 							}
 
 						} else if (resType == 6) { //word文档 
-							sessionStorage.setItem("resourceId", resourceId);
+							sessionStorage.setItem("resourceWId", resourceId);
 							if (resourceId == sessionStorage.getItem("resourcewordId")) {
 								$(that.$parent.$refs.indexItem).find("#wordMax").remove();
 								sessionStorage.removeItem("resourcewordId");
@@ -212,7 +220,7 @@
 								that.$router.push({
 									name: 'word',
 									params: {
-										resourceId: resourceId
+										resourceWId: resourceId
 									}
 								});
 							} else if (sessionStorage.getItem("resourcewordId")) {
@@ -221,19 +229,19 @@
 								that.$router.push({
 									name: 'word',
 									params: {
-										resourceId
+										resourceWId: resourceId
 									}
 								});
 							}
 						} else if (resType == 7) { //excel文档
-							sessionStorage.setItem("resourceId", resourceId);
+							sessionStorage.setItem("resourceEId", resourceId);
 							if (resourceId == sessionStorage.getItem("resourceexcelId")) {
 								$(that.$parent.$refs.indexItem).find("#excelMax").remove();
 								sessionStorage.removeItem("resourceexcelId");
 								that.$router.push({
 									name: 'excel',
 									params: {
-										resourceId: resourceId
+										resourceEId: resourceId
 									}
 								});
 							} else if (sessionStorage.getItem("resourceexcelId")) {
@@ -243,7 +251,7 @@
 									name: 'excel',
 									params: {
 										showExcelsrc: that.showExcelsrc,
-										resourceId
+										resourceEId: resourceId
 									}
 								});
 							}

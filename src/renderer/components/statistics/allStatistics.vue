@@ -5,9 +5,9 @@
 		<div class="getClasstjtc">
 			<div class="tcContent">
 				<!-- 分组选择左侧栏 -->
-				<div class="fzleft"  v-if="!pattern&&model==3">
+				<div class="fzleft" v-if="!pattern&&model==3">
 					<p>
-						<button v-bind:class="{ active:cancelbtn==true}" v-on:click="allClass(0)" >全部</button>
+						<button v-bind:class="{ active:cancelbtn==true}" v-on:click="allClass(0)">全部</button>
 					</p>
 					<ul>
 						<li v-for="(item,index) in groupStudent" v-on:click="addClass(index,item.id)" v-bind:class="{ active:index==current}">{{item.name}}</li>
@@ -34,7 +34,7 @@
 						</ul>
 					</div>
 					<!-- 班级答题统计 -->
-					<div class="pingjuntrue"   v-if="!pattern&&model==3">
+					<div class="pingjuntrue" v-if="!pattern&&model==3">
 						<ul class="banjiuldati">
 							<li>测试平均正确率：
 								<p class="pingjunzitiset">{{averagelv2}}%</p>
@@ -75,7 +75,7 @@
 						<div style="text-align:center;">
 							<span v-if="changeTab" @click="switchTab()" id="switchPai" class="lvsebtn">查看表格</span>
 							<span v-if="!changeTab" @click="switchTab()" id="switchPai" class="lvsebtn">查看图表</span>
-							<span id="studentResultbtn" class="lvsebtn" @click="rankingStatistics()">查看详情</span>
+							<span id="studentResultbtn" class="lvsebtn" @click="rankingStatistics()">学生正确率</span>
 						</div>
 					</div>
 				</div>
@@ -96,19 +96,19 @@
 		name: "AnswerStatistics",
 		data() {
 			return {
-				current:-1,
-				groupStudent:[],
-				cancelbtn:true,
+				current: -1,
+				groupStudent: [],
+				cancelbtn: true,
 				changeTab: true,
 				tableData: [],
-				averagelv2:0,
-				haveTheAnswerCount:0,
-				notTheAnswerCount:0,
-			  text:this.$route.params.text,
-			  eachRecordId:this.$route.params.id,
-				notTheAnswerCount:0,
-				usergroupId:'',
-				changeId:''
+				averagelv2: 0,
+				haveTheAnswerCount: 0,
+				notTheAnswerCount: 0,
+				text: this.$route.params.text,
+				eachRecordId: this.$route.params.id,
+				notTheAnswerCount: 0,
+				usergroupId: '',
+				changeId: ''
 			}
 		},
 		computed: {
@@ -120,84 +120,95 @@
 			})
 		},
 		sockets: {
-			showTable(){
+			showTable() {
 				this.switchTab()
 			},
-			tihao(data){
+			showPic() {
+				this.switchTab()
+			},
+			tihao(data) {
 				this.getQuestionNum(data)
 			},
-			closeInfoWindow(){
+			closeInfoWindow() {
 				this.back()
 			},
-			watchStudetail(){
+			watchStudetail() {
 				this.rankingStatistics()
+			},
+			chakanzongchengjiScroll(data) {
+				var conheight = $(".paichangetable").height();
+				$(".paichangetable").scrollTop(data * conheight * 1.8);
 			}
-			
 		},
 		methods: {
 			back() {
 				this.$router.back();
 			},
-			addClass:function(index,id){ //点击组
-				  this.cancelbtn=false;
-				  this.current=index;
-				  this.usergroupId=id;
-				  var that=this;
-				  this.$http.get("http://localhost:3000/jeic/api/answerResult/getAnswerByRecordId?recordId="+this.changeId+'&type=1'+'&teachinggroupId='+this.groupId+'&usergroupId='+id).then(function(res) {
-				  	console.log(res)
-				  	var tishuliangnum=[];
-				  	var banjibaifenbi=[];
-				  	var averagelv=0
-				  	var chushu = res.data.data.length;
-				  	that.tableData=res.data.data
-				  	for (var i = 0; i < res.data.data.length; i++) {
-				  		banjibaifenbi.push(res.data.data[i].accuracy * 100);
-				  		tishuliangnum.push(i + 1 + "题")
-				  		averagelv = averagelv + res.data.data[i].accuracy;
-				  	}
-				  	that.averagelv2 = parseFloat(averagelv * 100 / chushu).toFixed(2)
-				  	that.displayChart(tishuliangnum,banjibaifenbi)
-				  });
-				  this.$http.get("http://127.0.0.1:3000/jeic/api/answerResult/getDataGroupByUser?recordId="+this.changeId+'&type='+this.model+'&usergroupId='+id+'&teachinggroupId='+this.groupId).then(function(res) {
-				  	console.log(res,'已答题认识')
-				  	that.haveTheAnswerCount = res.data.data.haveTheAnswerCount
-				  	that.notTheAnswerCount = res.data.data.notTheAnswerCount
-				  });
-				  
-			},
-			
-			allClass:function(id){ //点击全部
-				this.cancelbtn=true;
-				this.current=-1;
-				this.usergroupId=id;
-				var that=this;
-				this.$http.get("http://localhost:3000/jeic/api/answerResult/getAnswerByRecordId?recordId="+this.changeId+'&type=1'+'&teachinggroupId='+this.groupId).then(function(res) {
+			addClass: function(index, id) { //点击组
+				this.cancelbtn = false;
+				this.current = index;
+				this.usergroupId = id;
+				var that = this;
+				this.$http.get("http://localhost:3000/jeic/api/answerResult/getAnswerByRecordId?recordId=" + this.changeId +
+					'&type=1' + '&teachinggroupId=' + this.groupId + '&usergroupId=' + id).then(function(res) {
 					console.log(res)
-					var tishuliangnum=[];
-					var banjibaifenbi=[];
-					var averagelv=0
+					var tishuliangnum = [];
+					var banjibaifenbi = [];
+					var averagelv = 0
 					var chushu = res.data.data.length;
-					that.tableData=res.data.data
+					that.tableData = res.data.data
 					for (var i = 0; i < res.data.data.length; i++) {
 						banjibaifenbi.push(res.data.data[i].accuracy * 100);
 						tishuliangnum.push(i + 1 + "题")
 						averagelv = averagelv + res.data.data[i].accuracy;
 					}
 					that.averagelv2 = parseFloat(averagelv * 100 / chushu).toFixed(2)
-					that.displayChart(tishuliangnum,banjibaifenbi)
+					that.displayChart(tishuliangnum, banjibaifenbi)
 				});
-				
-				// 获取已答题和未答题人数
-				this.$http.get("http://127.0.0.1:3000/jeic/api/answerResult/getDataGroupByUser?recordId="+this.changeId+'&type='+this.model+'&teachinggroupId='+this.groupId).then(function(res) {
-					console.log(res,'已答题认识')
+				this.$http.get("http://127.0.0.1:3000/jeic/api/answerResult/getDataGroupByUser?recordId=" + this.changeId +
+					'&type=' + this.model + '&usergroupId=' + id + '&teachinggroupId=' + this.groupId).then(function(res) {
+					console.log(res, '已答题认识')
 					that.haveTheAnswerCount = res.data.data.haveTheAnswerCount
 					that.notTheAnswerCount = res.data.data.notTheAnswerCount
 				});
-				
+
 			},
-			
+
+			allClass: function(id) { //点击全部
+				this.cancelbtn = true;
+				this.current = -1;
+				this.usergroupId = id;
+				var that = this;
+				this.$http.get("http://localhost:3000/jeic/api/answerResult/getAnswerByRecordId?recordId=" + this.changeId +
+					'&type=1' + '&teachinggroupId=' + this.groupId).then(function(res) {
+					console.log(res)
+					var tishuliangnum = [];
+					var banjibaifenbi = [];
+					var averagelv = 0
+					var chushu = res.data.data.length;
+					that.tableData = res.data.data
+					for (var i = 0; i < res.data.data.length; i++) {
+						banjibaifenbi.push(res.data.data[i].accuracy * 100);
+						tishuliangnum.push(i + 1 + "题")
+						averagelv = averagelv + res.data.data[i].accuracy;
+					}
+					that.averagelv2 = parseFloat(averagelv * 100 / chushu).toFixed(2)
+					that.displayChart(tishuliangnum, banjibaifenbi)
+				});
+
+				// 获取已答题和未答题人数
+				this.$http.get("http://127.0.0.1:3000/jeic/api/answerResult/getDataGroupByUser?recordId=" + this.changeId +
+					'&type=' + this.model + '&teachinggroupId=' + this.groupId).then(function(res) {
+					console.log(res, '已答题认识')
+					that.haveTheAnswerCount = res.data.data.haveTheAnswerCount
+					that.notTheAnswerCount = res.data.data.notTheAnswerCount
+				});
+
+			},
+
 			//切换btn柱状图的班级图表
 			switchTab: function() {
+				console.log(this.changeTab)
 				this.changeTab = !this.changeTab;
 			},
 			getQuestionNum: function(num) {
@@ -214,7 +225,7 @@
 				})
 			},
 			//chart图表
-			displayChart: function(dataX,dataY) {
+			displayChart: function(dataX, dataY) {
 				let myChart = this.$echarts.init(this.$refs.container2);
 				var option = {
 					title: {
@@ -237,7 +248,7 @@
 								color: '#eee',
 								fontSize: 24
 							},
-				
+
 						}
 					},
 					yAxis: {
@@ -270,76 +281,77 @@
 				};
 
 				myChart.setOption(option);
-				var that=this;
+				var that = this;
 				myChart.on('click', function(params) {
 					console.log()
 					that.$router.push({
 						name: 'singleStatistics',
 						params: {
-							id: params.dataIndex+1
+							id: params.dataIndex + 1
 						},
 					})
 				});
 			}
 		},
 		created() {
-			var that=this;
-			if(this.text){
+			var that = this;
+			if (this.text) {
 				this.changeId = this.eachRecordId;
-				console.log(this.changeId,'gaibian2')
-			}else{
+				console.log(this.changeId, 'gaibian2')
+			} else {
 				this.changeId = this.recordId;
-				console.log(this.changeId,'gaibian1')
+				console.log(this.changeId, 'gaibian1')
 			}
-			this.$http.get("http://localhost:3000/jeic/api/answerResult/getAnswerByRecordId?recordId="+this.changeId+'&type=1'+'&teachinggroupId='+this.groupId).then(function(res) {
+			this.$http.get("http://localhost:3000/jeic/api/answerResult/getAnswerByRecordId?recordId=" + this.changeId +
+				'&type=1' + '&teachinggroupId=' + this.groupId).then(function(res) {
 				console.log(res)
-				var tishuliangnum=[];
-				var banjibaifenbi=[];
-				var averagelv=0
+				var tishuliangnum = [];
+				var banjibaifenbi = [];
+				var averagelv = 0
 				var chushu = res.data.data.length;
-				that.tableData=res.data.data
+				that.tableData = res.data.data
 				for (var i = 0; i < res.data.data.length; i++) {
 					banjibaifenbi.push(res.data.data[i].accuracy * 100);
 					tishuliangnum.push(i + 1 + "题")
 					averagelv = averagelv + res.data.data[i].accuracy;
 				}
 				that.averagelv2 = parseFloat(averagelv * 100 / chushu).toFixed(2)
-				that.displayChart(tishuliangnum,banjibaifenbi)
+				that.displayChart(tishuliangnum, banjibaifenbi)
 			});
-			
+
 			//获取分组学生
-			this.$http.get("http://127.0.0.1:3000/jeic/api/teachingGroup/"+this.groupId).then(function(
+			this.$http.get("http://127.0.0.1:3000/jeic/api/teachingGroup/" + this.groupId).then(function(
 				res) {
 				if (res.data.ret == 200) {
 					that.groupStudent = res.data.data.userGrouplist;
 					console.log(res.data)
 				};
 			});
-			
+
 			// 获取已答题和未答题人数
-			this.$http.get("http://127.0.0.1:3000/jeic/api/answerResult/getDataGroupByUser?recordId="+this.changeId+'&type='+this.model+'&teachinggroupId='+this.groupId).then(function(res) {
-				console.log(res,'已答题认识')
+			this.$http.get("http://127.0.0.1:3000/jeic/api/answerResult/getDataGroupByUser?recordId=" + this.changeId + '&type=' +
+				this.model + '&teachinggroupId=' + this.groupId).then(function(res) {
+				console.log(res, '已答题认识')
 				that.haveTheAnswerCount = res.data.data.haveTheAnswerCount
 				that.notTheAnswerCount = res.data.data.notTheAnswerCount
 			});
 		},
 		mounted() {
 			this.displayChart()
-			console.log(this.text,'text')
-			console.log(this.eachRecordId,'id')
+			console.log(this.text, 'text')
+			console.log(this.eachRecordId, 'id')
 		}
 	}
 </script>
 
 <style scoped>
-	
-	.wrapper{
+	.wrapper {
 		position: relative;
 		z-index: 2;
 		width: 100%;
 		height: 100%;
 	}
-	
+
 	.backLast {
 		background: none;
 		color: #fff;
@@ -349,8 +361,8 @@
 		bottom: 3rem;
 		left: 3rem;
 	}
-	
-	.fzleft p button{
+
+	.fzleft p button {
 		width: 8rem;
 		height: 2.6rem;
 		background: #fff;
@@ -358,16 +370,16 @@
 		color: #000;
 		border-radius: 10px;
 		box-shadow: 0px 1px 13px #5f5d5d;
-		font-size:1.2rem;
-		margin:3rem 0;
+		font-size: 1.2rem;
+		margin: 3rem 0;
 	}
-	
-	.active{
-		background: #fe9c02!important;
-		color:#fff!important;
+
+	.active {
+		background: #fe9c02 !important;
+		color: #fff !important;
 	}
-	
-	.fzleft>ul>li{
+
+	.fzleft>ul>li {
 		display: inline-block;
 		width: 8rem;
 		height: 2.6rem;
@@ -381,14 +393,14 @@
 		line-height: 2.6rem;
 		cursor: pointer;
 	}
-	
-	.fzleft{
-		width:20.3rem;
-		height:100%;
+
+	.fzleft {
+		width: 20.3rem;
+		height: 100%;
 		background: #78b1e8;
-		float:left;
+		float: left;
 		box-sizing: border-box;
-		padding-left:3rem;
+		padding-left: 3rem;
 	}
 
 	.closefullscreen {

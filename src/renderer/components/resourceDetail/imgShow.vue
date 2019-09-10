@@ -46,11 +46,11 @@
 			closeimgtc(){
 				this.closeimgtc();
 			},
-			imgZoom(){
-				this.imgChange(data[0]);
+			imgZoom(data){
+				this.imgChange(data);
 			},
-			imgMove(){
-				this.displacement(data[0]);
+			imgMove(data){
+				this.displacement(data);
 			},
 			imgRotate(){
 				this.revolve();
@@ -78,6 +78,7 @@
         },1000);
       },
       imgChange (num) { //缩放图片
+      	console.log(num,'放大缩小参数')
         if (num == "big") {
           this.imgZoomRate += 0.2;
         } else if (num == "small" && this.imgZoomRate >= 0.4) {
@@ -86,6 +87,7 @@
         $(".imgTransform").css("transform", 'scale(' + this.imgZoomRate + ')');
       },
       displacement (direction){
+      	console.log(direction,'平移参数')
         if (direction == "left") {
           this.crosswise += -40;
         } else if (direction == "right") {

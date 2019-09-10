@@ -10,7 +10,7 @@
       </div>
       <div class="mainBox clearfix">
         <!-- 左侧 -->
-        <div class="mainL fl" @mouseup="mainL($event)">
+        <div class="mainL fl" @mouseup.stop="mainL($event)">
           <div class="newBuild" v-for="(item,i) in newBuild" :key='i'>
             <div class="tit clearfix">
               <strong contenteditable='false' >{{item.name}}</strong>
@@ -209,21 +209,25 @@ export default {
     },
     // 组长选中高亮
     leader(obj,i){
-      let that = this;
-      this.indexNum = i;
-      this.Highlight = true;
-      this.userInfo = $(obj.target).prev().html();
-      $(obj.target).css({'border':'.1rem solid #F2CB80'});
-      this.targetObj = obj ;
+      if($(obj.target).is('.leftDrag')){
+        let that = this;
+        this.indexNum = i;
+        this.Highlight = true;
+        this.userInfo = $(obj.target).prev().html();
+        $(obj.target).css({'border':'.1rem solid #F2CB80'});
+        this.targetObj = obj ;
+      }
     },
     // 组员选中高亮
     menber(obj,i){
-      let that = this;
-      this.indexNum = i;
-      this.Highlight = true;
-      this.userInfo = $(obj.target).prev().html();
-      $(obj.target).css({'border':'.1rem solid #F2CB80'});
-      this.targetObj = obj ;
+      if($(obj.target).is('.leftDrag')){
+        let that = this;
+        this.indexNum = i;
+        this.Highlight = true;
+        this.userInfo = $(obj.target).prev().html();
+        $(obj.target).css({'border':'.1rem solid #F2CB80'});
+        this.targetObj = obj ;
+      }
     },
     // 点击左侧任何地方取消高亮选中
     mainL(e){

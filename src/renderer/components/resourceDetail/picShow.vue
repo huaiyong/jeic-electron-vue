@@ -42,10 +42,10 @@
 			closeimgtc(){
 				this.closeimgtc();
 			},
-			imgZoom(){
+			imgZoom(data){
 				this.imgChange(data[0]);
 			},
-			imgMove(){
+			imgMove(data){
 				this.displacement(data[0]);
 			},
 			imgRotate(){

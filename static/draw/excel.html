@@ -13,7 +13,7 @@
     <script src="./js/jquery-1.8.2.min.js"></script> 
 		<script src="./js/socket.io.js"></script>
     <script>
-        var resourceId = sessionStorage.getItem("resourceId"); //定义全局变量 从url中获取资源Id
+        var resourceId = sessionStorage.getItem("resourceEId"); //定义全局变量 从url中获取资源Id
         if(resourceId==''||resourceId==null || resourceId==undefined){
         	var resourceUrl = window.location.search;
     			var resourcePadId = resourceUrl.substr(12);

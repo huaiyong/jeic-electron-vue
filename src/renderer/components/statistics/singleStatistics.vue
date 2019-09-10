@@ -162,6 +162,10 @@
 			},
 			NO(){
 				this.changOption("NO")
+			},
+			shitijiangjieScroll(data){
+				var conheight = $(".tihaotcset").height();
+				$(".tihaotcset").scrollTop(data* conheight * 0.1);
 			}
 		},
 		methods: {
@@ -672,33 +676,34 @@
 				this.getResult()
 			},
 			changOption(params){
+				console.log(params)
 				var that = this
-				that.xuanxiang = params.name
+				that.xuanxiang = params
 				that.clickEcharts = true;
 				that.stulists = [];
-				if (params.name == "A") {
+				if (params == "A") {
 					that.stulists=that.stulistsA;
-				} else if (params.name == "B") {
+				} else if (params == "B") {
 					that.stulists=that.stulistsB;
-				} else if (params.name == "C") {
+				} else if (params == "C") {
 					that.stulists=that.stulistsC;
-				} else if (params.name == "D") {
+				} else if (params == "D") {
 					that.stulists=that.stulistsD;
-				} else if (params.name == "E") {
+				} else if (params == "E") {
 					that.stulists=that.stulistsE;
-				} else if (params.name == "F") {
+				} else if (params == "F") {
 					that.stulists=that.stulistsF;
-				} else if (params.name == "G") {
+				} else if (params == "G") {
 					that.stulists=that.stulistsG;
-				} else if (params.name == "H") {
+				} else if (params == "H") {
 					that.stulists=that.stulistsH;
-				} else if (params.name == "I") {
+				} else if (params == "I") {
 					that.stulists=that.stulistsI;
-				} else if (params.name == "J") {
+				} else if (params == "J") {
 					that.stulists=that.stulistsJ;
-				} else if (params.name == "YES") {
+				} else if (params == "YES") {
 					that.stulists=that.stulistsYES;
-				} else if (params.name == "NO") {
+				} else if (params == "NO") {
 					that.stulists=that.stulistsNO;
 				}
 			},
@@ -765,7 +770,7 @@
 				const that = this;
 				myChart.on('click', function(params) {
 					console.log(params.name)
-					that.changOption(params)
+					that.changOption(params.name)
 					
 				});
 			}

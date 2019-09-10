@@ -10,21 +10,21 @@
     <meta name="x5-fullscreen" content="true">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <link href="./css/iconfont/iconfont.css" rel="stylesheet">
-    <script src="./js/jquery-1.8.2.min.js"></script> 
+    <script src="./js/jquery-1.8.2.min.js"></script>
     <script src="./js/angular-1.3.2.min.js"></script>
 	<script src="./js/socket.io.js"></script>
     <script src="./js/swiper.min.js"></script>
     <script src="./js/hammer.js" ></script>
     <script src="./js/config.js" ></script>
     <script>
-    		
+
         var resourceId = sessionStorage.getItem("resourceId"); //定义全局变量 从url中获取资源Id
         if(resourceId==''||resourceId==null || resourceId==undefined){
         	var resourceUrl = window.location.search;
     			var resourcePadId = resourceUrl.substr(12);
         	var resourceId = resourcePadId;
         }
-        
+
     </script>
 </head>
  <link rel="stylesheet" href="./css/swiper.min.css">
@@ -132,7 +132,7 @@
         bottom:0;
         right:0;
     }
-	
+
 	.yulanbtn{
 		width: 138px;
 		height: 52px;
@@ -146,80 +146,78 @@
 </style>
 
 <body ng-controller="pptShow">
+<iframe src="" id="pptsrc" frameborder="0" style="width:100%;height:100%;"></iframe>
+<div class="caozuo" style="display: none;">
+    <button onclick="left()" class="page_btn lastPage"><em class="iconfont icon-zuojiantou"></em></button>
+    <button onclick="right()" class="page_btn nextPage"><em class="iconfont icon-youjiantou"></em></button>
+</div>
 
-    <iframe src="" id="pptsrc" frameborder="0" style="width:100%;height:100%;"></iframe>
-		<div class="caozuo" style="display: none;">
-        <button onclick="left()" class="page_btn lastPage"><em class="iconfont icon-zuojiantou"></em></button>
-        <button onclick="right()" class="page_btn nextPage"><em class="iconfont icon-youjiantou"></em></button>
+<div id="tanceng" class="tanceng" style="z-index:2;position: fixed;width: 100%;height: 100%;display: none" >
+
+</div>
+
+<div id="padtanceng">
+
+</div>
+
+
+
+<div class="imgOpen"  style="position: fixed;right: 0;bottom: 30px;z-index: 200">
+    <a href="javascript:opendiv()" ><img src="images/icon_slt.png"></a>
+</div>
+<div class="swiper-container"  style="background: #45494a;bottom: 0px;position: fixed;padding-top: 20px;padding-bottom: 20px;left: 3000px;z-index: 3">
+    <div class="swiper-wrapper" >
+        <div ng-repeat="x in pptImgList" class="swiper-slide" repeat-finish><img width="100%" src="{{x}}" ng-click="cc($index,'pptsrc')" ></div>
+        <div class="swiper-pagination"></div>
     </div>
+</div>
+<!--登录提示框-->
 
-    <div id="tanceng" class="tanceng" style="z-index:2;position: fixed;width: 100%;height: 100%;display: none" >
+<!--  预览模块 -->
+<div  id="preview" style="position: fixed;z-index: 203;display:none;width:100%;height:100%;">
+    <div id="padtanceng2" >
 
     </div>
-
-    <div id="padtanceng">
+    <!-- <div style="right: 0px;position: fixed; color: red;z-index: 1" onclick="thumOnclick()">关闭</div> -->
+    <div class="tanceng" style="position: fixed;width: 100%;height: 100%;display: none" >
 
     </div>
+    <iframe src="" id="pptdis" frameborder="0" style="width:100%;height:100%;"></iframe>
 
 
-
-    <div class="imgOpen"  style="position: fixed;right: 0;bottom: 30px;z-index: 200">
+    <div class="imgOpen" style="position: fixed;right: 0;bottom: 30px;z-index: 200">
         <a href="javascript:opendiv()" ><img src="images/icon_slt.png"></a>
     </div>
-    <div class="swiper-container"  style="background: #45494a;bottom: 0px;position: fixed;padding-top: 20px;padding-bottom: 20px;left: 3000px;z-index: 3">
-        <div class="swiper-wrapper" >
-          <div ng-repeat="x in pptImgList" class="swiper-slide" repeat-finish><img width="100%" src="{{x}}" ng-click="cc($index,'pptsrc')" ></div>
-            <div class="swiper-pagination"></div>
+    <div class="swiper-container"  style="background: #45494a;bottom: 0px;position: fixed;padding-top: 20px;padding-bottom: 20px;left: 3000px;">
+        <div class="swiper-wrapper">
+            <div ng-repeat="x in pptImgList" class="swiper-slide" ><img width="100%" src="{{x}}" ng-click="cc($index,'pptdis')" ></div>
         </div>
-      </div>
-    <!--登录提示框-->
-
-    <!--  预览模块 -->
-    <div  id="preview" style="position: fixed;z-index: 203;display:none;width:100%;height:100%;">
-        <div id="padtanceng2" >
-
-        </div>
-       <!-- <div style="right: 0px;position: fixed; color: red;z-index: 1" onclick="thumOnclick()">关闭</div> -->
-        <div class="tanceng" style="position: fixed;width: 100%;height: 100%;display: none" >
-
-        </div>
-      <iframe src="" id="pptdis" frameborder="0" style="width:100%;height:100%;"></iframe>
-
-
-          <div class="imgOpen" style="position: fixed;right: 0;bottom: 30px;z-index: 200">
-              <a href="javascript:opendiv()" ><img src="images/icon_slt.png"></a>
-          </div>
-          <div class="swiper-container"  style="background: #45494a;bottom: 0px;position: fixed;padding-top: 20px;padding-bottom: 20px;left: 3000px;">
-              <div class="swiper-wrapper">
-                <div ng-repeat="x in pptImgList" class="swiper-slide" ><img width="100%" src="{{x}}" ng-click="cc($index,'pptdis')" ></div>
-              </div>
-            </div>
     </div>
-     <div class="caozuo">
-            <button onclick="thumOnclick()" class="yulanbtn">预览</button>
-        </div>
+</div>
+<div class="caozuo">
+    <button onclick="thumOnclick()" class="yulanbtn">预览</button>
+</div>
 
-    <p class="welcome_user" style="display:none;z-index:202">幻灯片播放完毕!</p>
+<p class="welcome_user" style="display:none;z-index:202">幻灯片播放完毕!</p>
 </body>
 
 </html>
 <script>
-//判断是移动端还是pc端
-if ((navigator.userAgent.match(/(phone|pad|pod|ios|iPad|Android|Mobile|BlackBerry|IEMobile|MQQBrowser|JUC|Fennec|wOSBrowser|BrowserNG|WebOS|Symbian|Windows Phone)/i))) {
-	$(".yulanbtn").show();
-    $("#padtanceng").show();
-}else{
-	$(".yulanbtn").hide()
-    $("#padtanceng").hide();
-}
+    //判断是移动端还是pc端
+    if ((navigator.userAgent.match(/(phone|pad|pod|ios|iPad|Android|Mobile|BlackBerry|IEMobile|MQQBrowser|JUC|Fennec|wOSBrowser|BrowserNG|WebOS|Symbian|Windows Phone)/i))) {
+        $(".yulanbtn").show();
+    }else{
+        $(".yulanbtn").hide()
+    }
 
 
 
 </script>
 <script>
-	document.getElementById('pptsrc').contentWindow.addEventListener("click",function(){
-		alert("111")
-	})
+
+    document.getElementById('pptsrc').contentWindow.addEventListener("click",function(){
+        alert("111")
+    })
 
 
     var clickCount = 0;
@@ -256,39 +254,7 @@ if ((navigator.userAgent.match(/(phone|pad|pod|ios|iPad|Android|Mobile|BlackBerr
         clickCount = 1;
     });
 
-    var hammertime = new Hammer.Manager(document.getElementById('padtanceng'));
 
-    var Swipe = new Hammer.Swipe();
-    var tap = new Hammer.Tap({
-        taps: 1
-    });
-    hammertime.add(Swipe);
-    hammertime.add(tap);
-    //处理滑动过快时出现bug问题的全局变量
-
-    hammertime.on('swipeleft', function(e) {
-      //下一页
-        console.log("下一页");
-        if(clickCount != 0){
-            return ;
-        }
-        right();
-        clickCount = 1;
-    });
-    hammertime.on('swiperight', function(e) {
-        //上一页
-        console.log("上一页");
-        left();
-    });
-
-    hammertime.on('tap', function(e) {
-        console.log("下一页");
-        if(clickCount != 0){
-            return ;
-        }
-        right();
-        clickCount = 1;
-    });
     var flag = 0;
 
     function opendiv() {
@@ -309,36 +275,36 @@ if ((navigator.userAgent.match(/(phone|pad|pod|ios|iPad|Android|Mobile|BlackBerr
     var onFlag = false;
     var tempPPtNumber = 0;
     function thumOnclick(){
-           if(!onFlag){
-               $("#preview").slideDown();
-               onFlag = true;
-               tempPPtNumber = pptNumber;
-               document.getElementById("pptdis").contentWindow.postMessage(JSON.stringify({
-                   cmd: 'goto',pagenum:pptNumber
-               }), '*'); //ppt 跳转
+        if(!onFlag){
+            $("#preview").slideDown();
+            onFlag = true;
+            tempPPtNumber = pptNumber;
+            document.getElementById("pptdis").contentWindow.postMessage(JSON.stringify({
+                cmd: 'goto',pagenum:pptNumber
+            }), '*'); //ppt 跳转
 
-			   $("#preview").css( "zIndex", "0" )
-			   $(".yulanbtn").html("退出预览")
-               $(".tanceng").hide();
-               $(".swiper-container").animate({left:"3000px"});
-               flag = 0;
-           }else{
-			   $("#preview").css( "zIndex", "203" )
-             $("#preview").slideUp();
-			 $(".yulanbtn").html("预览")
-               pptNumber = tempPPtNumber;
-             onFlag = false;
-           }
+            $("#preview").css( "zIndex", "0" )
+            $(".yulanbtn").html("退出预览")
+            $(".tanceng").hide();
+            $(".swiper-container").animate({left:"3000px"});
+            flag = 0;
+        }else{
+            $("#preview").css( "zIndex", "203" )
+            $("#preview").slideUp();
+            $(".yulanbtn").html("预览")
+            pptNumber = tempPPtNumber;
+            onFlag = false;
+        }
 
     }
 
+	var ip=sessionStorage.getItem("ip")
+	var socketip="http://"+ip+":3000"
+
     //定义一些初始化数据
-    var ip=sessionStorage.getItem("ip")
-		var socketip="http://"+ip+":3000"
-//  var socket = io(socketip); //定义socket
-    var socket = io.connect(socketip);
+    var socket = io(); //定义socket
     function left() { //点击翻上页
-         socket.emit('ppt', {"name": 'lastpage'}); //上一页
+        socket.emit('ppt', {"name": 'lastpage'}); //上一页
     }
 
     function right() { //点击翻下页
@@ -351,7 +317,7 @@ if ((navigator.userAgent.match(/(phone|pad|pod|ios|iPad|Android|Mobile|BlackBerr
         $scope.pptImgList;
         $.ajax({
             type: "get"
-            , url: 'http://111.207.13.88:9061/edu-resource/a/resource/mrs_rmi/getById?token=29B5DF07F7FC514807CE5FBC12EA1506&id=' + resourceId
+            , url: showResourceIp + resourceId
             , async: false
             , success: function (res) {
                 if (res.ret == 200) {
@@ -412,14 +378,12 @@ if ((navigator.userAgent.match(/(phone|pad|pod|ios|iPad|Android|Mobile|BlackBerr
     })
 
     function lastpage2(){
-        startSync = 0;
         document.getElementById('pptdis').contentWindow.postMessage(JSON.stringify({
             cmd: 'preAnim'
         }), '*');
     }
 
     function nextpage2(){
-        startSync = 0;
         if(pptNumber == pptLength){
             $(".welcome_user").css("display", "block");
             setTimeout('$(".welcome_user").css("display","none");', 3000);
@@ -432,19 +396,18 @@ if ((navigator.userAgent.match(/(phone|pad|pod|ios|iPad|Android|Mobile|BlackBerr
 
 
     function lastpage(){
-        startSync = 0;
         document.getElementById('pptsrc').contentWindow.postMessage(JSON.stringify({
             cmd: 'preAnim'
         }), '*');
     }
 
     function nextpage(){
-        startSync = 0;
         if(pptNumber == pptLength){
             $(".welcome_user").css("display", "block");
             setTimeout('$(".welcome_user").css("display","none");', 3000);
             return ;
         }
+        console.log("发送下发消息");
         document.getElementById('pptsrc').contentWindow.postMessage(JSON.stringify({
             cmd: 'nextAnim'
         }), '*');
@@ -452,19 +415,19 @@ if ((navigator.userAgent.match(/(phone|pad|pod|ios|iPad|Android|Mobile|BlackBerr
 
     var skflag = 0;
 
-	//socket.io同步将消息显示在网页上
-	socket.on('ppt', function (data) {
-		if (data.name == "lastpage") {
-		    lastpage();
-		}else if (data.name == "nextpage") {
-		    nextpage();
-		} else if(data.name == "goto"){
-			var pptNumber = data.data;
-			document.getElementById('pptsrc').contentWindow.postMessage(JSON.stringify({
-			    cmd: 'goto',pagenum:pptNumber,moreAnim:data.moreAnim
-			}), '*');
-		}
-	})
+    //socket.io同步将消息显示在网页上
+    socket.on('ppt', function (data) {
+        if (data.name == "lastpage") {
+            lastpage();
+        }else if (data.name == "nextpage") {
+            nextpage();
+        } else if(data.name == "goto"){
+            var pptNumber = data.data;
+            document.getElementById('pptsrc').contentWindow.postMessage(JSON.stringify({
+                cmd: 'goto',pagenum:pptNumber,moreAnim:data.moreAnim
+            }), '*');
+        }
+    })
 </script>
 <script>
     /*<![CDATA[*/
@@ -473,32 +436,78 @@ if ((navigator.userAgent.match(/(phone|pad|pod|ios|iPad|Android|Mobile|BlackBerr
     var moreAnim = null;
     var startSync = 0;
     var phoneLastPage = null;
+    var initFlag = 0;
 
     //监测PC端ppt页数变化
     var pcLoading = 0;
     window.addEventListener('message', function (e) {
         var origin = e.origin;
 
+
         var pageinfo = JSON.parse(e.data);
         var cmd = pageinfo.cmd;
         if (cmd == 'slide' ) {
-            startSync = 0;
+
         }
         if (cmd == 'curpage' && pageinfo.page != null && pageinfo.moreAnim != null) {
             pptNumber = parseInt(pageinfo.page) + 1;
-
             moreAnim = parseInt(pageinfo.moreAnim);
             totalPage = parseInt(pageinfo.totalPage);
             if (pcLoading == 0) {
                 pcLoading++;
             }
-			//最后一页播放完成时给提示
+            //最后一页播放完成时给提示
             if (pageinfo.end) {
                 $(".welcome_user").css("display", "block");
                 setTimeout('$(".welcome_user").css("display","none");', 3000);
             }
             console.log('大屏端PPT页数发生变化 (页数: ' + pptNumber + '    动画数: ' + moreAnim + ')');
+            if(initFlag == 0){
+                initFlag = 1;
+                var hammertime = new Hammer.Manager(document.getElementById('padtanceng'));
+
+                var Swipe = new Hammer.Swipe();
+                var tap = new Hammer.Tap({
+                    taps: 1
+                });
+                hammertime.add(Swipe);
+                hammertime.add(tap);
+                //处理滑动过快时出现bug问题的全局变量
+
+                hammertime.on('swipeleft', function(e) {
+                    //下一页
+                    console.log("下一页");
+                    if(clickCount != 0){
+                        console.log("无效点击处理");
+                        return ;
+                    }
+                    clickCount = 1;
+                    right();
+
+                });
+                hammertime.on('swiperight', function(e) {
+                    //上一页
+                    console.log("上一页");
+                    left();
+                });
+
+                hammertime.on('tap', function(e) {
+                    console.log("下一页");
+                    if(clickCount != 0){
+                        console.log("无效点击处理");
+                        return ;
+                    }
+                    clickCount = 1;
+                    right();
+
+                });
+            }
+
         }
+
+        setTimeout('console.log("设置clickCount");clickCount = 0;', 500);
+
+        // startSync = 0;
     });
     var syncPhonePageCount = 0;
 
@@ -533,13 +542,14 @@ if ((navigator.userAgent.match(/(phone|pad|pod|ios|iPad|Android|Mobile|BlackBerr
         }
     }
 
-    $(document).on('mousemove', debounce(function(e) {
+    $(document).on('touchend', debounce(function(e) {
         if(flag==1){
             $(".tanceng").hide();
             $(".swiper-container").animate({left:"3000px"});
             flag = 0;
         }
         console.log("触发去抖");
+        $(".imgOpen").show();
     }, 6000))
 
     $(document).on('click',"#tanceng", debounce(function(e) {
@@ -548,7 +558,7 @@ if ((navigator.userAgent.match(/(phone|pad|pod|ios|iPad|Android|Mobile|BlackBerr
             $(".swiper-container").animate({left:"3000px"});
             flag = 0;
         }
+        $(".imgOpen").show();
         console.log("触发去抖");
     }, 0))
-
 </script>

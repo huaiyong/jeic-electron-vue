@@ -9,7 +9,7 @@
     <div class="records_cont clearfix">
       <div class="records_type">
         <ul class="clearfix" v-if="recordList">
-          <li v-for="(i,index) in recordList" :key="index" @click="showclassRecord(i.id,i.resourceId,i.resourceUrl,i.type,i.name)">
+          <li v-for="(i,index) in recordList" :key="index" @click="showclassRecord(i.id,i.resourceId,i.resourceUrl,i.type,i.name,i.sendType,i.answerType)">
             <span :class="{'records_img':i.type==2,'records_img':i.type==3,'records_doc':i.type==1,'records_qita':i.type==null}"></span>
             <p class="filetext_title" v-text="i.name"></p>
           </li>
@@ -57,9 +57,13 @@
 	        };
 	      });
     	},
-      showclassRecord(eachRecordId,resourceId,resourceUrl,type,name) {
+      showclassRecord(eachRecordId,resourceId,resourceUrl,type,name,sendType,answerType) {
+      	
+				this.$store.dispatch("getEachRecordId", eachRecordId );	
+				this.$store.dispatch("getResourceId", resourceId );
       	console.log(eachRecordId,'点击id')
       	console.log(resourceId,'resourceId');
+      	console.log(sendType,answerType,'type')
 //    	this.$store.dispatch("recordId", eachRecordId);
         this.$router.push({
           name: 'recordDetail',
@@ -67,7 +71,9 @@
           	resourceId:resourceId,
           	eachRecordId:eachRecordId,
           	resourceUrl:resourceUrl,
-          	type:type
+          	type:type,
+          	sendType:sendType,
+          	answerType:answerType
           }
         });
       },

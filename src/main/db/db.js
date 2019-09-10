@@ -65,6 +65,19 @@ DB.close = function(){
   DB.db.close();
 };
 
+DB.asyncRun=function(query) {
+	return new Promise(function(resolve, reject) {
+    DB.db.all(query,function(err, row)  {
+	    if(err){
+	    	reject(err.message)
+	    }else{
+	    	//console.log("&&&&&&&"+row)
+	    	resolve(row)
+	    }
+    })
+	})   
+}
+
 module.exports = DB
 module.exports.getdb = getdb
 

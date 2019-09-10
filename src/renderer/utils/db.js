@@ -226,7 +226,44 @@ db.serialize(() => {
 	)`, err => {
 		logger(err);
 	});
-
+	
+	db.run(`CREATE TABLE "candidate" (
+  "id" VARCHAR(64) NOT NULL,
+  "name" VARCHAR(64),
+  "no" integer(1),
+  "vote_id" VARCHAR(64) DEFAULT 0,
+  PRIMARY KEY ("id")
+	)`, err => {
+		logger(err);
+	});
+	
+	db.run(`CREATE TABLE "vote" (
+  "id" VARCHAR(64) NOT NULL,
+  "name" VARCHAR(64),
+  "type" integer(1),
+  "candidate_no" integer(1),
+  "anonymous" integer(1),
+  "vote_number" integer(1),
+  "voting_rules" INTEGER(1) DEFAULT 0,
+  PRIMARY KEY ("id")
+)`, err => {
+		logger(err);
+	});
+	
+	db.run(`CREATE TABLE "vote_result" (
+  "class_record_id" VARCHAR(64),
+  "vote_id" VARCHAR(64),
+  "user_id" VARCHAR(64),
+  "device_id" VARCHAR(64),
+  "realname" VARCHAR(255),
+  "ticket_number" INT(11),
+  "result" VARCHAR(64),
+  "option_number" INT(11),
+  "create_date" DATETIME
+)`, err => {
+		logger(err);
+	});
+	
 });
 
 export default db;

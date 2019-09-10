@@ -16,11 +16,24 @@ const state = {
   model:null , //1是全班 2是组长 3是全组
   groupId:'',   //组的id
   imgArr:[],//拍照对比
+  sendType:'', //1是全班 2是分組
+  answerType:'', //1是組長 2是全組
+  eachRecordId:'' //每一条记录的id
 };
 const mutations = {
   getUserId(state, data) {
     state.userId = data;
   },
+  getSendType(state, data){
+  	state.sendType = data;
+  },
+  getAnswerType(state, data){
+  	state.answerType = data;
+  },
+  getEachRecordId(state, data){
+  	state.eachRecordId = data;
+  },
+
   getSubjectId(state, data) {
     state.subjectId = data;
   },
@@ -69,10 +82,22 @@ const mutations = {
   getImgArr(state, data) {
     state.imgArr = data;
   },
+  getZhantai(state, data) {
+    state.zhantai = data;
+  },
 };
 const actions = {
   getUserId(context, data) {
     context.commit('getUserId', data);
+  },
+  getSendType(context, data) {
+    context.commit('getSendType', data);
+  },
+  getAnswerType(context, data) {
+    context.commit('getAnswerType', data);
+  },
+  getEachRecordId(context, data) {
+    context.commit('getEachRecordId', data);
   },
   getSubjectId(context, data) {
      context.commit('getSubjectId', data);
@@ -121,6 +146,9 @@ const actions = {
   },
   getImgArr(context, data) {
     context.commit('getImgArr', data);
+  },
+  getZhantai(context, data) {
+    context.commit('getZhantai', data);
   }
 };
 export default {

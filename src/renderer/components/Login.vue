@@ -13,8 +13,8 @@
 				<button class="loginSubmit" @click="loginSubmit(userName,userPwd)">登录</button>
 			</div>
 			<div class="loginCode" v-show="loginMode">
-				<img :src="codeSrc" alt="">
-				<!-- <vue-qr :bgSrc='config.logo' :logoSrc="config.logo" :text="config.value" :size="200" :dotScale="config.dotScale"></vue-qr> -->
+				<!-- <img :src="codeSrc" alt=""> -->
+				<vue-qr :bgSrc='config.logo' :logoSrc="config.logo" :text="config.value" :size="200" :dotScale="config.dotScale"></vue-qr>
 				<p>打开课中APP扫码登录</p>
 			</div>
 		</div>
@@ -26,7 +26,7 @@
 			<img src="../assets/img/login_back.png" alt="">
 		</div>
 		
-		<update-version></update-version>
+	<!-- 	<update-version></update-version> -->
 </div>
 
 </template>
@@ -86,6 +86,7 @@
 					document.getElementById("errorTitle").style.display ="block";
 				} else {
 					pwd=md5(md5(pwd));
+					
 					this.$http.get(this.configure.jeucIp + '/uc/login?username=' + name + '&password=' + pwd).then(function(jdata) {
 						if (jdata.data.ret == 200) {
 							document.getElementById("errorTitle").style.display = "none";
@@ -104,14 +105,11 @@
 			},
 			getCodeInfo() { //获取二维码和扫码信息
 				const that = this;
-				this.$http.get(this.configure.jeucIp + "/uc/QRCode/getQrCode").then(function(req) {
-					if (req.data.ret = 200) {
-						that.codeSrc = req.data.data.qrCodeImg;
-						that.uuid = req.data.data.uuid;
-					};
-				});
 				const timer = setInterval(function() {
-					that.$http.get(that.configure.jeucIp + "/uc/QRCode/longConnectionCheck?uuid=" + that.uuid).then(function(req) {
+					var uuidstring=that.config.value.indexOf("@")
+					var uuid= that.config.value.substring(0,uuidstring)
+					// console.log(uuid)
+					that.$http.get("http://localhost:3000/jeic/api/login/longConnectionCheck?uuid=" + uuid).then(function(req) {
 						if (req.data.ret == 200) {
 							clearInterval(timer);
 							that.loginSubmit(req.data.data.loginName, req.data.data.password)

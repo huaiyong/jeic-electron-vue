@@ -82,6 +82,7 @@
 				this.$electron.ipcRenderer.on('update-message', (event, msg) => {
 					const message = msg.message;
 					const data = msg.data;
+					alert(message)
 					switch (message) {
 						case 'error':
 							this.updateText = '检查更新失败';

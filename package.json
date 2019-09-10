@@ -1,12 +1,8 @@
 {
   "name": "jeic-electron-vue",
-<<<<<<< HEAD
-  "version": "1.0.1",
-=======
-  "version": "1.0.3",
->>>>>>> d141d19a8881b74738e21be1aa568c2437f94538
-  "author": "huaiyong <770393167@qq.com>",
-  "description": "Easy invoicing system stand-alone desktop version,An electron-vue sqlite3 project",
+  "version": "1.2.1",
+  "author": "北京捷成世纪科技股份有限公司",
+  "description": "捷成智慧课堂是一款围绕老师课程教学闭环,贯穿课前,课中,课后,满足日常教学使用的辅助工具",
   "license": "MIT",
   "main": "./dist/electron/main.js",
   "repository": {
@@ -32,8 +28,8 @@
     "packageVersion": "echo $npm_package_version"
   },
   "build": {
-    "productName": "jeic-electron-vue",
-    "copyright": "huaiyong",
+    "productName": "捷成智慧课堂",
+    "copyright": "北京捷成世纪科技股份有限公司",
     "appId": "org.huaiyong.jeic-electron-vue",
     "directories": {
       "output": "build"
@@ -63,7 +59,7 @@
       "icon": "build/icons/logo.ico",
       "extraResources": {
         "from": "./SunVoteSDK_x64.dll",
-        "to": "./SunVoteSDK_x64.dll"
+        "to": "./../SunVoteSDK_x64.dll"
       }
     },
     "linux": {

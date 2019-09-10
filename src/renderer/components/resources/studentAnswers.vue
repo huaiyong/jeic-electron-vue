@@ -201,6 +201,7 @@
 				textData: {}, //试题
 				textDataLength: 1, //试题数量
 				showIndex: 0, //默认显示试题下标
+				yuntishiScroll:0,//控制云试题滑动
 				signRemember: [], //已作答学生列表
 				checkedState: false, //按钮选中状态
 				lowerHairState: false, //结束答题后才能查看详情
@@ -311,7 +312,24 @@
 			},
 			groupMode(data){
 				this.chooseMode(data);
+			},
+			yunshitiziyuanScrollxia(){
+				this.yunshitiMove("bottom");
+			},
+			yunshitiziyuanScrollshang(){
+				this.yunshitiMove("top");
+			},
+			xueshengliebiaoScroll(data){
+			
+				var conheight = $(".zmj_answerStudentList").height();
+				$(".zmj_answerStudentList").scrollTop(data* conheight);
+			},
+			gerenchengjiScroll(data){
+				console.log(data)
+				var conheight = $(".zmj_resultTable").height();
+				$(".zmj_resultTable").scrollTop(data* conheight);
 			}
+			
 		},
 		methods: {
 			back() {
@@ -335,6 +353,14 @@
 			},
 			closeChooseStudent() { //关闭选择小组弹框
 				this.xaifaFrame = false;
+			},
+		    yunshitiMove(direction){  //云试题左侧滚动条
+				if (direction == "top") {
+					this.yuntishiScroll += 20;
+				} else if (direction == "bottom" && this.yuntishiScroll > 0) {
+					this.yuntishiScroll += -20;
+				};
+				$('.zmj_answerTest ul').scrollTop(this.yuntishiScroll);
 			},
 			showSelect() { //切换模式
 				$(".zmj_xaifaList .select ul").show();
