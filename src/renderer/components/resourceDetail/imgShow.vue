@@ -8,13 +8,13 @@
         <em class="iconfont icon-zuixiaohua"></em>
       </span>
       <div class="imgZoom">
-        <button type="button" class="iconfont icon-fangda" @click="imgChange('big')"></button>
-        <button type="button" class="iconfont icon-suoxiao1" @click="imgChange('small')"></button>
+        <button type="button" class="iconfont icon-fangda" @click="imgChange('imgBig')"></button>
+        <button type="button" class="iconfont icon-suoxiao1" @click="imgChange('imgSmall')"></button>
         <button type="button" class="iconfont icon-xuanzhuan" @click="revolve"></button>
-        <button type="button" class="iconfont icon-xiangzuo" @click="displacement('left')"></button>
-        <button type="button" class="iconfont icon-xiangyou" @click="displacement('right')"></button>
-        <button type="button" class="iconfont icon-xiangshang" @click="displacement('top')"></button>
-        <button type="button" class="iconfont icon-xiangxia" @click="displacement('bottom')"></button>
+        <button type="button" class="iconfont icon-xiangzuo" @click="displacement('imgLeft')"></button>
+        <button type="button" class="iconfont icon-xiangyou" @click="displacement('imgRight')"></button>
+        <button type="button" class="iconfont icon-xiangshang" @click="displacement('imgTop')"></button>
+        <button type="button" class="iconfont icon-xiangxia" @click="displacement('imgBottom')"></button>
       </div>
       <div class="contentBox  clearfix imgTransform" style="text-align:center;"> 
         <img class="imgshowtc" :src="imgsrc" alt="" id="imgshowtc"/> 
@@ -61,13 +61,12 @@
 		},
     methods: {
       getRouterData() {
-      	this.imgZoomRate=1, //图片缩放比率
-        this.crosswise=0,    //左右移动
-        this.lengthways=0,   //上下移动
-        this.imgRevolve= 1,   //图片旋转
-        this.imgsrc=this.$route.params.imgsrc,
-        this.resourceId=this.$route.params.resourceId,
-        console.log(this.imgsrc,this.resourceId,12121)
+      	this.imgZoomRate=1; //图片缩放比率
+        this.crosswise=0;    //左右移动
+        this.lengthways=0;   //上下移动
+        this.imgRevolve= 1;   //图片旋转
+        this.imgsrc=this.$route.params.imgsrc;
+        this.resourceId=this.$route.params.resourceId
       },
       error:function(){
         const that=this;
@@ -78,23 +77,21 @@
         },1000);
       },
       imgChange (num) { //缩放图片
-      	console.log(num,'放大缩小参数')
-        if (num == "big") {
+        if (num == "imgBig") {
           this.imgZoomRate += 0.2;
-        } else if (num == "small" && this.imgZoomRate >= 0.4) {
+        } else if (num == "imgSmall" && this.imgZoomRate >= 0.4) {
           this.imgZoomRate += -0.2;
         };
         $(".imgTransform").css("transform", 'scale(' + this.imgZoomRate + ')');
       },
       displacement (direction){
-      	console.log(direction,'平移参数')
-        if (direction == "left") {
+        if (direction == "imgLeft") {
           this.crosswise += -40;
-        } else if (direction == "right") {
+        } else if (direction == "imgRight") {
           this.crosswise += 40;
-        } else if (direction == "top") {
+        } else if (direction == "imgTop") {
           this.lengthways += -40;
-        } else if (direction == "bottom") {
+        } else if (direction == "imgBottom") {
           this.lengthways += 40;
         };
         $("#imgshowtc").css("margin-left", this.crosswise + "px");

@@ -1,6 +1,6 @@
 {
   "name": "jeic-electron-vue",
-  "version": "1.2.1",
+  "version": "1.2.2",
   "author": "北京捷成世纪科技股份有限公司",
   "description": "捷成智慧课堂是一款围绕老师课程教学闭环,贯穿课前,课中,课后,满足日常教学使用的辅助工具",
   "license": "MIT",
@@ -81,14 +81,20 @@
     ]
   },
   "dependencies": {
+    "async": "^3.1.0",
     "crypto": "^1.0.1",
+    "eslint": "^6.4.0",
+    "eslint-config-egg": "^7.5.1",
+    "eslint-plugin-vue": "^5.2.3",
     "exec": "^0.2.1",
     "ffi": "^2.3.0",
+    "moment": "^2.24.0",
     "node-uuid": "^1.4.8",
     "open": "^6.4.0",
     "screenshot-desktop": "^1.9.0",
     "socket.io": "^2.2.0",
     "sqlite3": "^4.0.1",
+    "typescript": "^3.6.3",
     "uws": "^9.14.0",
     "vue-devtools": "^5.0.0-beta.1",
     "vue-qr": "^2.1.0",
@@ -155,7 +161,8 @@
     "webpack": "^3.5.2",
     "webpack-dev-server": "^2.7.1",
     "webpack-hot-middleware": "^2.18.2",
-    "yorkie": "^1.0.3"
+    "yorkie": "^1.0.3",
+    "screenshot-desktop": "^1.9.0"
   },
   "__npminstall_done": false
 }

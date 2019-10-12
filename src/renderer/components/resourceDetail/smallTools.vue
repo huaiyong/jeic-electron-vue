@@ -53,7 +53,7 @@
 						<p>抢答</p>
 					</li>
 					<li @click="vote()">
-						<img src="../../assets/img/qiangdabtn.png" alt="">
+						<img src="../../assets/img/toupia.png" alt="">
 						<p>投票</p>
 					</li>
 				</ul>
@@ -127,12 +127,12 @@
 					<div class="time">
 						<button @click="addCount('shiMin')">+</button>
 						<span v-text="shiMin"></span>
-						<button @click="subtract('shiMin')">+</button>
+						<button @click="subtract('shiMin')">-</button>
 					</div>
 					<div  class="time">
 						<button @click="addCount('min')">+</button>
 						<span v-text="min">2</span>
-						<button @click="subtract('min')">+</button>
+						<button @click="subtract('min')">-</button>
 					</div>
 				</div>
 				<div class="icon fl">
@@ -142,17 +142,21 @@
 					<div class="time">
 						<button @click="addCount('shiSec')">+</button>
 						<span v-text="shiSec"></span>
-						<button @click="subtract('shiSec')">+</button>
+						<button @click="subtract('shiSec')">-</button>
 					</div>
 					<div class="time">
 						<button @click="addCount('sec')">+</button>
 						<span v-text="sec">2</span>
-						<button @click="subtract('sec')">+</button>
+						<button @click="subtract('sec')">-</button>
 					</div>
 				</div>
 			</div>
-			<button @click="beginCountDown()" class="begin"><i class="iconfont icon-kaishi"></i></button>
+			<button @click="beginCountDown()" class="begin" :disabled="disabledState"><i class="iconfont icon-kaishi"></i></button>
 			<button @click="reset()" class="reset"><i class="iconfont icon-zhongzhi"></i></button>
+		    <audio controls height="100" width="100" id="audio" style="display: none;">
+		      <source src="../../assets/music/timer2_cowbell.mp3" type="audio/mpeg">
+		      <embed height="50" width="100" src="../../assets/music/timer2_cowbell.mp3">
+		    </audio> 
 		</div>
 		<!--随机点名-->
 		<div class="callName">
@@ -173,6 +177,7 @@
 	import {
 		ipcRenderer
 	} from 'electron';
+	const shell = require('electron').shell;
 	export default {
 		name: "SmallTools",
 		data() {
@@ -191,6 +196,7 @@
 				shiSec:0,//秒
 				sec:0,
 				timer:null,//倒计时定时器，
+				disabledState:false,
 				timer1:null, //抢到定时器
 				successInfo:{}, //抢答成功人员
 			}
@@ -224,6 +230,9 @@
 			toolsHide(){
 				this.toolsHide();
 			},
+			luping(){
+				this.luPing();
+			},
 			Rollcall(){
 				this.callName();
 			},
@@ -248,7 +257,7 @@
 			sizeAnnotation(data){
 				this.chooseSize(data[0],data[1]);
 			},
-			colorAnnotation(){
+			colorAnnotation(data){
 				this.chooseColor(data[0],data[1]);
 			},
 			moretoolsClick(){
@@ -280,8 +289,41 @@
 			zhantai(data){
 				this.$store.dispatch("getZhantai",data);
 				this.$router.push({name:"showcase"});
-			}
-			
+			},
+			annotation(data){
+				this.annotationFrame();
+				var mycan=document.getElementById("canvas");
+				var con = mycan.getContext('2d');
+				var Width = document.documentElement.clientWidth;
+				var Height = document.documentElement.clientHeight;
+				if (data[1].length != 0) {
+					if (data[0] == "start") {
+						con.beginPath()
+						con.lineCap = "round";
+						con.lineJoin = "round";
+						con.strokeStyle =this.changeColor;
+						con.lineWidth = this.sizeR;
+						con.moveTo(data[1][0][0] / (data[2] / Width), data[1][0][1] / (data[3] / Height));
+					} else if (data[0] == "move") {
+						con.lineTo(data[1][0][0] / (data[2] / Width), data[1][0][1] / (data[3] / Height));
+						con.strokeStyle = this.changeColor;
+						con.lineWidth = this.sizeR;
+						con.stroke();
+						con.restore();
+					} else if (data[0] == "end") {
+						this.undoarr.push(mycan.toDataURL());
+					};
+			};
+		 },
+		 luxiang(data){
+			 this.$router.push({"name":"videoPlayer",params:{arrVideo:data[0],videoName:data[1]}});
+		 },
+		 toupiao(data){
+			 this.$router.push({name:"customVote",params:{data:data}});
+		 },
+		 xuanju(data){
+		 	 this.$router.push({name:"xuanju",params:{data:data}});
+		 }
 			
 		},
 		methods: {
@@ -332,50 +374,23 @@
 			    $(".title-show").show();
 				$(".successInfo").hide();
 				$(".responderBtn").html("抢答中...");
-				var that=this;
-				this.$http("http://127.0.0.1:3000/jeic/api/sendRecord/startResponder?number=1").then(function(res){
+				this.$http("http://127.0.0.1:3000/jeic/api/sendRecord/startResponder?number=1").then((res)=>{
 					if(res.data.ret==200){
-						if(that.pattern){
-							that.timer1=setInterval(function(){
-								that.$http("http://localhost:3000/jeic/api/sendRecord/getStartResponder?type=1").then(function(res){
+						if(this.pattern){
+							this.timer1=setInterval(()=>{
+								this.$http("http://localhost:3000/jeic/api/sendRecord/getStartResponder?type=1").then((res)=>{
 									if(res.data.ret==200){
-										if(JSON.stringify(res.data.data) != "{}"){
-											that.successInfo=res.data.data;
-											that.$socket.emit("jeic", {
-												"name": "QuickResponseQuestionData",
-												"data": res.data.data
-											});
-											$(".responderBtn").html("重新抢答");
-											$(".title-show").hide();
-											$(".successInfo").show();
-											clearInterval(that.timer1);
-											that.$http("http://127.0.0.1:3000/jeic/api/sendRecord/stopResponder").then(function(res){
-												
-											});
-										};
-									}
+										this.qiangda(res.data.data);
+									};
 								});
 							},1000);
 							
 						}else{
-							that.timer1=setInterval(function(){
-								that.$http("http://localhost:3000/jeic/api/sendRecord/getStartResponder?type=3&teachingGroupId="+that.groupId).then(function(res){
+							this.timer1=setInterval(()=>{
+								this.$http("http://localhost:3000/jeic/api/sendRecord/getStartResponder?type=3&teachingGroupId="+this.groupId).then((res)=>{
 									if(res.data.ret==200){
-										if(JSON.stringify(res.data.data) != "{}"){
-											that.successInfo=res.data.data;
-											that.$socket.emit("jeic", {
-												"name": "QuickResponseQuestionData",
-												"data": res.data.data
-											});
-											$(".responderBtn").html("重新抢答");
-											$(".title-show").hide();
-											$(".successInfo").show();
-											clearInterval(that.timer1);
-											that.$http("http://127.0.0.1:3000/jeic/api/sendRecord/stopResponder").then(function(res){
-												
-											});
-										};
-									}
+										this.qiangda(res.data.data);
+									};
 								});
 							},1000);
 						}
@@ -385,9 +400,24 @@
 				});
 				
 			},
+			qiangda(data){
+				if(JSON.stringify(data) != "{}"){
+					this.successInfo=data;
+					this.$socket.emit("jeic", {
+						"name": "QuickResponseQuestionData",
+						"data": data
+					});
+					$(".responderBtn").html("重新抢答");
+					$(".title-show").hide();
+					$(".successInfo").show();
+					clearInterval(this.timer1);
+					this.$http("http://127.0.0.1:3000/jeic/api/sendRecord/stopResponder").then(function(res){
+						
+					});
+				};
+			},
 			search() { //搜索
-				ipcRenderer.send('open-baidu');
-				
+			  shell.openExternal("https://www.baidu.com/");
 			},
 			luPing(){
 				$(".pos04").addClass("active").siblings().removeClass("active");
@@ -403,6 +433,7 @@
 					screenCapApi.startRecord(StringData);
 					$(".pos04 span").html("录屏中");
 					$(".pos04").addClass("active").siblings().removeClass("active");
+					this.$store.dispatch("getLupingState", true);
 				}else{
 					//alert('录频')
 					screenCapApi.stopRecord();
@@ -411,6 +442,7 @@
 					}, 1000);
 					$(".pos04 span").html("录屏");
 					$(".pos04").removeClass("active");
+					this.$store.dispatch("getLupingState", false);
 				};
 			},
 			countDownShow(){
@@ -425,6 +457,7 @@
 				this.min=0;
 				this.shiSec=0;
 				this.sec=0;
+				this.disabledState=false;
 			},
 			addCount(data){  //倒计时加
 				if(this[data]<9){
@@ -442,6 +475,8 @@
 			},
 			beginCountDown(){ //开始计时
 				var that=this;
+				clearInterval(this.timer);
+				this.disabledState=true;
 				var maxtime=this.shiMin*60*10+this.min*60+this.shiSec*10+this.sec;
 				var countDown=function CountDown(){
 				                if (maxtime >= 0) {
@@ -463,7 +498,10 @@
 									that.sec=seconds[1];
 				                    --maxtime;
 				                } else{
-				                    clearInterval(this.timer);
+				                    clearInterval(that.timer);
+									var audio=document.getElementById("audio");
+									audio.play();
+								    that.disabledState=false;
 				                };
 				            };
 				this.timer = setInterval(countDown, 1000);
@@ -475,18 +513,10 @@
 				this.min=0;
 				this.shiSec=0;
 				this.sec=0;
+				this.disabledState=false;
 			},
 			annotationFrame() { //批注弹层
-			    var mycan=document.getElementById("canvas");
-			    var con=document.getElementById("canvas").getContext('2d');
-				$(".pos05").addClass("active").siblings().removeClass("active");
-				this.undoarr = [];
-				con.clearRect(0, 0, mycan.width, mycan.height);
-				con.beginPath();
-				this.changeColor = "#f3161f";
-				this.sizeR="3";
-				$(".chooseColor li").eq(0).addClass('active').siblings().removeClass('active');
-				$(".chooseSize li").eq(0).addClass('active').siblings().removeClass('active');
+		        $(".pos05").addClass("active").siblings().removeClass("active");
 				$(".annotationFrame").show();
 				this.toolsHide();
 			},
@@ -510,7 +540,6 @@
 						}); 
 					};
 					 $(".pos02").addClass("active").siblings().removeClass("active");
-					 console.log($(".callName").css("display"))
 					 if($(".callName").css("display")=="none"){
 						$(".callName").show();
 						this.startRollcall(arr);
@@ -648,6 +677,15 @@
 			closeAnnotationFrame(){ //关闭批注
 				$(".annotationFrame").hide();
 				$(".pos05").removeClass("active");
+				var mycan=document.getElementById("canvas");
+				var con=document.getElementById("canvas").getContext('2d');
+				this.undoarr = [];
+				con.clearRect(0, 0, mycan.width, mycan.height);
+				con.beginPath();
+				this.changeColor = "#f3161f";
+				this.sizeR="3";
+				$(".chooseColor li").eq(0).addClass('active').siblings().removeClass('active');
+				$(".chooseSize li").eq(0).addClass('active').siblings().removeClass('active');
 			},
 			restor() { //撤销
 			    var mycan=document.getElementById("canvas");
@@ -693,7 +731,7 @@
 
 					// 鼠标移动事件
 					['touchmove', 'mousemove'].forEach(function(item) {
-                  
+                         console.log(2)
 						if (item == 'touchmove') {
 							div.addEventListener(item, function(e) {
 								if (flag) {
@@ -1225,12 +1263,16 @@
 	}
 	.moreclass li{
 		    width: 50px;
-		    height: 50px;
+		    height: 80px;
 			color: #fff;
 		    display: inline-block;
 		    text-align: center;
 		    margin: 5px;
 		    cursor: pointer;
+	}
+	.moreclass li img{
+		width: 50px;
+		height: 50px;
 	}
 	.responderBox{
 		position: absolute;

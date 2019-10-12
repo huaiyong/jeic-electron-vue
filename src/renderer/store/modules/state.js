@@ -16,17 +16,38 @@ const state = {
   model:null , //1是全班 2是组长 3是全组
   groupId:'',   //组的id
   imgArr:[],//拍照对比
-  sendType:'', //1是全班 2是分組
-  answerType:'', //1是組長 2是全組
-  eachRecordId:'' //每一条记录的id
+//sendType:'', //1是全班 2是分組
+  answerType:'', //1是全员 2是组长 3是全组
+  eachRecordId:'' ,//每一条记录的id,
+  lupingState:false,//是否录屏
+  pptState:true,//ppt显示状态
+  pptHave:false,
+  wordId:"",
+  wordState:true,
+  wordHave:false,
+  pdfId:"",
+  pdfState:true,
+  pdfHave:false,
+  excelId:"",
+  excelState:true,
+  excelHave:false,
+  excelId:"",
+};
+var copyState = deepClone(state); // 拷贝state对象
+function deepClone(obj) {
+	var newObj = obj instanceof Array ? [] : {}
+	for (var i in obj) {
+		newObj[i] = typeof obj[i] === 'object' ? deepClone(obj[i]) : obj[i]
+	}
+	return newObj
 };
 const mutations = {
   getUserId(state, data) {
     state.userId = data;
   },
-  getSendType(state, data){
-  	state.sendType = data;
-  },
+//getSendType(state, data){
+//	state.sendType = data;
+//},
   getAnswerType(state, data){
   	state.answerType = data;
   },
@@ -85,14 +106,58 @@ const mutations = {
   getZhantai(state, data) {
     state.zhantai = data;
   },
+  getLupingState(state, data) {
+    state.lupingState = data;
+  },
+  getPptState(state, data) {
+    state.pptState = data;
+  },
+  getPptId(state, data) {
+    state.pptId = data;
+  },
+  getPptHave(state, data) {
+    state.pptHave = data;
+  },
+  getWordState(state, data) {
+    state.wordState = data;
+  },
+  getWordId(state, data) {
+    state.wordId = data;
+  },
+  getWordHave(state, data) {
+    state.wordHave = data;
+  },
+  getPdfState(state, data) {
+    state.pdfState = data;
+  },
+  getPdfId(state, data) {
+    state.pdfId = data;
+  },
+  getPdfHave(state, data) {
+    state.pdfHave = data;
+  },
+  getExcelState(state, data) {
+    state.excelState = data;
+  },
+  getExcelId(state, data) {
+    state.excelId = data;
+  },
+  getExcelHave(state, data) {
+    state.excelHave = data;
+  },
+  resetState(state) {
+  	for (var i in copyState) {
+  		state[i] = copyState[i] // 递归赋值
+  	}
+  }
 };
 const actions = {
   getUserId(context, data) {
     context.commit('getUserId', data);
   },
-  getSendType(context, data) {
-    context.commit('getSendType', data);
-  },
+//getSendType(context, data) {
+//  context.commit('getSendType', data);
+//},
   getAnswerType(context, data) {
     context.commit('getAnswerType', data);
   },
@@ -149,6 +214,48 @@ const actions = {
   },
   getZhantai(context, data) {
     context.commit('getZhantai', data);
+  },
+  getLupingState(context, data) {
+    context.commit('getLupingState', data);
+  },
+  getPptState(context, data) {
+    context.commit('getPptState', data);
+  },
+  getPptId(context, data) {
+    context.commit('getPptId', data);
+  },
+  getPptHave(context, data) {
+    context.commit('getPptHave', data);
+  },
+  getExcelState(context, data) {
+    context.commit('getExcelState', data);
+  },
+  getExcelId(context, data) {
+    context.commit('getExcelId', data);
+  },
+  getExcelHave(context, data) {
+    context.commit('getExcelHave', data);
+  },
+  getWordState(context, data) {
+    context.commit('getWordState', data);
+  },
+  getWordId(context, data) {
+    context.commit('getWordId', data);
+  },
+  getWordHave(context, data) {
+    context.commit('getWordHave', data);
+  },
+  getPdfState(context, data) {
+    context.commit('getPdfState', data);
+  },
+  getPdfId(context, data) {
+    context.commit('getPdfId', data);
+  },
+  getPdfHave(context, data) {
+    context.commit('getPdfHave', data);
+  },
+  resetState(context){
+	context.commit('resetState'); 
   }
 };
 export default {

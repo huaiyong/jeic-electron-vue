@@ -1,33 +1,13 @@
 <template>
-	<div id="app" style="overflow: hidden;">
-			<router-view style="height: 100%;" v-if="isRouterAlive"></router-view>
-	</div>	
+	<div id="app">
+		<router-view></router-view>
+	</div>
 </template>
 
 <script>
-	export default {
-    provide() {
-      return {
-        reload: this.reload
-      };
-    },
-    data() {
-      return {
-        isRouterAlive: true
-      };
-    },
-    methods: {
-      reload() {
-        this.isRouterAlive = false;
-        this.$nextTick(function() {
-          this.isRouterAlive = true;
-        });
-      }
-    }
-  };
 </script>
 
-<style lang="less">
+<style>
 	html,
 	body,
 	#app {
@@ -35,11 +15,6 @@
 		background: url("./assets/img/bigBg.jpg");
 		background-size: cover;
 	}
-
-	body {
-		color: #333;
-	}
-
 	::-webkit-scrollbar {
 		width: 5px;
 	}

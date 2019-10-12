@@ -1,5 +1,8 @@
 <template>
-	<div>
+	<div class="zmj_login">
+		<div class="zmj_loginLogo">
+			<img src="../assets/img/logo_login.png" alt="">
+		</div>
 		<div class="zmj_loginWrap">
 			<h1>智慧课堂 有你有我<span :class="{'inputLogin':!loginMode}" @click="modeTab()"></span></h1>
 			<div class="loginForm" v-show="!loginMode">
@@ -8,48 +11,43 @@
 					<input type="password" placeholder="密码" required="required" v-model="userPwd">
 				</div>
 				<div class="loginError">
-					<p id="errorTitle">账号或密码有误</p>
+					<p ref="errorTitle">账号或密码有误</p>
 				</div>
 				<button class="loginSubmit" @click="loginSubmit(userName,userPwd)">登录</button>
 			</div>
 			<div class="loginCode" v-show="loginMode">
-				<!-- <img :src="codeSrc" alt=""> -->
 				<vue-qr :bgSrc='config.logo' :logoSrc="config.logo" :text="config.value" :size="200" :dotScale="config.dotScale"></vue-qr>
 				<p>打开课中APP扫码登录</p>
 			</div>
 		</div>
-		<div class="zmj_loginLogo">
-			<img src="../assets/img/logo_login.png" alt="">
-			
-		</div>
 		<div class="zmj_loginClose" @click="closeWindows()">
 			<img src="../assets/img/login_back.png" alt="">
 		</div>
-		
-	<!-- 	<update-version></update-version> -->
-</div>
-
+		<update-version></update-version>
+	</div>
 </template>
 
 <script>
 	import md5 from 'js-md5';
 	import vueQr from 'vue-qr';
 	import uuid from 'node-uuid';
-	import os  from 'os';
+	import os from 'os';
 	import updateVersion from "./resourceDetail/update"
 	var interfaces = os.networkInterfaces();
 	var localIP = "";
 
-	for(var devName in interfaces){
-		 var iface = interfaces[devName];
-        for(var i=0;i<iface.length;i++){
-			 var alias = iface[i];
-			if(alias.family === 'IPv4' && alias.address !== '127.0.0.1' && !alias.internal){
+	for (var devName in interfaces) {
+		//		if(devName==="本地连接"){
+		var iface = interfaces[devName];
+		for (var i = 0; i < iface.length; i++) {
+			var alias = iface[i];
+			if (alias.family === 'IPv4' && alias.address !== '127.0.0.1' && !alias.internal) {
 				localIP = alias.address;
-				console.log(localIP)
-				sessionStorage.setItem("ip",localIP)
+				sessionStorage.setItem("ip", localIP)
 			}
 		}
+		//		}
+
 	}
 
 	import {
@@ -69,8 +67,8 @@
 				userName: "", //用户名,
 				userPwd: "", //用户密码
 				config: {
-				  value: uuid.v1()+"@"+localIP,//显示的值、跳转的地址
-				  dotScale:0.9
+					value: "", //显示的值、跳转的地址
+					dotScale: 0.9
 				}
 			}
 		},
@@ -79,40 +77,36 @@
 				this.loginMode = !this.loginMode;
 			},
 			loginSubmit(name, pwd) { //登录
-				const that = this;
 				if (name == "") {
-					document.getElementById("errorTitle").style.display ="block";
+					this.$refs.errorTitle.style.display = "block";
 				} else if (pwd == "") {
-					document.getElementById("errorTitle").style.display ="block";
+					this.$refs.errorTitle.style.display = "block";
 				} else {
-					pwd=md5(md5(pwd));
-					
-					this.$http.get(this.configure.jeucIp + '/uc/login?username=' + name + '&password=' + pwd).then(function(jdata) {
+					pwd = md5(md5(pwd));
+					this.$http.get(this.configure.jeucIp + '/uc/login?username=' + name + '&password=' + pwd).then(jdata => {
 						if (jdata.data.ret == 200) {
-							document.getElementById("errorTitle").style.display = "none";
+							this.$refs.errorTitle.style.display = "none";
 							sessionStorage.setItem("realname", jdata.data.data.realname);
 							sessionStorage.setItem("userMobile", jdata.data.data.userMobile);
 							sessionStorage.setItem("userEmail", jdata.data.data.userEmail);
-							that.$store.dispatch("getUserId", jdata.data.data.id);
-							that.$router.push({
+							this.$store.dispatch("getUserId", jdata.data.data.id);
+							this.$router.push({
 								'name': 'Classroom'
 							});
 						} else {
-							document.getElementById("errorTitle").style.display ="block";
+							this.$refs.errorTitle.style.display = "block";
 						};
 					});
 				};
 			},
 			getCodeInfo() { //获取二维码和扫码信息
-				const that = this;
-				const timer = setInterval(function() {
-					var uuidstring=that.config.value.indexOf("@")
-					var uuid= that.config.value.substring(0,uuidstring)
-					// console.log(uuid)
-					that.$http.get("http://localhost:3000/jeic/api/login/longConnectionCheck?uuid=" + uuid).then(function(req) {
+				const timer = setInterval(() => {
+					var uuidstring = this.config.value.indexOf("@")
+					var uuid = this.config.value.substring(0, uuidstring)
+					this.$http.get("http://localhost:3000/jeic/api/login/longConnectionCheck?uuid=" + uuid).then(req => {
 						if (req.data.ret == 200) {
 							clearInterval(timer);
-							that.loginSubmit(req.data.data.loginName, req.data.data.password)
+							this.loginSubmit(req.data.data.loginName, req.data.data.password)
 						};
 					});
 				}, 2000);
@@ -123,6 +117,7 @@
 
 		},
 		created() {
+			this.config.value = uuid.v1() + "@" + localIP;
 			this.getCodeInfo();
 		}
 	}
@@ -191,14 +186,14 @@
 	.zmj_loginWrap .loginSubmit {
 		width: 30rem;
 		height: 4.4rem;
-		background: #ef4300;
-		border-radius: .6rem;
-		border: .1rem solid #ff730e;
-		box-shadow: 0 1.5rem 3rem 0 rgba(255, 255, 255, .25) inset, 0 2px 7px 0 rgba(0, 0, 0, .2);
 		font-size: 1.4rem;
 		font-weight: 700;
 		color: #fff;
-		text-shadow: 0 0.1rem 0.2rem rgba(0, 0, 0, .1);
+		background: #ef4300;
+		border-radius: .6rem;
+		border: .1rem solid #ff730e;
+		box-shadow: 0 1.5rem 3rem 0 rgba(255, 255, 255, .25) inset, 0 .2rem .7rem 0 rgba(0, 0, 0, .2);
+		outline: none;
 		cursor: pointer;
 	}
 

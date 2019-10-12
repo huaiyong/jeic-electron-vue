@@ -5,7 +5,7 @@
           <i class="iconfont icon-fanhui"></i>
         </router-link>
         <em>此次分组名称</em>
-        <span contenteditable='false' @click="titleEdit()">{{groupName}}</span>
+        <input type="text" v-model="groupName" maxlength="12">
         <small>( {{this.$route.query.info=='1'?'临时组':'固定组'}} )</small>
       </div>
       <div class="mainBox clearfix">
@@ -13,7 +13,8 @@
         <div class="mainL fl" @mouseup.stop="mainL($event)">
           <div class="newBuild" v-for="(item,i) in newBuild" :key='i'>
             <div class="tit clearfix">
-              <strong contenteditable='false' >{{item.name}}</strong>
+              <input type="text" class="samllTitle" v-model="item.name" maxlength="12">
+              <em>{{item.name}}</em>
               <span @click="Editable($event)">修改</span>
               <i class="iconfont icon-shanchuzu fr" @click="deleteNewBuiid($event,item,i)"></i>
             </div>
@@ -37,7 +38,7 @@
             </div>
           </div>
           <div class="smallAdd" @click="addGroup()"><i class="iconfont icon-jiahao"></i></div>
-          <div class="btn" @click="finish()">完成</div>
+          <div class="btn" @click="finish($event)">完成</div>
         </div>
 
         <!-- 右侧 -->
@@ -70,6 +71,7 @@ export default {
       userInfo:'',    //是组长还是组员
       LargeArr:{},   //完成返回出去的数据
       targetObj : '', //组员和组长的目标对象，存储地
+      ifShow:false
     }
   },
   //created函数中调用ajax获取页面初始化所需的数据
@@ -108,7 +110,23 @@ export default {
         that.groupName = data.data.data.name;
         that.ids = data.data.data.id;
         that.removeName();
+        for(var i=0;i<that.newBuild.length;i++){
+          if(that.newBuild[i].studentList.length == 0 &&  JSON.stringify(that.newBuild[i].groupLeader) == '{}' ){
+            $('.btn').removeClass('blue');
+          }else{
+            $('.btn').addClass('blue');
+          }
+        }
       });
+    }
+  },
+  watch: {
+    groupName(val){
+      if(this.newBuild.length == 0 || val == ''){
+        $('.btn').removeClass('blue');
+      }else{
+        $('.btn').addClass('blue');
+      }
     }
   },
   methods: {
@@ -146,19 +164,10 @@ export default {
     getImgUrl(obj){
       return obj == '男'?'boy':'girl'
     },
-    // 标题的编辑
-    titleEdit(){
-      $('.heads span').attr('contenteditable',true);
-    },
     // 修改的可编辑
     Editable(obj){
-      $(document).mouseup(function(e){
-        var con2 = $('.tit strong');   // 设置目标区域
-        if(!con2.is(e.target)){ // 判断是不是目标区域
-          $('.tit strong').attr('contenteditable',false).css({'border':'0rem solid #F2CB80'})
-        }
-      });
-      $(obj.target).prev().attr('contenteditable',true).css({'border':'.1rem solid #F2CB80'});
+      $(obj.target).siblings('em').css('display','none');
+      $(obj.target).siblings('input').css('display','inline-block').trigger("focus");;
     },
     //删除名字
     deleteName(obj,i,index){
@@ -168,6 +177,13 @@ export default {
       }else{
         this.list.push(this.newBuild[i].studentList[index])
         this.newBuild[i].studentList.splice(index,1)
+      }
+      for(var i=0;i<this.newBuild.length;i++){
+        if(this.newBuild[i].studentList.length == 0  &&  JSON.stringify(this.newBuild[i].groupLeader) == '{}' && this.groupName == ''){
+          $('.btn').removeClass('blue');
+        }else{
+          $('.btn').addClass('blue');
+        }
       }
     },
     // 删除每小组
@@ -180,6 +196,11 @@ export default {
         for(var i=0;i<arr.studentList.length;i++){
           this.list.push(arr.studentList[i])
         };
+      }
+      if(this.newBuild.length == 0 || this.groupName == '' ){
+        $('.btn').removeClass('blue');
+      }else{
+        $('.btn').addClass('blue');
       }
     },
     // 添加分组按钮
@@ -196,6 +217,7 @@ export default {
       if(this.Highlight && this.userInfo == '组员'){
         this.newBuild[this.indexNum].studentList.push(this.list[i]);
         this.list.splice(i,1);
+        $('.btn').addClass('blue');
       }
       //组长
       if(this.Highlight && this.userInfo == '组长'){
@@ -205,6 +227,7 @@ export default {
         }
         this.newBuild[this.indexNum].groupLeader = obj;
         this.list.splice(i,1);
+        $('.btn').addClass('blue');
       }
     },
     // 组长选中高亮
@@ -231,66 +254,95 @@ export default {
     },
     // 点击左侧任何地方取消高亮选中
     mainL(e){
-      let temporaryObj = $(this.targetObj.target);   // 设置目标区域
-      if(!temporaryObj.is(e.target) && temporaryObj.has(e.target).length === 0){ // 判断是不是目标区域
+      // 组长/组员
+      let temporaryObj = $(this.targetObj.target);  
+      if(!temporaryObj.is(e.target) && temporaryObj.has(e.target).length === 0){
         $(temporaryObj).css({'border':'0rem solid #F2CB80'});
         this.Highlight = false;
       }
+      // 小组标题
+      var con2 = $('.tit input');   
+      if(!con2.is(e.target)){ 
+        $('.tit input').css('display','none');
+        $('.tit em').css('display','inline-block');
+      }
     },
     //完成事件
-    finish(){
-      let that = this;
-      this.LargeArr.id = this.ids;
-      this.LargeArr.name = this.groupName;
-      this.LargeArr.class_id = this.$store.state.state.classId;
-      this.LargeArr.subject_id = this.$store.state.state.subjectId;
-      this.LargeArr.teacher_id = this.$store.state.state.userId;
-      this.LargeArr.type = this.$route.query.info;
-      this.LargeArr.userGrouplist = this.newBuild;
-      // 新建页面
-      if(this.$route.query.type == 'newBuilt'){
-        this.$http.post("http://127.0.0.1:3000/jeic/api/teachingGroup", { GroupData: this.LargeArr}).then(function(res){
-          that.$router.push({
-            path:'/teachModel',
-            query:{
-              classType:'group'
-            }
+    finish(e){
+
+      if($(e.target).is('.blue')){
+        let that = this;
+        this.LargeArr.id = this.ids;
+        this.LargeArr.name = this.groupName;
+        this.LargeArr.class_id = this.$store.state.state.classId;
+        this.LargeArr.subject_id = this.$store.state.state.subjectId;
+        this.LargeArr.teacher_id = this.$store.state.state.userId;
+        this.LargeArr.type = this.$route.query.info;
+        this.LargeArr.userGrouplist = this.newBuild;
+        
+        // 新建页面
+        if(this.$route.query.type == 'newBuilt'){
+          this.$http.post("http://127.0.0.1:3000/jeic/api/teachingGroup", { GroupData: this.LargeArr}).then(function(res){
+            that.$router.push({
+              path:'/teachModel',
+              query:{
+                classType:'group'
+              }
+            });
           });
-        });
-      }
-      // 编辑页面
-      if(this.$route.query.type == 'edit'){
-        this.$http.put("http://127.0.0.1:3000/jeic/api/teachingGroup", { GroupData: this.LargeArr}).then(function(res){
-          that.$router.push({
-            path:'/teachModel',
-            query:{
-              classType:'group'
-            }
+        }
+        // 编辑页面
+        if(this.$route.query.type == 'edit'){
+          this.$http.put("http://127.0.0.1:3000/jeic/api/teachingGroup", { GroupData: this.LargeArr}).then(function(res){
+            that.$router.push({
+              path:'/teachModel',
+              query:{
+                classType:'group'
+              }
+            });
           });
-        });
+        }
       }
+
     },
   }
 }
 </script>
 
-<style>
+<style scoped="scoped">
   .foundGroup{width: 100%;height: 100%;background:#fff;font-size: 1.354rem;color: #333333;}
   .foundGroup .heads{width: 100%;height: 5.2rem;line-height: 5.2rem;border-bottom:.1rem solid #ececec;box-sizing: border-box;padding: 0 3rem;}
   .foundGroup .heads i{font-size: 1.6rem;cursor: pointer;color: #4092f4;}
   .foundGroup .heads em{font-size: 1.6rem;margin:0 .5rem;}
-  .foundGroup .heads span{display: inline-block;min-width: 6rem;height: 2.2rem;line-height: 2.2rem;padding: 0 1rem; font-size: 1.4583rem;background: #4092f4;border-radius: .5rem;color: #fff;}
+  .foundGroup .heads input{
+    display: inline-block;
+    max-width: 17.5rem;
+    height: 2.2rem;
+    line-height: 2.2rem;
+    padding: 0 1rem; 
+    font-size: 1.4583rem;
+    background: #eee;
+    border-radius: .5rem;
+    color: #000;
+    border: none;
+  }
   .foundGroup .heads small{color: #acacac;font-size: 1.354rem;}
   
   .foundGroup .mainBox{height: 93%;}
   .foundGroup .mainBox .mainL{width: 38%;height: 96%;border-right: .1rem solid #ececec;box-sizing: border-box;padding: 3rem 3rem 0;overflow-y: auto;}
   .foundGroup .mainBox .mainL .smallAdd{width: 7rem; height: 7rem; border-radius: 5px; background: #eeeeee; box-sizing: border-box; text-align: center; padding-top: 2.2rem; margin-top: 2rem; cursor: pointer;}
   .foundGroup .mainBox .mainL .smallAdd i{font-size: 4rem;color: #4092f4;}
-  .foundGroup .mainBox .mainL .btn{width: 10rem;height: 3rem;line-height: 3rem;text-align: center;background: #4092f4;color: #fff;border-radius: 40px;margin: 2rem auto 0;cursor: pointer;font-size: 1.458rem;}
+  .foundGroup .mainBox .mainL .btn{width: 10rem;height: 3rem;line-height: 3rem;text-align: center;background: #ccc;color: #fff;border-radius: 40px;margin: 2rem auto 0;font-size: 1.458rem;}
+    .foundGroup .mainBox .mainL .blue{background: #4092f4;cursor: pointer;}
   .foundGroup .mainBox .mainL .newBuild{margin-bottom: 3rem;}
-  .foundGroup .mainBox .mainL .newBuild .tit strong{font-size: 1.6rem;padding: 0 .5rem;}
+  .foundGroup .mainBox .mainL .newBuild .tit input{
+    font-size: 1.6rem;
+    border: none;
+    display: none;
+  }
+  .foundGroup .mainBox .mainL .newBuild .tit em{display: inline-block;}
   .foundGroup .mainBox .mainL .newBuild .tit span{color: #4092f4;font-size: 1.145rem;cursor: pointer;}
-  .foundGroup .mainBox .mainL .newBuild .tit i{color: #4092f4;font-size: 1.6rem;cursor: pointer;}
+  .foundGroup .mainBox .mainL .newBuild .tit i{color: #4092f4;font-size: 1.6rem;cursor: pointer;top: 7px;position: relative;}
   .foundGroup .mainBox .mainL .newBuild .groupLeader h3,
   .foundGroup .mainBox .mainL .newBuild .teamMember h3{font-size: 1.354rem; margin: 2rem 0 0.8rem;}
   .foundGroup .mainBox .mainL .newBuild .groupLeader>div,
@@ -312,11 +364,9 @@ export default {
   .foundGroup .mainBox .mainR li img{width: 7rem;height: 7rem;margin-bottom: 1rem;}
   .foundGroup .mainBox .mainR li p{text-align: center;}
 
-
-
  
   .flip-list-move {transition: transform 0.5s;}
   .ghost {opacity: 0.5;background: #c8ebfb;}
-
+ 
 
 </style>

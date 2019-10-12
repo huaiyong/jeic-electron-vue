@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<title></title>
+	</head>
+	<script src="./js/socket.io.js"></script>
+	<script src="./js/rtcClient.js"></script>
+	<style type="text/css">
+		#remoteVideosContainer {
+			width: 100%;
+			height: 100%;
+		}
+
+		#remoteVideosContainer video {
+			width: 100%;
+			height: 100%;
+		}
+	</style>
+	<body style="width:100%;height: 100%;">
+		<div id="remoteVideosContainer"></div>
+	</body>
+	<script type="text/javascript">
+		var zhantaidata = sessionStorage.getItem("zhantai");
+		var zhantaidata = sessionStorage.getItem("resourceId"); //定义全局变量 从url中获取资源Id
+		if (zhantaidata == '' || zhantaidata == null || zhantaidata == undefined) {
+			var resourceUrl = window.location.search;
+			var zhantaiid = resourceUrl.substr(11);
+			var id = zhantaiid;
+		}
+
+		new PeerManager().peerInit(id)
+	</script>
+</html>

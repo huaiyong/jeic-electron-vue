@@ -9,14 +9,14 @@
     <div class="records_cont clearfix">
       <div class="records_type">
         <ul class="clearfix" v-if="recordList">
-          <li v-for="(i,index) in recordList" :key="index" @click="showclassRecord(i.id,i.resourceId,i.resourceUrl,i.type,i.name,i.sendType,i.answerType)">
+          <li v-for="(i,index) in recordList" :key="index" @click="showclassRecord(i.id,i.resourceId,i.resourceUrl,i.type,i.name,i.answerType)">
             <span :class="{'records_img':i.type==2,'records_img':i.type==3,'records_doc':i.type==1,'records_qita':i.type==null}"></span>
             <p class="filetext_title" v-text="i.name"></p>
           </li>
         </ul>
         <div v-if="!recordList" class="tipsall"> 
-        	<img src="../../assets/img/404.png" alt="" />
-          <p class="tipscolor">没有查询到记录</p>
+        	<img src="../../assets/img/ktjl.png" alt="" />
+          <p class="tipscolor">暂无教学记录</p>
         </div>
       </div>
     </div>
@@ -43,7 +43,7 @@
 	    	this.close();
 	    },
 	    jiaoxueXiangQing(data){
-	    	this.showclassRecord(data[0],data[1],data[2],data[3],data[4])
+	    	this.showclassRecord(data[0],data[1],data[2],data[3],data[4],data[6])
 	    }
 	  },
     methods: {
@@ -51,20 +51,14 @@
     		const that = this;
 	      this.$http.get("http://127.0.0.1:3000/jeic/api/sendRecord/findClassRecordByRid?classRecordId=" + this.classRecord).then(function(res) {
 	        if (res.data.ret == 200) { //云试题
-	        	console.log(res.data.data,666)
 	          that.recordList = res.data.data;
-	          console.log(that.recordList,7777);
 	        };
 	      });
     	},
-      showclassRecord(eachRecordId,resourceId,resourceUrl,type,name,sendType,answerType) {
-      	
+      showclassRecord(eachRecordId,resourceId,resourceUrl,type,name,answerType) {      	
 				this.$store.dispatch("getEachRecordId", eachRecordId );	
 				this.$store.dispatch("getResourceId", resourceId );
-      	console.log(eachRecordId,'点击id')
-      	console.log(resourceId,'resourceId');
-      	console.log(sendType,answerType,'type')
-//    	this.$store.dispatch("recordId", eachRecordId);
+				console.log(answerType,'!!!!!!!!!!!!!!!!!')
         this.$router.push({
           name: 'recordDetail',
           params:{
@@ -72,7 +66,6 @@
           	eachRecordId:eachRecordId,
           	resourceUrl:resourceUrl,
           	type:type,
-          	sendType:sendType,
           	answerType:answerType
           }
         });
@@ -192,15 +185,16 @@
     background-size: 100%;
   }
   .tipsall {
-	margin: 2.8rem auto;
+	margin: 4.8rem auto;
 	text-align: center;
 	}
 	.tipsall img{
-		width: 330px;
+		width: 20rem;
 		text-align: center;
 		margin:0 auto;
 	}
 	.tipscolor {
+		margin-top:1rem;
 		font-size: 2.2rem;
 		color: #f6b337;
 	}

@@ -1,9 +1,9 @@
 <template>
 	<div class="zmj_answer">
 		<!--试题内容部分 start-->
-		<div class="zmj_answerTest" v-if="testType==1">
-			<h2>请使用答题器完成以下<span v-text="textDataLength"></span>道题</h2>
-			<ul ref="zmj_answerOption">
+		<div class="zmj_answerTest">
+			<h2 v-show="testType==1">请使用答题器完成以下<span v-text="textDataLength"></span>道题</h2>
+			<ul ref="zmj_answerOption" v-show="testType==1">
 				<li v-for="(item,index) in textData.data" :key="index" v-show="index==showIndex">
 					<div class="zmj_answerBody">
 						<div v-if="item.type=='1'" class="zmj_answerType">判断</div>
@@ -16,16 +16,27 @@
 							<div v-html="i.text"></div>
 						</li>
 					</ol>
+					
 					<div class="stuAnswer" v-if='studentScore[index]'>
 					  <span v-text="studentName"></span>的答案：<span v-text="studentScore[index].answer"></span>
 				    </div>
 				</li>
 			</ul>
-			<div class="zmj_answerTest" v-if="type==2">
-				<img class="wx_imgshowtc" :src="resourceUrl" alt="" />
-			</div>
-			<img src="../../assets/img/boy.png" alt="" class="photoTest" v-if="testType==3">		
-			<div class="zmj_answerItem clearfix">
+			<div v-if="testType==3" class="subjectDetail imgType">
+				<span class="zmj_answerType" v-if="imgType == 1">判断</span>
+				<span class="zmj_answerType" v-if="imgType == 2">单选</span>
+				<span class="zmj_answerType" v-if="imgType == 3">填空</span>
+				<span class="zmj_answerType" v-if="imgType == 4">多选</span>
+				<span class="zmj_answerType" v-if="imgType == 5">阅读理解</span>
+				<span class="zmj_answerType" v-if="imgType == 6">解答</span>
+				<span class="zmj_answerType" v-if="imgType == 7">完形</span>
+				<span class="zmj_answerType" v-if="imgType == 8">材料</span>
+				<img :src="imgUrl" alt="" class="photoTest">
+				<div class="stuAnswer" v-for="(i,index) in studentScore" :key="index" v-if='studentScore[index].answer'>
+					  <span v-text="studentName"></span>的答案：<span v-text="studentScore[index].answer"></span>
+				    </div>
+			</div>	
+			<div class="zmj_answerItem clearfix" v-show="testType==1">
 				<div class="change">
 					<i class="iconfont icon-zuojiantou" @click="prevTest()" v-show="showIndex>0"></i>
 					<span>第<i v-text="showIndex+1"></i>题</span>
@@ -51,7 +62,7 @@
 			<div class="zmj_answerStudentList">
 				<!--全班模式 start-->
 				<ul class="zmj_answerWhole" v-if="!isGroup">
-					<li v-for="(item,index) in remember" :key="index" :class="{'active':isStuActive.indexOf(item.id)!=-1,'stuActive':studentName==item.name}" @click="studentResult(item.id,item.name,'',$event)">
+					<li v-for="(item,index) in remember" :key="index" :class="{'active':isStuActive.indexOf(item.id)!=-1,'stuActive':studentName==item.name}" @click="studentResult(item.id,item.name,$event)">
 						<img v-if="item.sex=='男'" src="../../assets/img/boy.png" alt="">
 						<img v-if="item.sex=='女'" src="../../assets/img/girl.png" alt="">
 						<p v-text="item.name"></p>
@@ -64,14 +75,14 @@
 						<p v-text="i.name"></p>
 						<div class="clearfix"> 
 							<ol class="fl clearfix">
-								<li :class="{'active':isStuActive.indexOf(i.groupLeader.id)!=-1,'stuActive':studentName==i.groupLeader.name}" @click="studentResult(i.groupLeader.id,i.groupLeader.name,i.name,$event)">
+								<li :class="{'active':isStuActive.indexOf(i.groupLeader.id)!=-1,'stuActive':studentName==i.groupLeader.name}" @click="studentResult(i.groupLeader.id,i.groupLeader.name,$event)">
 									<img v-if="i.groupLeader.sex=='男'" src="../../assets/img/boy.png" alt="">
 									<img v-if="i.groupLeader.sex=='女'" src="../../assets/img/girl.png" alt="">
 									<p v-text="i.groupLeader.name"></p>
 								</li>
 							</ol>
 							<ul class=" fl clearfix">
-								<li v-for="item in i.studentList" :key="item.id" :class="{'active':isStuActive.indexOf(item.id)!=-1,'stuActive':studentName==item.name}"  @click="studentResult(item.id,item.name,i.name,$event)">
+								<li v-for="item in i.studentList" :key="item.id" :class="{'active':isStuActive.indexOf(item.id)!=-1,'stuActive':studentName==item.name}"  @click="studentResult(item.id,item.name,$event)">
 									<img v-if="item.sex=='男'" src="../../assets/img/boy.png" alt="">
 									<img v-if="item.sex=='女'" src="../../assets/img/girl.png" alt="">
 									<p v-text="item.name"></p>
@@ -104,19 +115,20 @@
 				showIndex: 0, //默认显示试题下标
 				signRemember: [], //已作答学生列表
 				studentName: "", //学生名字
-				groupName:"", //组名
 				groupStudent: [], //分组学生
 				studentScore:[],//学生成绩
 				resourceId: "", //下发记录ID
 				eachRecordId: this.$route.params.eachRecordId, //资源ID
 				isFirstEnter: false,
 				isStuActive:[],//判断已答题学生
-				type:this.$route.params.type, //类型 1:试题 2:图片
-				sendType:"", //1全班,2分組作答
-				answerType:"", //1組長作答,2全組作答
+				type:this.$route.params.type, //类型 1:试题 3:图片
+//				sendType:"", //1全班,2分組作答
+				answerType:"", //1全班作答 2是组长作答 3是全组作答
 				isGroup:false,//true 分組,false全班
 				resourceUrl:this.$route.params.resourceUrl, //获取img路径
-				teacherImg:'' //老师传的图片
+				teacherImg:'',//老师传的图片
+				changeType:'', //中间变量
+				yuntishiScroll:0 //滚动距离
 			}
 		},
 		computed: {
@@ -126,7 +138,10 @@
 				pattern: state => state.state.pattern,
 				classRecord: state => state.state.classRecord,
 				testType: state => state.state.testType,
-				groupId: state => state.state.groupId
+				groupId: state => state.state.groupId,
+				imgUrl:state => state.state.imgUrl,
+				imgType:state => state.state.imgType,
+				imgAnswer:state => state.state.imgAnswer,
 			})
 
 
@@ -141,10 +156,16 @@
 			big(){
 				this.bigSize();
 			},
-			historyNextQuestion(){
+			yunshitiziyuanScrollshang(data){
+				this.shitiMove(data.name);
+			},
+			yunshitiziyuanScrollxia(data){
+				this.shitiMove(data.name);
+			},
+			nextQuestion(){
 				this.nextTest();
 			},
-			historyLastQuestion(){
+			prevQuestion(){
 				this.prevTest();
 			},
 			testImgLook(){
@@ -163,8 +184,9 @@
 				this.lookSituation(data[0])
 			},
 			checkStuDeail(data){
-				this.studentResult(data[0],data[1])
-			}
+				this.resultDisplay(data[0],data[1])
+			},
+			
 		},
 		methods: {
 			back() {
@@ -176,31 +198,19 @@
 				this.studentScore = []
 			},
 			getTypeData() {
-				this.sendType = this.$route.params.sendType;
 				this.answerType = this.$route.params.answerType;
-				this.$store.dispatch("getSendType", this.sendType );
 				this.$store.dispatch("getAnswerType", this.answerType );
 			},
 			getTextData() { //获取试题
 				this.resourceId = this.$route.params.resourceId;
-				if(this.type==1){
-					console.log('试题')
 					const that = this;
-					console.log(this.resourceId,'reid')
 					this.$http.get(this.configure.resourceIp + '/teacher/import/getQuestionInfo.do?hid=' + this.resourceId).then(
 						function(res) {
 							if (res.data.ret == 200) {
 								that.textData = res.data.data;
 								that.textDataLength = res.data.data.total;
-								
-								console.log(that.textData,that.textDataLength,'~~~~')
 							};
 						});
-				}else{
-					console.log('图片')
-					this.resourceUrl = this.$route.params.resourceUrl;
-					this.teacherImg = this.$route.params.resourceUrl;
-				}
 			},
 			nextTest() { //下一题
 				this.showIndex++;
@@ -216,6 +226,14 @@
 			},
 			bigSize() { //大号字体
 				this.$refs.zmj_answerOption.style.fontSize = "4rem";
+			},
+			shitiMove(direction){
+				if (direction == "yunshitiziyuanScrollshang") {
+					this.yuntishiScroll += 20;
+				} else if (direction == "yunshitiziyuanScrollxia" && this.yuntishiScroll > 0) {
+					this.yuntishiScroll += -20;
+				};
+				$('.subjectDetail').scrollTop(this.yuntishiScroll);
 			},
 			hideStudentList() {
 				$(".zmj_answerTest").animate({
@@ -269,22 +287,20 @@
 			},
 			getStuAnswerList(){
 				this.eachRecordId = this.$route.params.eachRecordId;
-				console.log('abc')
 				var that = this;
-				console.log(this.eachRecordId,'id')
+				if(this.testType=='3' || this.testType=='1'){
+					this.changeType = 1;
+				}else{
+					this.changeType = 2;
+				}
 				this.$http.get(
-"http://localhost:3000/jeic/api/sendRecord/getAnsweredUser?sendRecordId="+this.eachRecordId+"&type="+this.testType).then(function(res) {
-					
-					console.log(res,'获取学生已答题列表')
+"http://localhost:3000/jeic/api/sendRecord/getAnsweredUser?sendRecordId="+this.eachRecordId+"&type="+this.changeType).then(function(res) {
 					if (res.data.ret == 200) {
 						that.signRemember = res.data.data;//获取答题学生的名单
-						
 						that.signRemember.map(function(item){
-							that.isStuActive.push(item.user_id);
-							console.log(that.isStuActive,'A')
+							that.isStuActive.push(item);
+							
 						})
-						console.log(that.signRemember)
-						console.log(that.signRemember.indexOf('3179092d622645cc894183f9b899dbcd'),'分组列表')
 					};
 				});
 			},
@@ -294,51 +310,43 @@
 					res) {
 					if (res.data.ret == 200) {
 						that.groupStudent = res.data.data.userGrouplist;
-						console.log(that.groupStudent,'分组列表')
 					};
 				});
 
 
 			},
-			studentResult(id, name, groupName,event) { //查看某个学生答题结果/
+			studentResult(id, name,event) { //查看某个学生答题结果/
 				if(!$(event.target).hasClass('active')){
-			  	console.log('no active');
 			  	this.error(name + "未答题");
-			  }else{
-			  	console.log('yes active');
-			  	this.resultDisplay(id, name, groupName);
+			 }else{
+			  	this.resultDisplay(id, name);
 			  }	
 			},
-			resultDisplay(id,name,groupName){
+			resultDisplay(id,name){
+				console.log(this.type,'type')
 				this.eachRecordId = this.$route.params.eachRecordId;
-				console.log(id,name,groupName,this.eachRecordId,'参数打印')
 				this.studentName = name;
-				this.groupName=groupName;
-				if(this.type==1){
-					console.log('试题');
+				if(this.type==1 || this.type==3){
 					var that=this;
 					this.$http.get("http://localhost:3000/jeic/api/answerResult/getDataByUserId?recordId="+this.eachRecordId+"&userId="+id).then(function(res){
-						console.log(res,'学生答题情况11')
-						
 						if(res.data.ret==200){
-							  	that.studentScore=res.data.data.list;
-									console.log(that.studentScore,'hahahah')				
-						};
-					});
-				}else{
-					console.log('获取图片地址');
-					var that=this;
-					this.$http.get("http://localhost:3000/jeic/api/studentPad/getStudentBackPicture?stuId="+id+"&classRecordId="+this.classRecord+"&id="+this.eachRecordId).then(function(res){
-						console.log(res.data.data,'获取图片地址')						
-						if(res.data.ret==200){
-							if (res.data.data.length > 0) {
-								that.resourceUrl = res.data.data[0].resourceUrl;
-							} else {
-								that.resourceUrl = teacherImg;
-							};
+							  	that.studentScore=res.data.data.list;		
 						};
 					});
 				}
+//else if(this.testType==3){
+//					var that=this;
+//					this.$http.get("http://localhost:3000/jeic/api/studentPad/getStudentBackPicture?stuId="+id+"&classRecordId="+this.classRecord+"&id="+this.eachRecordId).then(function(res){					
+//						if(res.data.ret==200){
+//							console.log(res,'图片')
+//							if (res.data.data.length > 0) {
+////								that.resourceUrl = res.data.data[0].resourceUrl;
+//							} else {
+////								that.resourceUrl = teacherImg;
+//							};
+//						};
+//					});
+//				}
 			}
 		},
 		activated() {
@@ -346,9 +354,7 @@
 				this.showIndex = 0;
 				this.getTextData();
 				this.getTypeData();
-				console.log(this.sendType,'全班还是分组')
-				console.log(this.answerType,'组长还是全组')
-				if(this.sendType=='1'){
+				if(this.answerType=='1'){
 					this.isGroup = false;
 					this.getStuAnswerList();
 				}else{
@@ -356,8 +362,6 @@
 					this.getStuAnswerList();
 					this.getStudentList();
 				}
-				console.log(this.type,this.resourceUrl,'传递的参数呀~~~~')
-				console.log(this.eachRecordId,'id~~~')
 			};
 			this.$route.meta.reload =true;
 			this.isFirstEnter = false;
@@ -368,7 +372,6 @@
 		},
 		mounted() {
 			this.getStudentList();
-			 console.log(this.pattern,this.remember,'fkdjfkdjk')
 			var that = this;
 			$(".zmj_answerTest").on("click", "img", function() {
 				var imgSrc = $(this).attr("src");
@@ -425,7 +428,7 @@
 	}
 
 	.zmj_answerTest ul img {
-		max-width: 90%;
+		max-width: 89%;
 		height: auto;
 		cursor: pointer;
 	}

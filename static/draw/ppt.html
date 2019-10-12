@@ -231,8 +231,6 @@
     hammertime.add(tap);
     hammertime.on('swipeleft', function(e) {
         //下一页
-        console.log("下一页");
-
         if(clickCount != 0){
             return ;
         }
@@ -241,7 +239,6 @@
     });
     hammertime.on('swiperight', function(e) {
         //上一页
-        console.log("上一页");
         lastpage2();
     });
 
@@ -298,11 +295,9 @@
 
     }
 
-	var ip=sessionStorage.getItem("ip")
-	var socketip="http://"+ip+":3000"
 
     //定义一些初始化数据
-    var socket = io(); //定义socket
+    var socket = io.connect();
     function left() { //点击翻上页
         socket.emit('ppt', {"name": 'lastpage'}); //上一页
     }
@@ -327,7 +322,6 @@
                     $.each(data,function(i,va){
                         data[i] = va.replace(/\/[0-9]+\./,"/"+(i+1)+".");
                     })
-                    console.log(data);
                     $scope.pptImgList = data;
                 }
                 else {
@@ -338,8 +332,6 @@
             }
         });
 
-        console.log(pptsrc)
-        console.log($scope.pptImgList);
         pptLength = $scope.pptImgList.length;
         clickCount = 0;
         $("#pptsrc").attr("src", pptsrc);
@@ -407,7 +399,6 @@
             setTimeout('$(".welcome_user").css("display","none");', 3000);
             return ;
         }
-        console.log("发送下发消息");
         document.getElementById('pptsrc').contentWindow.postMessage(JSON.stringify({
             cmd: 'nextAnim'
         }), '*');
@@ -461,7 +452,6 @@
                 $(".welcome_user").css("display", "block");
                 setTimeout('$(".welcome_user").css("display","none");', 3000);
             }
-            console.log('大屏端PPT页数发生变化 (页数: ' + pptNumber + '    动画数: ' + moreAnim + ')');
             if(initFlag == 0){
                 initFlag = 1;
                 var hammertime = new Hammer.Manager(document.getElementById('padtanceng'));
@@ -476,9 +466,7 @@
 
                 hammertime.on('swipeleft', function(e) {
                     //下一页
-                    console.log("下一页");
                     if(clickCount != 0){
-                        console.log("无效点击处理");
                         return ;
                     }
                     clickCount = 1;
@@ -487,14 +475,11 @@
                 });
                 hammertime.on('swiperight', function(e) {
                     //上一页
-                    console.log("上一页");
                     left();
                 });
 
                 hammertime.on('tap', function(e) {
-                    console.log("下一页");
                     if(clickCount != 0){
-                        console.log("无效点击处理");
                         return ;
                     }
                     clickCount = 1;
@@ -505,7 +490,7 @@
 
         }
 
-        setTimeout('console.log("设置clickCount");clickCount = 0;', 500);
+      setTimeout('console.log("设置clickCount");clickCount = 0;', 500);
 
         // startSync = 0;
     });
@@ -548,7 +533,6 @@
             $(".swiper-container").animate({left:"3000px"});
             flag = 0;
         }
-        console.log("触发去抖");
         $(".imgOpen").show();
     }, 6000))
 
@@ -559,6 +543,5 @@
             flag = 0;
         }
         $(".imgOpen").show();
-        console.log("触发去抖");
     }, 0))
 </script>

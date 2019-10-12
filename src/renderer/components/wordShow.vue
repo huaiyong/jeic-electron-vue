@@ -1,6 +1,6 @@
 <template>
-	<div style="width:100%;height:100%;" class="resouceBg">
-		<iframe :src="url" frameborder="0" style="width:100%;height:100%;"></iframe>
+	<div style="width:100%;height:100%;" class="resouceBg" v-show="wordState">
+		<iframe :src="'http://localhost:3000/static/draw/word.html?resourceId='+this.wordId" frameborder="0" style="width:100%;height:100%;"></iframe>
 		<span class="closefullscreen fr" @click="closeWordtc">
 			<em class="iconfont icon-guanbi1 exitResTc"></em>
 		</span>
@@ -12,15 +12,14 @@
 
 <script>
 	import $ from 'jquery';
+	import {
+		mapState
+	} from "vuex";
 	export default {
 		name: "wordShow",
 		data() {
 			return {
-
-			    url: '',
-
-				resourceWId: '',
-				isFirstEnter: false
+			
 
 			}
 		},
@@ -32,38 +31,25 @@
 				this.closeWordtc()
 			}
 		},
+		computed: {
+			...mapState({
+				wordId: state => state.state.wordId,
+				wordState:state => state.state.wordState
+			})
+		},
 		methods: {
-			getRouterData() {
-				this.resourceWId = this.$route.params.resourceWId;
-				console.log(this.resourceWId,'word id')
-				this.url = "http://localhost:3000/static/draw/word.html?resourceId="+this.$route.params.resourceWId;
-			},
 			closeWordtc() {
-				this.$router.push({
-					"name": "Resourceslist"
-				});
-				sessionStorage.removeItem("resourcewordId");
-				sessionStorage.removeItem("resourceWId");
-				this.isFirstEnter = true;
+				this.$store.dispatch("getWordHave",false);
+				this.$store.dispatch("getWordState",true);
 			},
 			min() {
-				sessionStorage.setItem("resourcewordId", this.resourceId);
+				sessionStorage.setItem("resourcewordId", this.wordId);
 				$(this.$parent.$refs.indexItem).append(
 					"<li id='wordMax'><div><i class='iconfont icon-quanping'></i><p>word</p></div></li>");
-				this.$router.push({
-					"name": "Resourceslist"
-				});
+			   this.$store.dispatch("getWordState",false);
 			}
-		},
-		created() {
-      this.isFirstEnter = true;
-    },
-    activated() {
-      if (this.isFirstEnter) {
-        this.getRouterData();
-      };
-      this.isFirstEnter = false;
-    }
+		}
+	
 
 	}
 </script>

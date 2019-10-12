@@ -4,7 +4,7 @@
 		<div class="studentResultPopup">
 			<h4>学生答题正确率</h4>
 			<div class="studentResultTable">
-				<table v-if="sendType==1 && model==1">
+				<table v-if="answerType==1 && model==1">
 					<thead>
 						<tr>
 							<th>姓名</th>
@@ -31,7 +31,7 @@
 						</tr>
 					</tbody>
 				</table>
-				<table v-if="sendType==2 && answerType==1 && model==2">
+				<table v-if="answerType==2 && model==2">
 					<thead>
 						<tr>
 							<th>组名</th>
@@ -58,7 +58,7 @@
 						</tr>
 					</tbody>
 				</table>
-				<table v-if="sendType==2 && answerType==2 && model==3">
+				<table v-if="answerType==3 && model==3">
 					<thead>
 						<tr>
 							<th>组名</th>
@@ -84,7 +84,7 @@
 						</tr>
 					</tbody>
 				</table>
-				<table v-if="sendType==2 && model==3&&model==2">
+				<table v-if="answerType==2 && answerType==3 && model==3&&model==2">
 					<thead>
 						<tr>
 							<th>组名</th>
@@ -114,6 +114,7 @@
 </template>
 
 <script>
+	import $ from "jquery";
 	import {
 		mapState
 	} from "vuex";
@@ -129,8 +130,17 @@
 		sockets: {
 			closestrscroce(){
 				this.back();
+			},
+			getGroupStudentRange(data){
+				this.getGroupStudentRange(data);
+			},
+			xiaoHongHuaScroll(data){
+				var conheight = $(".studentResultTable").height();
+				$(".studentResultTable").scrollTop(data * conheight * 1.8);
+			},
+			closeStudZhenQueLv(){
+				this.back();
 			}
-			
 		},
 		methods: {
 			back() {
@@ -150,7 +160,6 @@
 				recordId: state => state.state.recordId,
 				model: state => state.state.model,
 				groupId: state => state.state.groupId,
-				sendType:state => state.state.sendType,
 				answerType:state => state.state.answerType	
 			})
 		},
@@ -158,11 +167,9 @@
 			var that = this
 			this.$http.get("http://127.0.0.1:3000/jeic/api/answerResult/getDataGroupByUser?recordId=" + this.recordId +
 				'&type=' + this.model + "&teachinggroupId=" + this.groupId).then(function(res) {
-				console.log(res)
 				that.names = res.data.data.answerResultList;
 				that.names.forEach(function(i,v){
 					var ratio = parseFloat(i.accuracy * 100).toFixed(2);
-					console.log(ratio)
 					if (0 <= ratio && ratio < 20) {
 						i.star = 0;
 					} else if (20 <= ratio && ratio < 40) {

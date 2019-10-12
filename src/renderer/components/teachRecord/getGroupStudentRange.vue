@@ -44,6 +44,7 @@
 </template>
 
 <script>
+	import $ from "jquery";
 	import {
 		mapState
 	} from "vuex";
@@ -56,21 +57,30 @@
 				stulist:false
 			}
 		},
+		sockets: {
+			closestrscroce(){
+				this.back();
+			},
+			xiaoHongHuaScroll(data){
+				var conheight = $(".studentResultTable").height();
+				$(".studentResultTable").scrollTop(data * conheight * 1.8);
+			},
+			closeGroupStudentRange(){
+				this.back();
+			}
+		},
 		methods: {
 			back() {
 				this.$router.back();
 			},
 			getParams() {
 				var routerParams = this.$route.params.id; // 取到路由带过来的参数 
-				console.log()
 				var that = this
 				this.$http.get("http://127.0.0.1:3000/jeic/api/answerResult/getDataGroupByUser?recordId=" + this.recordId +
 					'&type=' + this.model + "&teachinggroupId=" + this.groupId+'&usergroupId='+routerParams).then(function(res) {
-					console.log(res)
 					that.names = res.data.data.answerResultList[0].userList;
 					that.names.forEach(function(i,v){
 						var ratio = parseFloat(i.accuracy * 100).toFixed(2);
-						console.log(ratio)
 						if (0 <= ratio && ratio < 20) {
 							i.star = 0;
 						} else if (20 <= ratio && ratio < 40) {

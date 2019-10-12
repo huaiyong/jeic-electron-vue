@@ -8,15 +8,25 @@
 </template>
 
 <script>
+	
+	import {
+			mapState
+		} from "vuex";
 
 	export default{
 		name:"Draw",
+		sockets: {
+			closeDraw(){
+				this.back()
+			}
+		},
 		methods:{
 			back:function(){
-				this.$router.back();
+				this.$router.push({
+					"name": "Index"
+				});
 			}
 		}
-
 	}
 </script>
 

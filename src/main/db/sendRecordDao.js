@@ -25,10 +25,10 @@ function insertRecordStu(obj,creatuuid) {
 }
 
 // 添加学生答题表
-function insertAnswerResult(obj,user,trueAnswer,creatuuid,startDate) {
-	var sql="INSERT INTO answer_result(class_record_id,record_id,user_id,device_id,realname,resource_id,datamark,answer,true_answer,result,score,type,option_number,create_date) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?);";
+function insertAnswerResult(id,obj,user,trueAnswer,creatuuid,startDate) {
+	var sql="INSERT INTO answer_result(id,class_record_id,record_id,user_id,device_id,realname,resource_id,datamark,answer,true_answer,result,score,type,option_number,create_date) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);";
     let answerResultStmt = DB.prepare(sql);
-	answerResultStmt.run([obj.classRecordId, creatuuid, user.userId,user.deviceName,user.realname,obj.resource_id, trueAnswer.order,null,trueAnswer.answer,null,trueAnswer.score,trueAnswer.type, trueAnswer.option.length,startDate]);
+	answerResultStmt.run([id,obj.classRecordId, creatuuid, user.userId,user.deviceName,user.realname,obj.resource_id, trueAnswer.order,null,trueAnswer.answer,null,trueAnswer.score,trueAnswer.type, trueAnswer.option.length,startDate]);
 	answerResultStmt.finalize();
 }
 
@@ -37,7 +37,6 @@ function insertAnswer(list,res) {
     DB.serialize(function (err, result) {
     	DB.run('BEGIN');
     	for(var i=0;i < list.length;i++) {
-    		console.log(sql);
     		let stmt = DB.prepare(sql);
 		    stmt.run(list[i].fullId,list[i].recordId,list[i].deviceId,list[i].datamark,list[i].data,list[i].result);
 		    stmt.finalize();
@@ -51,26 +50,60 @@ function insertAnswer(list,res) {
     });
 }
 
-function insertAnswer2(answer) {
-	var sql="INSERT INTO answer(full_id,record_id,device_id,datamark,data,result) VALUES (?,?,?,?,?,?);";
-    DB.serialize(function (err, result) {
-    	DB.run('BEGIN');
-    		let stmt = DB.prepare(sql);
-		    stmt.run(answer.fullId,answer.recordId,answer.deviceId,answer.datamark,answer.data,answer.result);
-		    stmt.finalize();
-    	DB.run('COMMIT');
-    });
+function insertAnswer2(answerList) {
+	var sql="INSERT INTO answer(full_id,record_id,device_id,datamark,data,result) VALUES ";
+//	(?,?,?,?,?,?);";
+//  DB.serialize(function (err, result) {
+//  	DB.run('BEGIN');
+//  		let stmt = DB.prepare(sql);
+//		    stmt.run(answer.fullId,answer.recordId,answer.deviceId,answer.datamark,answer.data,answer.result);
+//		    stmt.finalize();
+//  	DB.run('COMMIT');
+//  });
+	for(var i = 0; i < answerList.length; i++) {
+		var full_id = answerList[i].full_id;
+		var record_id = answerList[i].record_id;
+		var device_id = answerList[i].device_id;
+		var datamark = answerList[i].datamark;
+		var data = answerList[i].data;
+		var result = answerList[i].result;
+		//循环插入学生数据信息
+		//DB.run(sql, userId, realname, sex, device,jsonObj.officeName, jsonObj.gradeName,jsonObj.classId, jsonObj.className);
+		if((i+1) == answerList.length){
+			sql += "('"+full_id+"','"+record_id+"','"+device_id+"','"+datamark+"','"+data+"','"+result+"')";
+		}else{
+			sql += "('"+full_id+"','"+record_id+"','"+device_id+"','"+datamark+"','"+data+"','"+result+"'),";
+		}
+	}
+	DB.run(sql);
 }
 
-function insertPadAnswer(answer) {
-	var sql="INSERT INTO pad_answer(full_id,record_id,user_id,qid,data,result) VALUES (?,?,?,?,?,?);";
-    DB.serialize(function (err, result) {
-    	DB.run('BEGIN');
-    		let stmt = DB.prepare(sql);
-		    stmt.run(answer.fullId,answer.recordId,answer.userId,answer.qid,answer.data,answer.result);
-		    stmt.finalize();
-    	DB.run('COMMIT');
-    });
+function insertPadAnswer(answerList) {
+	var sql="INSERT INTO pad_answer(full_id,record_id,user_id,qid,data,result) VALUES ";
+//	(?,?,?,?,?,?);";
+//  DB.serialize(function (err, result) {
+//  	DB.run('BEGIN');
+//  		let stmt = DB.prepare(sql);
+//		    stmt.run(answer.fullId,answer.recordId,answer.userId,answer.qid,answer.data,answer.result);
+//		    stmt.finalize();
+//  	DB.run('COMMIT');
+//  });
+	for(var i = 0; i < answerList.length; i++) {
+		var full_id = answerList[i].full_id;
+		var record_id = answerList[i].record_id;
+		var user_id = answerList[i].device_id;
+		var qid = answerList[i].qid;
+		var data = answerList[i].data;
+		var result = answerList[i].result;
+		//循环插入学生数据信息
+		//DB.run(sql, userId, realname, sex, device,jsonObj.officeName, jsonObj.gradeName,jsonObj.classId, jsonObj.className);
+		if((i+1) == answerList.length){
+			sql += "('"+full_id+"','"+record_id+"','"+user_id+"','"+qid+"','"+data+"','"+result+"')";
+		}else{
+			sql += "('"+full_id+"','"+record_id+"','"+user_id+"','"+qid+"','"+data+"','"+result+"'),";
+		}
+	}
+	DB.run(sql);
 }
 
 //获取抢答结果
@@ -84,8 +117,11 @@ function getRushAnswered(param,type,teachinggroupId,callback){
 }
 
 //根据课堂id查询下发列表
-function findSendRecord(classRecordId,callback) {
+function findSendRecord(classRecordId,userId,callback) {
   var sql="select * FROM send_record WHERE class_record_id ='"+classRecordId+"'";
+  if(userId!=undefined&&userId!=""){
+  	sql = "SELECT a.* FROM send_record AS a JOIN record_stu AS b ON a.id = b.record_id WHERE class_record_id = '"+classRecordId+"' AND b.user_id = '"+userId+"'"
+  }
   logger.info(sql);
   conn.queryData(sql,callback);
 }
@@ -98,7 +134,7 @@ function getAnsweredUser(classRecordId,callback) {
 
 //获取课堂记录里已答题的用户
 function getAnsweredUserBy(classRecordId,callback) {
-  var sql="select DISTINCT stu_id FROM class_stu_back WHERE send_record_id ='"+classRecordId+"'";
+  var sql="select DISTINCT stu_id FROM student_back_picture WHERE send_record_id ='"+classRecordId+"'";
   logger.info(sql);
   conn.queryData(sql,callback);
 }

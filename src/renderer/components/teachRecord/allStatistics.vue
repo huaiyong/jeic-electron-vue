@@ -1,11 +1,9 @@
 <template>
 	<div class="wrapper">
-
-		<!-- 		<router-link :to="{name:'AnswerDetails'}">学生统计</router-link> -->
 		<div class="getClasstjtc">
 			<div class="tcContent">
 				<!-- 分组选择左侧栏 -->
-				<div class="fzleft" v-if="sendType==2&&answerType==2&&model==3">
+				<div class="fzleft" v-if="answerType==3&&model==3">
 					<p>
 						<button v-bind:class="{ active:cancelbtn==true}" v-on:click="allClass(0)" >全部</button>
 					</p>
@@ -15,7 +13,7 @@
 				</div>
 				<div class="menberight">
 					<!-- 班级答题统计 -->
-					<div class="pingjuntrue" v-if="sendType=='1'&&model!=3">
+					<div class="pingjuntrue" v-if="answerType=='1'&&model!=3">
 						<ul class="banjiuldati">
 							<li>测试平均正确率：
 								<p class="pingjunzitiset">{{averagelv2}}%</p>
@@ -24,7 +22,7 @@
 							<li>未答题：<span></span>{{notTheAnswerCount}}人</li>
 						</ul>
 					</div>
-					<div class="pingjuntrue" v-if="sendType=='2'&&answerType=='1'&&model!=3">
+					<div class="pingjuntrue" v-if="answerType=='2'&&model!=3">
 						<ul class="banjiuldati">
 							<li>测试平均正确率：
 								<p class="pingjunzitiset">{{averagelv2}}%</p>
@@ -33,8 +31,18 @@
 							<li>未答题组数：<span></span>{{notTheAnswerCount}}</li>
 						</ul>
 					</div>
-					<!-- 班级答题统计 -->
-					<div class="pingjuntrue"   v-if="sendType=='2'&&answerType=='2'&&model==3">
+					<!-- 班级答题统计 全组模式 点击全部 -->
+					<div class="pingjuntrue" v-if="answerType=='3'&&model==3&&allGroupChecked">
+						<ul class="banjiuldati">
+							<li>测试平均正确率：
+								<p class="pingjunzitiset">{{averagelv2}}%</p>
+							</li>
+							<li>已答题：<span></span>{{haveTheAnswerCount}}人</li>
+							<li>未答题：<span></span>{{notTheAnswerCount}}人</li>
+						</ul>
+					</div>
+					<!-- 班级答题统计 全组模式 点击组名-->
+					<div class="pingjuntrue" v-if="answerType=='3'&&model==3&&!allGroupChecked">
 						<ul class="banjiuldati">
 							<li>测试平均正确率：
 								<p class="pingjunzitiset">{{averagelv2}}%</p>
@@ -88,6 +96,7 @@
 </template>
 
 <script>
+	import $ from "jquery";
 	import {
 		mapState
 	} from "vuex";
@@ -106,7 +115,8 @@
 				notTheAnswerCount:0,
 			  text:this.$route.params.text,
 				notTheAnswerCount:0,
-				usergroupId:''
+				usergroupId:'',
+				allGroupChecked:false
 			}
 		},
 		computed: {
@@ -115,23 +125,35 @@
 				pattern: state => state.state.pattern,
 				model: state => state.state.model,
 				groupId: state => state.state.groupId,
-				sendType:state => state.state.sendType,
 				answerType:state => state.state.answerType,
 				eachRecordId:state => state.state.eachRecordId
 			})
 		},
 		sockets: {
-			showTable(){
+			showTable() {
 				this.switchTab()
 			},
-			tihao(data){
+			showPic() {
+				this.switchTab()
+			},
+			tihao(data) {
 				this.getQuestionNum(data)
 			},
-			closeInfoWindow(){
+			closeInfoWindow() {
 				this.back()
 			},
-			watchStudetail(){
+			watchStudetail() {
 				this.rankingStatistics()
+			},
+			chakanzongchengjiScroll(data) {
+				var conheight = $(".paichangetable").height();
+				$(".paichangetable").scrollTop(data * conheight * 1.8);
+			},
+			allGroup(){
+				this.allClass();
+			},
+			checkGroup(data){
+				this.addClass(data[0],data[1])
 			}
 			
 		},
@@ -143,9 +165,9 @@
 				  this.cancelbtn=false;
 				  this.current=index;
 				  this.usergroupId=id;
+				  this.allGroupChecked=false;
 				  var that=this;
 				  this.$http.get("http://localhost:3000/jeic/api/answerResult/getAnswerByRecordId?recordId="+this.eachRecordId+'&type=1'+'&teachinggroupId='+this.groupId+'&usergroupId='+id).then(function(res) {
-				  	console.log(res)
 				  	var tishuliangnum=[];
 				  	var banjibaifenbi=[];
 				  	var averagelv=0
@@ -160,7 +182,6 @@
 				  	that.displayChart(tishuliangnum,banjibaifenbi)
 				  });
 				  this.$http.get("http://127.0.0.1:3000/jeic/api/answerResult/getDataGroupByUser?recordId="+this.eachRecordId+'&type='+this.model+'&usergroupId='+id+'&teachinggroupId='+this.groupId).then(function(res) {
-				  	console.log(res,'已答题认识')
 				  	that.haveTheAnswerCount = res.data.data.haveTheAnswerCount
 				  	that.notTheAnswerCount = res.data.data.notTheAnswerCount
 				  });
@@ -171,9 +192,9 @@
 				this.cancelbtn=true;
 				this.current=-1;
 				this.usergroupId=id;
+				this.allGroupChecked=true;
 				var that=this;
 				this.$http.get("http://localhost:3000/jeic/api/answerResult/getAnswerByRecordId?recordId="+this.eachRecordId+'&type=1'+'&teachinggroupId='+this.groupId).then(function(res) {
-					console.log(res)
 					var tishuliangnum=[];
 					var banjibaifenbi=[];
 					var averagelv=0
@@ -190,7 +211,6 @@
 				
 				// 获取已答题和未答题人数
 				this.$http.get("http://127.0.0.1:3000/jeic/api/answerResult/getDataGroupByUser?recordId="+this.eachRecordId+'&type='+this.model+'&teachinggroupId='+this.groupId).then(function(res) {
-					console.log(res,'已答题认识')
 					that.haveTheAnswerCount = res.data.data.haveTheAnswerCount
 					that.notTheAnswerCount = res.data.data.notTheAnswerCount
 				});
@@ -210,9 +230,18 @@
 				})
 			},
 			rankingStatistics: function() {
-				this.$router.push({
-					name: 'recordRankingStatistics',
-				})
+				if(this.usergroupId==""){
+					this.$router.push({
+						name: 'rankingStatistics',
+					})
+				}else{
+					this.$router.push({
+						name: 'getGroupStudentRange',
+						params: {
+							id: this.usergroupId
+						},
+					})
+				}
 			},
 			//chart图表
 			displayChart: function(dataX,dataY) {
@@ -273,7 +302,6 @@
 				myChart.setOption(option);
 				var that=this;
 				myChart.on('click', function(params) {
-					console.log()
 					that.$router.push({
 						name: 'recordSingleStatistics',
 						params: {
@@ -284,10 +312,8 @@
 			}
 		},
 		created() {
-			console.log('课堂记录的allstatistics.vue')
 			var that=this;
 			this.$http.get("http://localhost:3000/jeic/api/answerResult/getAnswerByRecordId?recordId="+this.eachRecordId+'&type=1'+'&teachinggroupId='+this.groupId).then(function(res) {
-				console.log(res)
 				var tishuliangnum=[];
 				var banjibaifenbi=[];
 				var averagelv=0
@@ -307,24 +333,17 @@
 				res) {
 				if (res.data.ret == 200) {
 					that.groupStudent = res.data.data.userGrouplist;
-					console.log(res.data)
 				};
 			});
 			
 			// 获取已答题和未答题人数
 			this.$http.get("http://127.0.0.1:3000/jeic/api/answerResult/getDataGroupByUser?recordId="+this.eachRecordId+'&type='+this.model+'&teachinggroupId='+this.groupId).then(function(res) {
-				console.log(res,'已答题认识')
 				that.haveTheAnswerCount = res.data.data.haveTheAnswerCount
 				that.notTheAnswerCount = res.data.data.notTheAnswerCount
 			});
 		},
 		mounted() {
 			this.displayChart()
-			
-			console.log(this.text,'text')
-			console.log(this.eachRecordId,'id')
-			console.log(this.sendType,'sendType');
-			console.log(this.answerType,'answerType')
 		}
 	}
 </script>

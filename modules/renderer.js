@@ -4,11 +4,8 @@
 const ffi$1 = require("ffi");
 const AnswerResult = require('../src/main/entity/AnswerResult');
 
-var signUser = "已签到用户设备号：";
-var answerUser = "已答题用户：";
-
 let iModeType;			// 答题器状态
-let userMap = {};
+global.userMap = {};
 global.answer = {};		//答题记录设备的全局变量
 global.answerList = [];		//答题记录设备的全局变量
 global.winner = [];		//答题记录设备的全局变量
@@ -140,11 +137,9 @@ function voteCallBack(iBaseID, iMode, sInfo) {
 }
 
 function keyCallBack(BaseID,KeyID,KeySN,iMode,Time,sInfo) {
-    signUser = signUser+"**"+KeySN;
 
     if(iModeType==1){
-        answerUser = answerUser+KeySN+"-->"+sInfo+"@@";
-        userMap[KeySN] = KeySN;
+        global.userMap[KeySN] = KeySN;
     }else if(iModeType==14){	//答题状态下记录答题的设备
         global.answer[KeySN] = KeySN;
         //存储答题信息
@@ -157,7 +152,10 @@ function keyCallBack(BaseID,KeyID,KeySN,iMode,Time,sInfo) {
 	        global.answerList.push(answerResult);
         }
     }else if(iModeType==13){
-        global.winner.push(KeySN);
+    	if(global.winner.length==0){
+    		global.winner.push(KeySN);
+    	}
+        
     }
 
     console.log("keyCallBack--: BaseID:"+BaseID+" KeyID :"+KeyID +"KeySN"+KeySN+ " BaseMode:"+ iMode +" Time:"+Time +" sInfo:" +sInfo);
@@ -233,16 +231,14 @@ process.on('exit', function() {
 
 //开始签到
 exports.signinStart = function() {
-//	signUser = "已签到用户设备号：";
-//	signUser = "已答题用户：";
-	userMap = {};
+	global.userMap = {};
     var i = libSunVoteSDK.VoteStart2(1,"1","1");
     return i;
 }
 // 获取签到结果
 exports.getSignin = function() {
     const userList = [];
-    for(var key in userMap){
+    for(var key in global.userMap){
         userList.push(key);
     }
     return userList;
@@ -259,9 +255,6 @@ exports.answerStart = function(voteType,answerStarParam) {
     global.answerList = [];
     global.padAnswerList = [];		// 添加到全局变量缓存中  结束下发使用
 	global.padAnswerUserList = [];	
-    signUser = "已签到用户设备号：";
-    signUser = "已答题用户：";
-//	var i =  libSunVoteSDK.VoteStart2(1,14,"5,1,1,0:4")
     var i =  libSunVoteSDK.VoteStart2(1,voteType,answerStarParam);
     return i;
 }
@@ -278,8 +271,6 @@ exports.getAnswer = function() {
 //开始抢答
 exports.startRushAnswer = function(voteType,answerStarParam) {
     global.winner = [];
-    signUser = "已签到用户设备号：";
-    signUser = "已答题用户：";
     var i = libSunVoteSDK.VoteStart(voteType,answerStarParam);
     return i;
 }

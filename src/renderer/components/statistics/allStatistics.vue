@@ -24,6 +24,7 @@
 							<li>未答题：<span></span>{{notTheAnswerCount}}人</li>
 						</ul>
 					</div>
+					<!-- 班级答题统计 组长模式-->
 					<div class="pingjuntrue" v-if="!pattern&&model!=3">
 						<ul class="banjiuldati">
 							<li>测试平均正确率：
@@ -33,8 +34,18 @@
 							<li>未答题组数：<span></span>{{notTheAnswerCount}}</li>
 						</ul>
 					</div>
-					<!-- 班级答题统计 -->
-					<div class="pingjuntrue" v-if="!pattern&&model==3">
+					<!-- 班级答题统计 全组模式 点击全部 -->
+					<div class="pingjuntrue" v-if="!pattern&&model==3&&allGroupChecked">
+						<ul class="banjiuldati">
+							<li>测试平均正确率：
+								<p class="pingjunzitiset">{{averagelv2}}%</p>
+							</li>
+							<li>已答题：<span></span>{{haveTheAnswerCount}}人</li>
+							<li>未答题：<span></span>{{notTheAnswerCount}}人</li>
+						</ul>
+					</div>
+					<!-- 班级答题统计 全组模式 点击组名-->
+					<div class="pingjuntrue" v-if="!pattern&&model==3&&!allGroupChecked">
 						<ul class="banjiuldati">
 							<li>测试平均正确率：
 								<p class="pingjunzitiset">{{averagelv2}}%</p>
@@ -88,12 +99,13 @@
 </template>
 
 <script>
+	import $ from "jquery";
 	import {
 		mapState
 	} from "vuex";
 
 	export default {
-		name: "AnswerStatistics",
+		name: "allStatistics",
 		data() {
 			return {
 				current: -1,
@@ -108,7 +120,8 @@
 				eachRecordId: this.$route.params.id,
 				notTheAnswerCount: 0,
 				usergroupId: '',
-				changeId: ''
+				changeId: '',
+				allGroupChecked:false
 			}
 		},
 		computed: {
@@ -136,8 +149,14 @@
 				this.rankingStatistics()
 			},
 			chakanzongchengjiScroll(data) {
-				var conheight = $(".paichangetable").height();
-				$(".paichangetable").scrollTop(data * conheight * 1.8);
+				var conheight = $(".studentScoce").height();
+				$(".paichangetable").scrollTop(data *conheight);
+			},
+			allGroup(){
+				this.allClass();
+			},
+			checkGroup(data){
+				this.addClass(data[0],data[1])
 			}
 		},
 		methods: {
@@ -148,10 +167,11 @@
 				this.cancelbtn = false;
 				this.current = index;
 				this.usergroupId = id;
+				this.allGroupChecked=false;
 				var that = this;
 				this.$http.get("http://localhost:3000/jeic/api/answerResult/getAnswerByRecordId?recordId=" + this.changeId +
 					'&type=1' + '&teachinggroupId=' + this.groupId + '&usergroupId=' + id).then(function(res) {
-					console.log(res)
+				
 					var tishuliangnum = [];
 					var banjibaifenbi = [];
 					var averagelv = 0
@@ -167,21 +187,22 @@
 				});
 				this.$http.get("http://127.0.0.1:3000/jeic/api/answerResult/getDataGroupByUser?recordId=" + this.changeId +
 					'&type=' + this.model + '&usergroupId=' + id + '&teachinggroupId=' + this.groupId).then(function(res) {
-					console.log(res, '已答题认识')
+				
 					that.haveTheAnswerCount = res.data.data.haveTheAnswerCount
 					that.notTheAnswerCount = res.data.data.notTheAnswerCount
 				});
 
 			},
 
-			allClass: function(id) { //点击全部
+			allClass: function() { //点击全部
 				this.cancelbtn = true;
 				this.current = -1;
-				this.usergroupId = id;
+				this.usergroupId = "";
+				this.allGroupChecked=true;
 				var that = this;
 				this.$http.get("http://localhost:3000/jeic/api/answerResult/getAnswerByRecordId?recordId=" + this.changeId +
 					'&type=1' + '&teachinggroupId=' + this.groupId).then(function(res) {
-					console.log(res)
+					
 					var tishuliangnum = [];
 					var banjibaifenbi = [];
 					var averagelv = 0
@@ -199,7 +220,7 @@
 				// 获取已答题和未答题人数
 				this.$http.get("http://127.0.0.1:3000/jeic/api/answerResult/getDataGroupByUser?recordId=" + this.changeId +
 					'&type=' + this.model + '&teachinggroupId=' + this.groupId).then(function(res) {
-					console.log(res, '已答题认识')
+					
 					that.haveTheAnswerCount = res.data.data.haveTheAnswerCount
 					that.notTheAnswerCount = res.data.data.notTheAnswerCount
 				});
@@ -208,7 +229,7 @@
 
 			//切换btn柱状图的班级图表
 			switchTab: function() {
-				console.log(this.changeTab)
+				
 				this.changeTab = !this.changeTab;
 			},
 			getQuestionNum: function(num) {
@@ -220,9 +241,19 @@
 				})
 			},
 			rankingStatistics: function() {
-				this.$router.push({
-					name: 'rankingStatistics',
-				})
+				if(this.usergroupId==""){
+					this.$router.push({
+						name: 'rankingStatistics',
+					})
+				}else{
+					this.$router.push({
+						name: 'getGroupStudentRange',
+						params: {
+							id: this.usergroupId
+						},
+					})
+				}
+				
 			},
 			//chart图表
 			displayChart: function(dataX, dataY) {
@@ -283,7 +314,7 @@
 				myChart.setOption(option);
 				var that = this;
 				myChart.on('click', function(params) {
-					console.log()
+					
 					that.$router.push({
 						name: 'singleStatistics',
 						params: {
@@ -297,10 +328,10 @@
 			var that = this;
 			if (this.text) {
 				this.changeId = this.eachRecordId;
-				console.log(this.changeId, 'gaibian2')
+				
 			} else {
 				this.changeId = this.recordId;
-				console.log(this.changeId, 'gaibian1')
+			
 			}
 			this.$http.get("http://localhost:3000/jeic/api/answerResult/getAnswerByRecordId?recordId=" + this.changeId +
 				'&type=1' + '&teachinggroupId=' + this.groupId).then(function(res) {
@@ -322,24 +353,24 @@
 			//获取分组学生
 			this.$http.get("http://127.0.0.1:3000/jeic/api/teachingGroup/" + this.groupId).then(function(
 				res) {
+					console.log(res)
 				if (res.data.ret == 200) {
 					that.groupStudent = res.data.data.userGrouplist;
-					console.log(res.data)
+					
 				};
 			});
 
 			// 获取已答题和未答题人数
 			this.$http.get("http://127.0.0.1:3000/jeic/api/answerResult/getDataGroupByUser?recordId=" + this.changeId + '&type=' +
 				this.model + '&teachinggroupId=' + this.groupId).then(function(res) {
-				console.log(res, '已答题认识')
+				
 				that.haveTheAnswerCount = res.data.data.haveTheAnswerCount
 				that.notTheAnswerCount = res.data.data.notTheAnswerCount
 			});
 		},
 		mounted() {
 			this.displayChart()
-			console.log(this.text, 'text')
-			console.log(this.eachRecordId, 'id')
+		
 		}
 	}
 </script>
@@ -472,7 +503,7 @@
 
 	.pingjunzitiset {
 		text-align: center;
-		font-size: 4.8rem;
+		font-size: 3.6rem;
 		font-weight: bold;
 		color: #FFC107;
 		margin: 2rem 0;

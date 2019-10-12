@@ -2,13 +2,13 @@
 	<div class="wrapper">
 		<div class="resouceBg">
 			<div class="imgZoom">
-				<button type="button" class="iconfont icon-fangda" @click="imgChange('big')"></button>
-				<button type="button" class="iconfont icon-suoxiao1" @click="imgChange('small')"></button>
+				<button type="button" class="iconfont icon-fangda" @click="imgChange('imgBig')"></button>
+				<button type="button" class="iconfont icon-suoxiao1" @click="imgChange('imgSmall')"></button>
 				<button type="button" class="iconfont icon-xuanzhuan" @click="revolve"></button>
-				<button type="button" class="iconfont icon-xiangzuo" @click="displacement('left')"></button>
-				<button type="button" class="iconfont icon-xiangyou" @click="displacement('right')"></button>
-				<button type="button" class="iconfont icon-xiangshang" @click="displacement('top')"></button>
-				<button type="button" class="iconfont icon-xiangxia" @click="displacement('bottom')"></button>
+				<button type="button" class="iconfont icon-xiangzuo" @click="displacement('imgLeft')"></button>
+				<button type="button" class="iconfont icon-xiangyou" @click="displacement('imgRight')"></button>
+				<button type="button" class="iconfont icon-xiangshang" @click="displacement('imgTop')"></button>
+				<button type="button" class="iconfont icon-xiangxia" @click="displacement('imgBottom')"></button>
 			</div>
 			<div class="contentBox  clearfix imgTransform" style="text-align:center;">
 				<img class="imgshowtc" :src="imgsrc" alt="" id="imgshowtc" style="max-width: 100%;max-height: 100%;"/>
@@ -59,11 +59,11 @@
 			closeimgtc() {
 			    this.back();
 			},
-			imgZoom() {
-				this.imgChange(data[0]);
+			imgZoom(data) {
+				this.imgChange(data);
 			},
-			imgMove() {
-				this.displacement(data[0]);
+			imgMove(data) {
+				this.displacement(data);
 			},
 			imgRotate() {
 				this.revolve();
@@ -117,21 +117,21 @@
 				}, 1000);
 			},
 			imgChange(num) { //缩放图片
-				if (num == "big") {
+				if (num == "imgBig") {
 					this.imgZoomRate += 0.2;
-				} else if (num == "small" && this.imgZoomRate >= 0.4) {
+				} else if (num == "imgSmall" && this.imgZoomRate >= 0.4) {
 					this.imgZoomRate += -0.2;
 				};
 				$(".imgTransform").css("transform", 'scale(' + this.imgZoomRate + ')');
 			},
 			displacement(direction) {
-				if (direction == "left") {
+				if (direction == "imgLeft") {
 					this.crosswise += -40;
-				} else if (direction == "right") {
+				} else if (direction == "imgRight") {
 					this.crosswise += 40;
-				} else if (direction == "top") {
+				} else if (direction == "imgTop") {
 					this.lengthways += -40;
-				} else if (direction == "bottom") {
+				} else if (direction == "imgBottom") {
 					this.lengthways += 40;
 				};
 				$("#imgshowtc").css("margin-left", this.crosswise + "px");

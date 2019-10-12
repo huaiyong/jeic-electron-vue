@@ -4,42 +4,42 @@
  */
 const db = require('./db').getdb();
 const conn = require('./db');
-const start = require("./startClassdb");
-
+//const start = require("./startClassdb");
+//
 function saveSignin(req,type,userList,res) {
-	
-	var sql = "INSERT INTO signin(class_record_id,user_id,realname,sex,device_id,type) VALUES (?,?,?,?,?,?);";
-	db.serialize(function(err){
-		db.run('BEGIN');
-		var stmt = db.prepare(sql);
-		start.findStuList(req, function(rows) {
-			if(rows.length > 0) {
-				for(var sltuList of rows) {
-					var sltuType = 0;
-					for(var i = 0;i < userList.length;i++) {
-						if(type == 1) {
-							if(sltuList.device == userList[i]) {
-								sltuType = 1;
-							}
-						}
-						if(type == 2){
-							if(sltuList.id == userList[i]) {
-								sltuType = 1;
-							}
-						}
-					}
-					stmt.run(sltuList.id,sltuList.id,sltuList.name,sltuList.sex,sltuList.device,sltuType);
-				}
-				stmt.finalize();
-			}
-		});
-	  	db.run('COMMIT');
-	    if(err){
-	    	return res.json({err_code: 0, msg: '保存失败', affectedRows: 0})
-	    }else{
-	        return res.json({err_code: 0, msg: '保存成功', affectedRows: 0})
-	    }
-    });
+//	
+//	var sql = "INSERT INTO signin(class_record_id,user_id,realname,sex,device_id,type) VALUES (?,?,?,?,?,?);";
+//	db.serialize(function(err){
+//		db.run('BEGIN');
+//		var stmt = db.prepare(sql);
+//		start.findStuList(req, function(rows) {
+//			if(rows.length > 0) {
+//				for(var sltuList of rows) {
+//					var sltuType = 0;
+//					for(var i = 0;i < userList.length;i++) {
+//						if(type == 1) {
+//							if(sltuList.device == userList[i]) {
+//								sltuType = 1;
+//							}
+//						}
+//						if(type == 2){
+//							if(sltuList.id == userList[i]) {
+//								sltuType = 1;
+//							}
+//						}
+//					}
+//					stmt.run(sltuList.id,sltuList.id,sltuList.name,sltuList.sex,sltuList.device,sltuType);
+//				}
+//				stmt.finalize();
+//			}
+//		});
+//	  	db.run('COMMIT');
+//	    if(err){
+//	    	return res.json({err_code: 0, msg: '保存失败', affectedRows: 0})
+//	    }else{
+//	        return res.json({err_code: 0, msg: '保存成功', affectedRows: 0})
+//	    }
+//  });
 }
 
 

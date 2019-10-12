@@ -23,7 +23,6 @@ router.post('', function(req, res, next) {
 		let obj;
 		if (req.body) {
 			obj = req.body.GroupData;
-			console.log(obj);
 		}else {
 			returnMsgUtil.returnMsg(res,400,'请传参数！',null)
 		}
@@ -85,6 +84,13 @@ router.put('', function(req, res, next) {
 	}
 	//var id = obj.id;
 	var teachingGroupId = obj.id;
+	//更新分组名字
+	var userGroup = new UserGroup();
+	userGroup.id = teachingGroupId;
+	userGroup.name = obj.name;
+	DB.updateUserGroupById(userGroup,function (rows) {
+		
+	})
 	DB.findUserGroupById(teachingGroupId,function (rows) {
 		var list = [];
 		if(rows.length > 0){
@@ -208,8 +214,6 @@ router.get('/:id', function(req, res, next) {
 			teachingGroupMap["class_id"]=teachingGroupClassId;
 			teachingGroupMap["subject_id"]=teachingGroupSubjectId;
 			teachingGroupMap["teacher_id"]=teachingGroupTeacherId;
-			//console.log(teachingGroupId);
-			//console.log(teachingGroupName);
 			DB.findUserGroup(userGroupParam,function (rows) {
 				
 				var list = [];//小组id集合

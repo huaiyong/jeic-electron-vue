@@ -17,15 +17,14 @@ function getDataGroupByUser(req, callback) {
 	if(type == 1) {
 		var sql = "select a.option_number AS optionNumber, a.type AS type, a.answer AS answer, a.user_id AS userId, a.realname AS realname, COUNT(record_id) AS Count, COUNT(result = 1 OR NULL) AS trueCount, COUNT(result = 1 OR NULL)/COUNT(record_id) AS accuracy, COUNT(result = 0 OR NULL) AS falseCount  from answer_result AS a where a.record_id ='" + recordId + "' GROUP BY a.user_id ORDER BY trueCount DESC";
 	} else if(type == 2) {
-		var sql = "SELECT a.option_number AS optionNumber,a.answer AS answer,a.realname AS userName, a.user_id AS userId, a.type AS type, b.usergroup_id AS usergroupId, c.name AS usergroupName, COUNT(record_id) AS Count, COUNT(result = 1 OR NULL) AS trueCount, COUNT(result = 1 OR NULL) / COUNT(record_id) AS accuracy, COUNT(result = 0 OR NULL) AS falseCount FROM answer_result AS a, student_usergroup AS b, usergroup AS c, teachinggroup AS d WHERE a.record_id = '" + recordId + "' AND b.student_id = a.user_id  AND d.id = '"+teachinggroupId+"' AND c.id =b.usergroup_id  AND b.leader_flag = 1  GROUP BY	a.user_id ORDER BY trueCount DESC "
+		var sql = "SELECT a.option_number AS optionNumber,a.answer AS answer,a.realname AS userName, a.user_id AS userId, a.type AS type, b.usergroup_id AS usergroupId, c.name AS usergroupName, COUNT(record_id) AS Count, COUNT(result = 1 OR NULL) AS trueCount, COUNT(result = 1 OR NULL) / COUNT(record_id) AS accuracy, COUNT(result = 0 OR NULL) AS falseCount FROM answer_result AS a, student_usergroup AS b, usergroup AS c, teachinggroup AS d WHERE a.record_id = '" + recordId + "' AND b.student_id = a.user_id  AND d.id = '"+teachinggroupId+"' AND c.id =b.usergroup_id  AND b.leader_flag = 1  AND c.teachinggroup_id = d.id GROUP BY	a.user_id ORDER BY trueCount DESC "
 	} else if(type == 3) { // 
 		if(usergroupId!=null && usergroupId !=''){
-			var sql = "SELECT a.option_number AS optionNumber,a.answer AS answer,a.realname AS userName, a.user_id AS userId, a.type AS type, b.usergroup_id AS usergroupId, c.name AS usergroupName, COUNT(record_id) AS Count, COUNT(result = 1 OR NULL) AS trueCount, COUNT(result = 1 OR NULL) / COUNT(record_id) AS accuracy, COUNT(result = 0 OR NULL) AS falseCount FROM answer_result AS a, student_usergroup AS b, usergroup AS c, teachinggroup AS d WHERE a.record_id = '" + recordId + "' AND b.student_id = a.user_id  AND d.id = '"+teachinggroupId+"' AND  c.id='"+usergroupId+"' AND b.usergroup_id=c.id     GROUP BY	a.user_id ORDER BY trueCount DESC "
+			var sql = "SELECT a.option_number AS optionNumber,a.answer AS answer,a.realname AS userName, a.user_id AS userId, a.type AS type, b.usergroup_id AS usergroupId, c.name AS usergroupName, COUNT(record_id) AS Count, COUNT(result = 1 OR NULL) AS trueCount, COUNT(result = 1 OR NULL) / COUNT(record_id) AS accuracy, COUNT(result = 0 OR NULL) AS falseCount FROM answer_result AS a, student_usergroup AS b, usergroup AS c, teachinggroup AS d WHERE a.record_id = '" + recordId + "' AND b.student_id = a.user_id  AND d.id = '"+teachinggroupId+"' AND  c.id='"+usergroupId+"' AND b.usergroup_id=c.id     AND c.teachinggroup_id = d.id GROUP BY	a.user_id ORDER BY trueCount DESC "
 		}else{
-			var sql = "SELECT a.option_number AS optionNumber,a.answer AS answer,a.realname AS userName, a.user_id AS userId, a.type AS type, b.usergroup_id AS usergroupId, c.name AS usergroupName, COUNT(record_id) AS Count, COUNT(result = 1 OR NULL) AS trueCount, COUNT(result = 1 OR NULL) / COUNT(record_id) AS accuracy, COUNT(result = 0 OR NULL) AS falseCount FROM answer_result AS a, student_usergroup AS b, usergroup AS c, teachinggroup AS d WHERE a.record_id = '" + recordId + "' AND b.student_id = a.user_id  AND d.id = '"+teachinggroupId+"' AND b.usergroup_id = c.id    GROUP BY	a.user_id ORDER BY trueCount DESC "
+			var sql = "SELECT a.option_number AS optionNumber,a.answer AS answer,a.realname AS userName, a.user_id AS userId, a.type AS type, b.usergroup_id AS usergroupId, c.name AS usergroupName, COUNT(record_id) AS Count, COUNT(result = 1 OR NULL) AS trueCount, COUNT(result = 1 OR NULL) / COUNT(record_id) AS accuracy, COUNT(result = 0 OR NULL) AS falseCount FROM answer_result AS a, student_usergroup AS b, usergroup AS c, teachinggroup AS d WHERE a.record_id = '" + recordId + "' AND b.student_id = a.user_id  AND d.id = '"+teachinggroupId+"' AND b.usergroup_id = c.id    AND c.teachinggroup_id = d.id GROUP BY	a.user_id ORDER BY trueCount DESC "
 		}
 	}
-	logger.debug('debug...');
 	logger.info(sql);
 	conn.queryData(sql, callback)
 }
@@ -80,6 +79,42 @@ function updateAnswerResult(answerResult,flag) {
     conn.executeSql(sql)
 }
 
+function updateAnswerResult1(answerList,flag) {
+	
+	var sql = "Replace INTO answer_result(id,class_record_id,record_id,user_id,device_id,realname,resource_id,datamark,answer,true_answer,result,score,type,option_number,create_date) VALUES "
+	for(var i = 0; i < answerList.length; i++) {
+		var id = answerList[i].id;
+		var classRecordId = answerList[i].class_record_id;
+		var recordId = answerList[i].record_id;
+		var user_id = answerList[i].user_id;
+		var device_id = answerList[i].device_id;
+		var realname = answerList[i].realname;
+		var resource_id = answerList[i].resource_id;
+		var datamark = answerList[i].datamark;
+		var answer = answerList[i].answer;
+		var true_answer = answerList[i].true_answer;
+		var result = answerList[i].result;
+		var score = answerList[i].score;
+		var type = answerList[i].type;
+		var option_number = answerList[i].option_number;
+		var create_date = answerList[i].create_date;
+		if((i+1) == answerList.length){
+			sql += "('"+id+"','"+classRecordId+"','"+recordId+"','"+user_id+"','"+device_id
+			+"','"+realname+"','"+resource_id+"','"+datamark+"','"+answer+"','"
+			+true_answer+"','"+result+"','"+score+"','"+type+"','"+option_number+"','"
+			+create_date+"')";
+		}else{
+			sql += "('"+id+"','"+classRecordId+"','"+recordId+"','"+user_id+"','"+device_id
+			+"','"+realname+"','"+resource_id+"','"+datamark+"','"+answer+"','"
+			+true_answer+"','"+result+"','"+score+"','"+type+"','"+option_number+"','"
+			+create_date+"'),";
+		}
+	}
+	console.log(sql)
+	db.run(sql);
+}
+
+
 function getAnswerResult(answerResult,callback) {
 	var sql = "SELECT * FROM answer_result WHERE record_id = '"+answerResult.recordId+"' AND device_id = '"+answerResult.deviceId+"' AND datamark = '"+answerResult.datamark+"';";
 	conn.queryData(sql,callback)
@@ -94,17 +129,14 @@ function getDataByQuestionId(req, callback) {
 	if(type == 1) { //全班教學模式
 		var sql = "select result,score,device_id,user_id, realname,answer,true_answer,type,option_number  from answer_result a  WHERE a.record_id = '" + recordId + "' and a.datamark=" + datamark;
 	} else if(type == 2) { //小組教學模式 組長作答
-		var sql = "select   a.result, a.score, c.name, a.answer, a.true_answer, b.usergroup_id, a.option_number, a.device_id, a.realname, a.user_id, a.type from answer_result a, student_usergroup b ,usergroup c , teachinggroup d  WHERE a.record_id = '" + recordId + "' AND b.student_id=a.user_id AND b.leader_flag= '" + 1 + "'AND d.id='" + teachinggroupId + "'  AND b.usergroup_id=c.id and a.datamark=" + datamark;
+		var sql = "select   a.result, a.score, c.name, a.answer, a.true_answer, b.usergroup_id, a.option_number, a.device_id, a.realname, a.user_id, a.type from answer_result a, student_usergroup b ,usergroup c , teachinggroup d  WHERE a.record_id = '" + recordId + "' AND b.student_id=a.user_id AND b.leader_flag= '" + 1 + "'AND d.id='" + teachinggroupId + "'  AND b.usergroup_id=c.id AND c.teachinggroup_id = d.id and a.datamark=" + datamark;
 	} else if(type == 3) { //小組教學模式   全組作答
 		if(teachinggroupId!=null&&usergroupId!=null){
-			console.log("題號1》》》"+datamark)
-			var sql = "select   a.result, a.score, c.name, a.answer, a.true_answer, b.usergroup_id, a.option_number, a.device_id, a.realname, a.user_id, a.type from answer_result a, student_usergroup b ,usergroup c , teachinggroup d  WHERE a.record_id = '" + recordId + "' AND b.student_id=a.user_id AND   d.id='" + teachinggroupId + "'  AND c.id='"+usergroupId+"' AND c.id=b.usergroup_id and a.datamark=" + datamark;
+			var sql = "select   a.result, a.score, c.name, a.answer, a.true_answer, b.usergroup_id, a.option_number, a.device_id, a.realname, a.user_id, a.type from answer_result a, student_usergroup b ,usergroup c , teachinggroup d  WHERE a.record_id = '" + recordId + "' AND b.student_id=a.user_id AND   d.id='" + teachinggroupId + "'  AND c.id='"+usergroupId+"' AND c.id=b.usergroup_id AND c.teachinggroup_id = d.id AND c.teachinggroup_id = d.id and a.datamark=" + datamark;
 		}else{
-			console.log("題號2》》》"+datamark)
-			var sql = "select   a.result, a.score, c.name, a.answer, a.true_answer, b.usergroup_id, a.option_number, a.device_id, a.realname, a.user_id, a.type from answer_result a, student_usergroup b ,usergroup c , teachinggroup d  WHERE a.record_id = '" + recordId + "' AND b.student_id=a.user_id AND    c.id=b.usergroup_id and a.datamark=" + datamark;
+			var sql = "select   a.result, a.score, c.name, a.answer, a.true_answer, b.usergroup_id, a.option_number, a.device_id, a.realname, a.user_id, a.type from answer_result a, student_usergroup b ,usergroup c , teachinggroup d  WHERE a.record_id = '" + recordId + "' AND b.student_id=a.user_id AND   d.id='" + teachinggroupId + "' AND c.id=b.usergroup_id AND c.teachinggroup_id = d.id AND c.teachinggroup_id = d.id and a.datamark=" + datamark;
 		}
 	}
-	logger.debug('debug...');
 	logger.info(sql);
 	conn.queryData(sql, callback)
 }
@@ -112,6 +144,7 @@ function getDataByQuestionId(req, callback) {
 module.exports.getDataByQuestionId = getDataByQuestionId //統計單個題的答題情況
 module.exports.findAnswerResult = findAnswerResult
 module.exports.updateAnswerResult = updateAnswerResult
+module.exports.updateAnswerResult1 = updateAnswerResult1
 module.exports.getAnswerByRecordId = getAnswerByRecordId
 module.exports.getAnswerResult = getAnswerResult
 module.exports.getDataGroupByUser = getDataGroupByUser

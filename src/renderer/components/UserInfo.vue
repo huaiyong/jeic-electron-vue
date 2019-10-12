@@ -56,7 +56,9 @@
 		    closeTeacherInfo(){
 				this.close();
 			},
-		
+		    tabteacherInfo(data){
+				this.changeIndex=data;
+			}
 		},
 		methods:{
 			close(){
@@ -72,7 +74,6 @@
 				this.updateTitle=data;
 			},
 			monitorVersion(data){
-				alert(data)
 				this.version=data;
 			}
 		}

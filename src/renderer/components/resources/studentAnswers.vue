@@ -50,7 +50,7 @@
 			</div>
 			<div class="zmj_answerStudentList">
 				<ul class="zmj_answerWhole" v-if="pattern">
-					<li v-for="(item,index) in remember" :key="index" :class="{'active':signRemember.indexOf(item.device)!=-1}" :id="item.id"
+					<li v-for="(item,index) in remember" :key="index" :class="{'active':signRemember.indexOf(item.device)!=-1 || signRemember.indexOf(item.id)!=-1 }" :id="item.id"
 					 @click="studentResult($event,item.id,item.name,'')">
 						<img v-if="item.sex=='男'" src="../../assets/img/boy.png" alt="">
 						<img v-if="item.sex=='女'" src="../../assets/img/girl.png" alt="">
@@ -62,14 +62,14 @@
 						<p v-text="i.name"></p>
 						<div class="clearfix">
 							<ol class="fl clearfix">
-								<li :class="{'active':signRemember.indexOf(i.groupLeader.device)!=-1}" @click="studentResult($event,i.groupLeader.id,i.groupLeader.name,i.name)">
+								<li :class="{'active':signRemember.indexOf(i.groupLeader.device)!=-1 || signRemember.indexOf(i.groupLeader.id)!=-1}" @click="studentResult($event,i.groupLeader.id,i.groupLeader.name,i.name)">
 									<img v-if="i.groupLeader.sex=='男'" src="../../assets/img/boy.png" alt="">
 									<img v-if="i.groupLeader.sex=='女'" src="../../assets/img/girl.png" alt="">
 									<p v-text="i.groupLeader.name"></p>
 								</li>
 							</ol>
 							<ul class=" fl clearfix">
-								<li v-for="item in i.studentList" :key="item.id" :class="{'active':signRemember.indexOf(item.device)!=-1}"
+								<li v-for="item in i.studentList" :key="item.id" :class="{'active':signRemember.indexOf(item.device)!=-1 || signRemember.indexOf(item.id)!=-1 }"
 								 @click="studentResult($event,item.id,item.name,i.name)">
 									<img v-if="item.sex=='男'" src="../../assets/img/boy.png" alt="">
 									<img v-if="item.sex=='女'" src="../../assets/img/girl.png" alt="">
@@ -253,8 +253,8 @@
 			prevQuestion() {
 				this.prevTest();
 			},
-			testImgLook() {
-				this.lookImg();
+			testImgLook(data) {
+				this.lookImg(data);
 			},
 			ToggleHide() {
 				this.hideStudentList();
@@ -320,27 +320,34 @@
 				this.yunshitiMove("top");
 			},
 			xueshengliebiaoScroll(data){
-			
 				var conheight = $(".zmj_answerStudentList").height();
 				$(".zmj_answerStudentList").scrollTop(data* conheight);
 			},
 			gerenchengjiScroll(data){
-				console.log(data)
 				var conheight = $(".zmj_resultTable").height();
 				$(".zmj_resultTable").scrollTop(data* conheight);
+			},
+			testDetailListScroll(data){
+				var conheight = $(".zmj_groupStudent").height();
+				$(".zmj_answerStudentList").scrollTop(data* conheight);
 			}
 			
 		},
 		methods: {
 			back() {
-				sessionStorage.removeItem("resourceId");
-			    clearInterval(this.timer);
-				this.$router.push({
-					"name": "Resourceslist"
-				});
+				if(!this.checkedState){
+				    this.$router.back();
+				}else{
+					this.error("请先结束答题");
+				};
 			},
 			min() {
-				sessionStorage.setItem("resourceId", this.resourceId);
+				if(this.testType==1){
+					sessionStorage.setItem("resourceId", this.resourceId);
+				}else{
+					 sessionStorage.setItem("paizhaoUrl", this.imgUrl);
+				};
+	
 				$(this.$parent.$refs.indexItem).append(
 					"<li id='testMax'><div><i class='iconfont icon-quanping'></i><p>试题</p></div></li>");
 				this.$router.push({
@@ -510,12 +517,11 @@
 			},
 			
 			getTextData() { //获取试题
-				const that = this;
 				this.$http.get(this.configure.resourceIp + '/teacher/import/getQuestionInfo.do?hid=' + this.resourceId).then(
-					function(res) {
+					(res)=>{
 						if (res.data.ret == 200) {
-							that.textData = res.data.data;
-							that.textDataLength = res.data.data.total;
+							this.textData = res.data.data;
+							this.textDataLength = res.data.data.total;
 						};
 					});
 			},
@@ -598,7 +604,7 @@
 							"resourceName": this.resourceName,
 							"ticount": this.textData.count,
 							"titotal": this.textData.total,
-							"sendType": 1
+							"answerType": 1
 						};
 					} else {
 						jsondata = {
@@ -611,7 +617,7 @@
 							"classRecordId": this.classRecord,
 							"resourceName": "自主创题",
 							"titotal":1,
-							"sendType": 1
+							"answerType":1
 						};
 					};
 
@@ -665,6 +671,7 @@
 			xiafaCommon(student) { //下发公用函数
 				const that = this;
 				let deviceArr=[];
+				let idArr=[];
 				let userList = [];
 				let jsondata = {};
 				for (var i = 0; i < student.length; i++) {
@@ -672,6 +679,7 @@
 					studentobj.userId = student[i].id;
 					studentobj.deviceName = student[i].device;
 					deviceArr.push(student[i].device);
+					idArr.push(student[i].id);
 					studentobj.realname = student[i].name;
 					userList.push(studentobj);
 				};
@@ -679,10 +687,10 @@
 				var answerType;
 				var model;
 				if (this.xiaFaMode) {
-					answerType = 2;
+					answerType = 3;
 					model = 3;
 				} else {
-					answerType = 1;
+					answerType = 2;
 					model = 2;
 				};
 				if (this.testType == 1) { //type=1表示是试卷类型
@@ -697,8 +705,8 @@
 						"resourceName": this.resourceName,
 						"ticount": this.textData.count,
 						"titotal": this.textData.total,
-						"sendType": 2,
-						"answerType": answerType
+						"answerType": answerType,
+						"teachingGroupId":this.groupId
 					};
 				} else {
 					jsondata = {
@@ -711,11 +719,11 @@
 						"classRecordId": this.classRecord,
 						"resourceName": "自主创题",
 						"titotal":1,
-						"sendType": 2,
-						"answerType": answerType
+						"answerType": answerType,
+						"teachingGroupId":this.groupId
 					};
 				};
-                console.log(jsondata)
+           
 				this.$http.post("http://127.0.0.1:3000/jeic/api/sendRecord", {
 					jsonData: jsondata
 				}).then(function(res) { //下发
@@ -739,16 +747,15 @@
 					that.$http.get("http://127.0.0.1:3000/jeic/api/sendRecord/getAnsweredList").then(function(res) {
 						if (res.data.ret == 200) {
 							var signRemember = res.data.data;
-							if(that.xiaFaMode==0){
 								for (var i=0;i<signRemember.length;i++){
-									if(deviceArr.indexOf(signRemember[i])!=-1){
-									    device.push(signRemember[i]);	
+									if(deviceArr.indexOf(signRemember[i])!=-1 || idArr.indexOf(signRemember[i])!=-1 ){
+									     if(device.indexOf(signRemember[i])==-1){
+									     	   device.push(signRemember[i]);
+									     };
+									    	
 									};
 								}
-								that.signRemember= device;
-							}else{
-								that.signRemember=signRemember;
-							};
+							that.signRemember= device;
 							that.$socket.emit('jeic', {
 								'name': "dati",
 								'data': that.signRemember
@@ -783,7 +790,7 @@
 					res) {
 					if (res.data.ret == 200) {
 						that.groupStudent = res.data.data.userGrouplist;
-						console.log(res.data)
+						
 					};
 				});
 
@@ -807,8 +814,9 @@
 					id).then(function(res) {
 					if (res.data.ret == 200) {
 						that.studentScore = res.data.data.list;
-                        console.log(that.studentScore)
-						that.studentResultState = true;
+                        if(that.studentScore){
+							that.studentResultState = true;
+						};
 					};
 				});
 			},
@@ -825,13 +833,18 @@
 		activated() {
 			if (this.$route.meta.reload || this.isFirstEnter) {
 				this.resourceName=this.$route.params.resourceName;
-				this.textDataLength=1;
 				this.showIndex = 0;
 				this.lowerHairState = false;
 				this.checkedState = false;
 				this.signRemember = [];
-				this.getTextData();
-				this.getStudentList();
+				if(this.testType==1){
+					this.getTextData();
+				}else{
+					this.textDataLength=1;
+				};
+				if(!this.pattern){
+					this.getStudentList();
+				};
 			};
 			this.$route.meta.reload =true;
 			this.isFirstEnter = false;
@@ -1206,14 +1219,15 @@
 	}
 
 	.zmj_groupStudent ol {
-		width: 20%;
+		width: 22%;
 	}
 
 	.zmj_groupStudent ul {
-		width: 80%;
+		width: 78%;
 	}
 
 	.zmj_groupStudent li {
+		text-align: center;
 		margin-right: 2.1rem;
 		margin-top: 1.8rem;
 		float: left;
@@ -1368,6 +1382,7 @@
 
 	.zmj_teamMember .zmj_allGroup>div {
 		margin-left: 2rem;
+		margin-bottom: 1rem;
 	}
 
 	.zmj_teamMember ol {

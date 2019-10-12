@@ -34,14 +34,14 @@ function api() {
 	appHttp.use(bodyParser.urlencoded({extended:false}))
 	appHttp.use(bodyParser.json());
 
-	var logger = log4js.getLogger();
-	//定义访问日志返回规范
-	appHttp.use(log4js.connectLogger(logger, {
-		level: 'info',
-		format: (req, res, format) => format(`:remote-addr :method :url ${JSON.stringify(req.body)}`)
-	}));
-	//重写console.log 让他按照日志输出
-	console.log = logger.info.bind(logger);
+//	var logger = log4js.getLogger();
+//	//定义访问日志返回规范
+//	appHttp.use(log4js.connectLogger(logger, {
+//		level: 'info',
+//		format: (req, res, format) => format(`:remote-addr :method :url ${JSON.stringify(req.body)}`)
+//	}));
+//	//重写console.log 让他按照日志输出
+//	console.log = logger.info.bind(logger);
 
 	// 配置服务端口
 	const server = appHttp.listen(3000, () => {
@@ -70,12 +70,6 @@ function api() {
 
     var sendRecord = require('./web/sendRecord'); //下发试题接口
     appHttp.use('/jeic/api/sendRecord', sendRecord);
-
-	var startClass = require('./web/startClass'); //开始上课接口
-    appHttp.use('/jeic/api/startClass', startClass);
-
-    var userGroup = require('./web/userGroup'); //开始上课接口
-    appHttp.use('/group', userGroup);//获取上课接口
 
     var student = require('./web/student'); //学生接口
     appHttp.use('/jeic/api/student', student);

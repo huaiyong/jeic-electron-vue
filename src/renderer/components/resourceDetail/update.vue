@@ -1,6 +1,6 @@
 <template>
 	<div>
-	   <div class="update" v-if="updateState">
+	    <div class="update" v-if="updateState">
 			<div class="bg">
 				<div class="edition">
 					<span v-text="updateInfo.version"></span>
@@ -82,7 +82,6 @@
 				this.$electron.ipcRenderer.on('update-message', (event, msg) => {
 					const message = msg.message;
 					const data = msg.data;
-					alert(message)
 					switch (message) {
 						case 'error':
 							this.updateText = '检查更新失败';

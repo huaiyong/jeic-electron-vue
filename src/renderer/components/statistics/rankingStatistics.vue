@@ -69,7 +69,7 @@
 					</thead>
 					<tbody>
 						<tr v-for="name in names">
-							<td @click="getGroupStudentRange(name.userGroupId)">{{name.userGroupName}}</td>
+							<td @click="getGroupStudentRanges(name.userGroupId)"><img class="redFlower" v-if="name.redFlower==1" src="../../assets/img/icon_xiaohonghua.png" alt="">{{name.userGroupName}}</td>
 							<td style="padding: 0 0 0 100px;">
 								<div class="backround">
 									<div class="jdt" :style="'width:'+ name.accuracy*100 +'%;'"></div><span class="baifenbi">{{name.accuracy*100 | toFixed(2) }}%</span>
@@ -123,6 +123,7 @@
 </template>
 
 <script>
+	import $ from "jquery";
 	import {
 		mapState
 	} from "vuex";
@@ -140,25 +141,28 @@
 				this.back();
 			},
 			getGroupStudentRange(data){
-				this.getGroupStudentRange(data);
+				this.getGroupStudentRanges(data);
 			},
 			xiaoHongHuaScroll(data){
 				var conheight = $(".studentResultTable").height();
-				$(".studentResultTable").scrollTop(data * conheight * 1.8);
+				$(".studentResultPopup").scrollTop(data * conheight);
+			},
+			closeGroupStudentRange(){
+				this.back();
 			}
 		},
 		methods: {
 			back() {
 				this.$router.back();
 			},
-			getGroupStudentRange(id){ //点击组名获取小组成员排名
+			getGroupStudentRanges(id){ //点击组名获取小组成员排名
 				this.$router.push({
 					name: 'getGroupStudentRange',
 					params: {
 						id: id
 					},
 				})
-			}
+			},
 		},
 		computed: {
 			...mapState({
@@ -176,7 +180,7 @@
 				 
 				that.names.forEach(function(i,v){
 					var ratio = parseFloat(i.accuracy * 100).toFixed(2);
-					console.log(ratio)
+					
 					if (0 <= ratio && ratio < 20) {
 						i.star = 0;
 					} else if (20 <= ratio && ratio < 40) {

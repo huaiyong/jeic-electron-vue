@@ -57,7 +57,8 @@ export default {
     return {
       arrVideo: this.$route.params.arrVideo, //视频地址
       arrAudio: this.$route.params.arrAudio, //音频地址
-      videoUrl:'' //地址
+      videoName: this.$route.params.videoName, //录像名字
+      videoUrl: '' //地址
     }
   },
   sockets:{
@@ -76,11 +77,15 @@ export default {
       this.$router.push({"name": "Resourceslist"});
     },
     getRouterData() {
-      if(this.arrVideo){
-        this.videoUrl = this.configure.videoPlay + this.arrVideo;
-      }else{
-        this.videoUrl = this.configure.videoPlay + this.arrAudio;
-      }
+    	if(this.videoName){
+    		this.videoUrl = this.arrVideo;
+    	}else{
+	      if(this.arrVideo){
+	        this.videoUrl = this.configure.videoPlay + this.arrVideo;
+	      }else{
+	        this.videoUrl = this.configure.videoPlay + this.arrAudio;
+	      }
+    	}
     },
     playAndPause() {
     	var video = $("#my-video");
@@ -88,6 +93,7 @@ export default {
                 video[0].play();
                 $('.play-btn').removeClass('stop').addClass('play');
                 $('.play-one').hide();
+//              playSpeed(videoSpeed);
             }
             else {
                 video[0].pause();
@@ -110,25 +116,26 @@ export default {
     var videoList = $('.player-list-video').length;
     var videoSpeed = 1;
     //播放列表切换
-    function qiehuan(){
-        video.prop("src",'source/' + videoIndex +'.mp4');
-        video.prop("poster",'source/' + videoIndex + '.jpg');
-        $('.timeBar').css('width', 0);
-        video[0].play();
-        $('.play-btn').removeClass('stop').addClass('play');
-        $('.play-one').hide();
-    }
-    $('.player-list-video').on('click', function () {
-        if (!full || !hidding){
-            videoIndex = $(this).index();
-            for(var i =0; i < videoList; i++){
-                $('.player-list-video').eq(i).removeClass('video-now');
-            }
-            $(this).addClass('video-now');
-            qiehuan();
-            qieh = 0;
-        }
-    });
+//  function qiehuan(){
+//      video.prop("src",'source/' + videoIndex +'.mp4');
+////      video.prop("poster",'source/' + videoIndex + '.jpg');
+//      $('.timeBar').css('width', 0);
+//      console.log(video,'video')
+//      video[0].play();
+//      $('.play-btn').removeClass('stop').addClass('play');
+//      $('.play-one').hide();
+//  }
+//  $('.player-list-video').on('click', function () {
+//      if (!full || !hidding){
+//          videoIndex = $(this).index();
+//          for(var i =0; i < videoList; i++){
+//              $('.player-list-video').eq(i).removeClass('video-now');
+//          }
+//          $(this).addClass('video-now');
+//          qiehuan();
+//          qieh = 0;
+//      }
+//  });
     // 读取初始时间
     function timeFormat(seconds) {
         var minite = Math.floor(seconds / 60);
@@ -277,7 +284,19 @@ export default {
     };
     //开始暂停
     function playAndPause() {
-            this.playAndPause()
+    	var video = $("#my-video");
+    	if(video[0].paused || video[0].ended) {
+                video[0].play();
+                $('.play-btn').removeClass('stop').addClass('play');
+                $('.play-one').hide();
+                playSpeed(videoSpeed);
+            }
+            else {
+                video[0].pause();
+                $('.play-btn').removeClass('play').addClass('stop');
+                $('.play-one').show();
+            }
+//          this.playAndPause()
     }
     //播放速度
     function playSpeed(speed) {
@@ -405,7 +424,7 @@ export default {
     updateVolume(0, 0.9);  // 初始化声音
     video.on("loadedmetadata", function(){
         if (qieh == 0){
-            qiehuan();
+//          qiehuan();
             qieh = 1;
         }
         $('header').hover(function() {
@@ -477,7 +496,7 @@ export default {
                 $('.player-list-video').eq(i).removeClass('video-now');
             }
             $('.player-list-video').eq(videoIndex).addClass('video-now');
-            qiehuan();
+//          qiehuan();
             qieh = 0;
         }
     });

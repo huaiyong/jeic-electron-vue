@@ -11,7 +11,6 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <link href="./css/iconfont/iconfont.css" rel="stylesheet">
     <script src="./js/jquery-1.8.2.min.js"></script> 
-		<script src="./js/socket.io.js"></script>
     <script>
         var resourceId = sessionStorage.getItem("resourceWId"); //定义全局变量 从url中获取资源Id
         if(resourceId==''||resourceId==null || resourceId==undefined){
@@ -44,13 +43,6 @@
 
 </html>
 <script>
-	//定义一些初始化数据
-    var ip=sessionStorage.getItem("ip")
-		var socketip="http://"+ip+":3000"
-//  var socket = io(socketip); //定义socket
-    var socket = io.connect(socketip);
-</script>
-<script>
 var showWordsrc;
         $.ajax({
             type: "get"
@@ -59,7 +51,6 @@ var showWordsrc;
             , success: function (res) {
                 if (res.ret == 200) {
                     showWordsrc = res.result.viewURL.officeView;
-                    console.log(res)
                 }
             }
         })

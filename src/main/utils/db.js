@@ -17,6 +17,7 @@ db.serialize(() => {
 	 * type：下发记录类型（1下发试题2下发图片3下发拍照创题）
 	 * send_type：1全班教学2分组教学
 	 * answer_type：答题类型（1全员作答2组长作答）
+	 * answer_type：答题类型（1全班作答2组长作答3全组作答）
 	 * stop_answer：是否结束答题（0否1是）
 	 */
 	db.run(`CREATE TABLE "send_record" (
@@ -52,6 +53,7 @@ db.serialize(() => {
 	 * 答案结果表 answer_result
 	 */
 	db.run(`CREATE TABLE "answer_result" (
+	"id"  VARCHAR(64) NOT NULL,
 	"class_record_id" VARCHAR(64),
 	"record_id" VARCHAR(64),
 	"user_id" VARCHAR(64),
@@ -65,7 +67,8 @@ db.serialize(() => {
 	"score" INT(11),
 	"type" VARCHAR(64),
 	"option_number" INT(11),
-	"create_date" DATETIME
+	"create_date" DATETIME,
+	PRIMARY KEY ("id")
     )`, err => {
 		logger(err);
 	});
@@ -127,7 +130,7 @@ db.serialize(() => {
 	  "class_record_id" varchar(64),
 	  "resource_id" varchar(64),
 	  "resource_name" varchar(64),
-	  "resource_url" varchar(64),
+	  "resource_url" varchar(255),
 	  "stu_id" varchar(64),
 	  "create_time" varchar(64) 
   	)`, err => {
@@ -162,13 +165,13 @@ db.serialize(() => {
 		logger(err);
 	});
 	db.run(`create table "student_back_picture" (
-	"class_record_id" varchar (192),
-	"send_record_id" varchar (192),
+	"class_record_id" varchar (64),
+	"send_record_id" varchar (64),
 	"type" int (11),
-	"resource_id" varchar (192),
-	"resource_name" varchar (192),
-	"resource_url" varchar (192),
-	"stu_id" varchar (192),
+	"resource_id" varchar (64),
+	"resource_name" varchar (64),
+	"resource_url" varchar (255),
+	"stu_id" varchar (64),
 	"create_time" datetime 
 )`, err => {
 		logger(err);
@@ -228,11 +231,10 @@ db.serialize(() => {
 	});
 	
 	db.run(`CREATE TABLE "candidate" (
-  "id" VARCHAR(64) NOT NULL,
+  "id" VARCHAR(64),
   "name" VARCHAR(64),
   "no" integer(1),
-  "vote_id" VARCHAR(64) DEFAULT 0,
-  PRIMARY KEY ("id")
+  "vote_id" VARCHAR(64) DEFAULT 0
 	)`, err => {
 		logger(err);
 	});
@@ -245,6 +247,7 @@ db.serialize(() => {
   "anonymous" integer(1),
   "vote_number" integer(1),
   "voting_rules" INTEGER(1) DEFAULT 0,
+  "stop_vote" integer(1),
   PRIMARY KEY ("id")
 )`, err => {
 		logger(err);

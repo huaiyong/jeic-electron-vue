@@ -28,7 +28,6 @@ router.get('/phoneLogin', function(req, res, next) {
 router.get('/longConnectionCheck', function(req, res, next) {
 	var uuid = req.param('uuid');
 	var user = userMap[uuid];
-	console.log(user)
 	if(user!=undefined){
 		delete userMap[uuid];
 		res.json({
@@ -45,5 +44,22 @@ router.get('/longConnectionCheck', function(req, res, next) {
 	}
 });
 
+
+router.get('/localIP', function(req, res) {
+    var interfaces = require('os').networkInterfaces();
+    for(var devName in interfaces){
+        var iface = interfaces[devName];
+        for(var i=0;i<iface.length;i++){
+            var alias = iface[i];
+            if(alias.family === 'IPv4' && alias.address !== '127.0.0.1' && !alias.internal){
+                res.json({
+					data: alias.address,
+					message: "上课成功",
+					ret: 200
+				})
+            }
+        }
+    }
+});
 
 module.exports = router;

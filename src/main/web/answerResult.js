@@ -74,8 +74,9 @@ router.get('/getAnswerByRecordId', function(req, res, next) {
 
 });
 
-/*全班教學模式下 根據下發記錄Id 查詢 答題詳情  
-分組教學模式下組長作答  根據下發記錄Id 查詢每一個小組的 答題詳情 （每一個組長的情況）*/
+/**
+ * 获取总体统计情况和各学生总体情况，小红花页面
+ */
 router.get('/getDataGroupByUser', function(req, res) {
 	var type = req.param('type')
 	var resultMap = {}
@@ -176,7 +177,9 @@ router.get('/getDataGroupByUser', function(req, res) {
 		});
 	}
 });
-// 查看單題選項答題情況 
+/**
+ * 获取单道题的统计详情
+ */
 router.get('/getDataByQuestionId', function(req, res) {
 	var dataMap = {};
 	var stuArray = new Array();
@@ -203,6 +206,7 @@ router.get('/getDataByQuestionId', function(req, res) {
 				var questionType = rows[0].type; //題型
 				var optionNumber = rows[0].option_number //選項個數
 				var score = rows[0].score //選項個數
+				var trueAnswer = rows[0].true_answer //正确答案
 				if(questionType == 1) { // 判斷題   判 斷當前題的題型  1 判斷題 2 單選  4 多選
 					var trueCount = 0;	//正确总个数
 					var falseCount = 0;	//错误总个数
@@ -342,6 +346,8 @@ router.get('/getDataByQuestionId', function(req, res) {
 			dataMap["optionNu"] = optionNumber;
 			dataMap["score"] = score;
 			dataMap["type"] = questionType;
+			dataMap["trueAnswer"] = trueAnswer;
+			dataMap["list"] = rows;
 			res.json({
 				data: dataMap,
 				message: "全班教學模式 全班作答 查看單個題的答題情況",
@@ -355,6 +361,7 @@ router.get('/getDataByQuestionId', function(req, res) {
 				var questionType = rows[0].type; //題型
 				var optionNumber = rows[0].option_number //選項個數
 				var score = rows[0].score //選項個數
+				var trueAnswer = rows[0].true_answer //正确答案
 				if(questionType == 1) { // 判斷題   判 斷當前題的題型  1 判斷題  4 多選
 					var trueCount = 0;	//正确总个数
 					var falseCount = 0;	//错误总个数
@@ -507,6 +514,8 @@ router.get('/getDataByQuestionId', function(req, res) {
 			dataMap["optionNu"] = optionNumber;
 			dataMap["score"] = score;
 			dataMap["type"] = questionType;
+			dataMap["trueAnswer"] = trueAnswer;
+			dataMap["list"] = rows;
 			res.json({
 				data: dataMap,
 				message: "分組教學模式 全班作答 查看單個題的答題情況",
@@ -520,6 +529,7 @@ router.get('/getDataByQuestionId', function(req, res) {
 				var questionType = rows[0].type; //題型
 				var optionNumber = rows[0].option_number //選項個數
 				var score = rows[0].score //選項個數
+				var trueAnswer = rows[0].true_answer //正确答案
 				if(questionType == 1) { // 判斷題   判 斷當前題的題型  1 判斷題  4 多選
 					var trueCount = 0;	//正确总个数
 					var falseCount = 0;	//错误总个数
@@ -673,6 +683,8 @@ router.get('/getDataByQuestionId', function(req, res) {
 			dataMap["optionNu"] = optionNumber;
 			dataMap["score"] = score;
 			dataMap["type"] = questionType;
+			dataMap["trueAnswer"] = trueAnswer;
+			dataMap["list"] = rows;
 			res.json({
 				data: dataMap,
 				message: "分組教學模式 全班作答 查看單個題的答題情況",
@@ -728,8 +740,9 @@ router.get('/getDataByUserId', function(req, res) {
 
 var answerList = [];
 
-//定义一个get请求 path为根目录
-/* GET home page. */
+/**
+ * 结束答题，将学生答题结果存入数据库
+ */
 router.get('/insertAnswer', function(req, res, next) {
 	var recordId = req.param('recordId');
 	// 答过题的用户
@@ -748,6 +761,7 @@ router.get('/insertAnswer', function(req, res, next) {
 	answerResultParam.recordId = recordId;
 	anwerResultDB.findAnswerResult(answerResultParam, function(rows) {
 		if(rows.length > 0) {
+			var answerList = [];
 			for(var answerResult of rows) {
 				var deviceId = answerResult.device_id; // 答题数据中的答题器编号
 				var datamark = answerResult.datamark; // 答题数据中的题号
@@ -759,8 +773,12 @@ router.get('/insertAnswer', function(req, res, next) {
 				ar.trueAnswer = answerResult.true_answer;
 				var resultStr = checkResult(ar);
 				ar.result = resultStr;
-				anwerResultDB.updateAnswerResult(ar);
+				
+				answerResult.answer = ar.answer;
+				answerResult.result = resultStr;
+				answerList.push(answerResult);
 			}
+			anwerResultDB.updateAnswerResult1(answerList);
 		}
 	})
 	// 获取pad答题数据信息进行处理
@@ -879,6 +897,10 @@ function getUserListGroupByUsergroup1(userData){
 	return dest;
 }
 
+/**
+ * 计算小红花
+ * @param {Object} answerResultList
+ */
 function getRedFlower(answerResultList){
 	var answerMap = {};
 	var answerMap2 = {};
@@ -891,6 +913,9 @@ function getRedFlower(answerResultList){
 			if(answerMap["accuracy"]==answerMap2["accuracy"]){
 				answerMap["redFlower"]=1;
 			}
+		}
+		if(answerMap["trueCount"]==0){
+			answerMap["redFlower"]=0;
 		}
 	}
 	return answerResultList;

@@ -45,6 +45,7 @@
 </template>
 
 <script>
+	import * as screenCapApi from '../../../modules/screencap/renderers/index/Index';
 	import {
 		mapState
 	} from "vuex";
@@ -55,192 +56,170 @@
 				classroomList: "", //班级列表
 				subjectList: "", //科目列表
 				checkdedClassroom: "请选择班级",
-				checkdedSubject: "请选择科目"
+				checkdedSubject: "请选择科目",
 			};
 		},
 		computed: {
 			...mapState({
 				classroomState: state => state.state.classroomState,
-				userId: state => state.state.userId
+				userId: state => state.state.userId,
+				lupingState: state => state.state.lupingState,
+				classRecord: state => state.state.classRecord
 			})
 		},
 		sockets: {
+			selectClass(data){
+				this.checkdedClassroom=data;
+			},
+			selectSubject(data){
+				this.checkdedSubject=data;
+			},
 			sureBeginClass(data) {
 				this.beginClass(data[0], data[1], data[2])
 			},
-			sureStopClass(){
+			sureStopClass() {
 				this.endClass();
 			},
-			closeClassroom(){
+			closeClassroom() {
 				this.close();
 			}
-
 		},
 		methods: {
+			getClassList(){
+				this.$http.get(this.configure.jeucIp + "/ea/eaUserCourse/class?uid=" + this.userId).then(jdata=>{
+					if (jdata.data.ret == 200) {
+						this.classroomList = jdata.data.data;
+					};
+				});
+			 },
 			selectClass(classId) {
-				const that = this;
 				if (classId != "请选择班级") {
 					//选择班级
-					this.$http
-						.get(
-							this.configure.jeucIp +
-							"/ea/eaUserCourse/subject?uid=" +
-							this.userId +
-							"&cid=" +
-							classId
-						)
-						.then(function(jdata) {
-							if (jdata.data.ret == 200) {
-								that.subjectList = jdata.data.data;
-							}
-						});
-				}
+					this.$http.get(this.configure.jeucIp +"/ea/eaUserCourse/subject?uid=" +this.userId +"&cid="+classId).then(jdata=>{
+						if (jdata.data.ret == 200) {
+							this.subjectList = jdata.data.data;
+						}
+					});
+				};
+			},
+			error(data){
+				this.$refs.commonTitle.innerHTML=data;
+				this.$refs.commonTitle.style.display = "block";
+				setTimeout(()=>{
+					this.$refs.commonTitle.style.display = "none";
+				}, 1000);
 			},
 			beginClass(classId, subjectId, subjectName) {
-				const that = this;
 				if (classId == "请选择班级") {
-					this.$refs.commonTitle.innerHTML = "请选择班级";
-					this.$refs.commonTitle.style.display = "block";
-					setTimeout(function() {
-						that.$refs.commonTitle.style.display = "none";
-					}, 1000);
+					this.error("请选择班级");
 				} else if (subjectId == "请选择科目" || subjectId == undefined) {
-					this.$refs.commonTitle.innerHTML = "请选择科目";
-					this.$refs.commonTitle.style.display = "block";
-					setTimeout(function() {
-						that.$refs.commonTitle.style.display = "none";
-					}, 1000);
+					this.error("请选择科目");
 				} else {
-					this.$http
-						.get(
-							this.configure.jeucIp +
-							"/uc/user?classId=" +
-							classId +
-							"&userType=2&state=1&delFlag=0&orderBy=2"
-						)
-						.then(function(res) {
-							if (res.data.ret == 200) {
-								var remember = res.data.data.list;
-								var userList = [];
-								for (var i = 0; i < remember.length; i++) {
-									var studentobj = {};
-									studentobj.userId = remember[i].id;
-									studentobj.deviceName = remember[i].deviceName;
-									studentobj.realname = remember[i].realname;
-									studentobj.sex = remember[i].sex;
-									userList.push(studentobj);
-								}
-								that.$http
-									.get(that.configure.jeucIp + "/ea/class/" + classId)
-									.then(function(res) {
+					this.$http.get(this.configure.jeucIp+"/uc/user?classId="+classId +"&userType=2&state=1&delFlag=0&orderBy=2").then(res=>{
+						if (res.data.ret == 200) {
+							var remember = res.data.data.list;
+							var userList = [];
+							for (var i = 0; i < remember.length; i++) {
+								var studentobj = {};
+								studentobj.userId = remember[i].id;
+								studentobj.deviceName = remember[i].deviceName;
+								studentobj.realname = remember[i].realname;
+								studentobj.sex = remember[i].sex;
+								userList.push(studentobj);
+							};
+							this.$http.get(this.configure.jeucIp + "/ea/class/" + classId).then(res=>{
+								if (res.data.ret == 200) {
+									var gradeId = res.data.data.gradeId;
+									var gradeName = res.data.data.gradeName;
+									var classXName = res.data.data.name;
+									this.$http.get(this.configure.jeucIp + "/uc/user/" + this.userId).then(res=>{
 										if (res.data.ret == 200) {
-											var gradeId = res.data.data.gradeId;
-											var gradeName = res.data.data.gradeName;
-											var classXName = res.data.data.name;
-											that.$http
-												.get(that.configure.jeucIp + "/uc/user/" + that.userId)
-												.then(function(res) {
-													if (res.data.ret == 200) {
-														var jdata = res.data;
-														var stuinfodata = {
-															officeId: jdata.data.provinceId +
-																"," +
-																jdata.data.cityId +
-																"," +
-																jdata.data.countyId +
-																"," +
-																jdata.data.officeId,
-															teacherId: that.userId,
-															teacherName: jdata.data.realname,
-															officeName: jdata.data.provinceName +
-																"," +
-																jdata.data.cityName +
-																"," +
-																jdata.data.countyName +
-																"," +
-																jdata.data.officeName,
-															gradeId: gradeId,
-															gradeName: gradeName,
-															classId: classId,
-															className: classXName,
-															subjectId: subjectId,
-															subjectName: subjectName,
-															userList: userList
+											var jdata = res.data;
+											var stuinfodata = {
+												officeId: jdata.data.provinceId +
+													"," +
+													jdata.data.cityId +
+													"," +
+													jdata.data.countyId +
+													"," +
+													jdata.data.officeId,
+												teacherId: this.userId,
+												teacherName: jdata.data.realname,
+												officeName: jdata.data.provinceName +
+													"," +
+													jdata.data.cityName +
+													"," +
+													jdata.data.countyName +
+													"," +
+													jdata.data.officeName,
+												gradeId: gradeId,
+												gradeName: gradeName,
+												classId: classId,
+												className: classXName,
+												subjectId: subjectId,
+												subjectName: subjectName,
+												userList: userList
+											};
+											this.$http.post("http://127.0.0.1:3000/jeic/api/classRecord/startClass",{jsonData: stuinfodata}).then(res=>{
+												if (res.data.ret == 200) {
+													var classRecord = res.data.data;
+													this.$socket.emit("joinRoom", {
+														"classId": classId,
+														"userId": this.userId
+													});
+													this.$socket.emit("jeic", {
+														"name": "classRecord",
+														"data": classRecord
+													});
+													sessionStorage.setItem("subjectName", subjectName);
+													this.$store.dispatch("getClassId", classId);
+													this.$store.dispatch("getSubjectId", subjectId);
+													this.$store.dispatch("getClassRecord", classRecord);
+													this.$store.dispatch("changeClassroomState", true);
+
+													this.$http.get("http://localhost:3000/jeic/api/student?classId=" + classId).then(res=>{
+														if (res.data.ret == 200) {
+															this.$store.dispatch("getRemember", res.data.data);
 														};
-
-														var stringstuinfodata = JSON.stringify(stuinfodata);
-
-														that.$http
-															.post(
-																"http://127.0.0.1:3000/jeic/api/startClass/startClass", {
-																	jsonData: stuinfodata
-																}
-															)
-															.then(function(res) {
-																if (res.data.ret == 200) {
-																	var classRecord = res.data.data;
-																	console.log(classRecord)
-																	that.$http.get("http://localhost:3000/jeic/api/student?classId=" + classId).then(function(res) {
-																		if (res.data.ret == 200) {
-																			that.$store.dispatch("getRemember", res.data.data);
-																		};
-																	});
-																	that.$http.get("http://localhost:3000/jeic/api/signin/signinStart").then(function(res) {
-																		
-																	});
-																	sessionStorage.setItem("subjectName",subjectName);
-																	that.$store.dispatch("getSubjectId", subjectId);
-																	that.$store.dispatch("getClassRecord", classRecord);
-																	that.$socket.emit("joinRoom", {
-																		"classId": classId,
-																		"userId": that.userId
-																	});
-																	that.$socket.emit("jeic", {
-																		"name": "classRecord",
-																		"data": classRecord
-																	});
-																};
-															})
-															.catch(function(err) {
-
-															});
-													}
-												});
+													});
+													this.$http.get("http://localhost:3000/jeic/api/signin/signinStart").then(function(res) {
+																												
+													});
+													this.$router.push({name:"Index"});
+													
+												};
+												
+											});	
 										};
 									});
-							}
-						});
-
-					this.$store.dispatch("changeClassroomState", true);
-					this.$store.dispatch("getClassId", classId);
-					this.$router.push({
-						name: "Index"
+								};
+							});
+						};
 					});
-				}
-			},
+				};    
+			},						
 			endClass() {
-				this.$store.dispatch("changeClassroomState", false);
-				this.$store.dispatch("getPattern", true);
+				if (this.lupingState) {
+					screenCapApi.stopRecord();
+					setTimeout(function() {
+						screenCapApi.uploadScreenCap();
+					}, 1000);
+				};
 				sessionStorage.clear();
-				this.$router.push({
-					path: "/"
+				this.$store.dispatch('resetState');
+				this.$http.post("http://127.0.0.1:3000/jeic/api/classRecord/stopClass?classRecordId="+this.classRecord).then((res)=>{
+					if(res.data.ret==200){
+						this.$router.push({path: "/"});
+					};
 				});
+				
 			},
 			close() {
-				this.$router.push({
-					name: "Index"
-				});
+				this.$router.push({name: "Index"});
 			}
 		},
 		created() {
-			const that = this;
-			this.$http
-				.get(this.configure.jeucIp + "/ea/eaUserCourse/class?uid=" + this.userId)
-				.then(function(jdata) {
-					if (jdata.data.ret == 200) {
-						that.classroomList = jdata.data.data;
-					}
-				});
+			this.getClassList();
 		}
 	};
 </script>

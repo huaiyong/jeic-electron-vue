@@ -49,8 +49,8 @@
                 </li>
               </ul>
               <div class="smallAdd" @click="addGroup()"><i class="iconfont icon-jiahao"></i></div>
-              <div class="btn" @click="groupConfirm()">确认选择</div>
           </div>
+          <div class="btn" @click="groupConfirm()">确认选择</div>
         </div>
       </div>
     </div>
@@ -92,23 +92,26 @@
           </div>
           <i class="fr iconfont icon-shanchu1" @click="lookGroupClose()"></i>
         </div>
-        <ul class="branchList">
-          <li class="line" v-for="(item,index) in lookGroupData" :key='index'>
-              <h3 class="title">{{item.name}}</h3>
-              <div class="clearfix" >
-                <div class="fl lineLeft">
-                    <img :src='"../../assets/img/"+ getImgUrl(item.groupLeader.sex) +".png"' alt="">
-                    <p>{{item.groupLeader.name}}</p>
-                </div>
-                <ul class="clearfix fr lineRight" >
-                    <li class="fl" v-for="(ele,i) in item.studentList" :key='i'>
-                      <img :src='"../../assets/img/"+ getImgUrl(ele.sex) +".png"' alt="">
-                      <p>{{ele.name}}</p>
-                    </li>
-                </ul>
-              </div>
-          </li>
-        </ul>
+		<div class="branchList">
+			<ul>
+			  <li class="line" v-for="(item,index) in lookGroupData" :key='index'>
+			      <h3 class="title">{{item.name}}</h3>
+			      <div class="clearfix" >
+			        <div class="fl lineLeft">
+			            <img :src='"../../assets/img/"+ getImgUrl(item.groupLeader.sex) +".png"' alt="">
+			            <p>{{item.groupLeader.name}}</p>
+			        </div>
+			        <ul class="clearfix fr lineRight" >
+			            <li class="fl" v-for="(ele,i) in item.studentList" :key='i'>
+			              <img :src='"../../assets/img/"+ getImgUrl(ele.sex) +".png"' alt="">
+			              <p>{{ele.name}}</p>
+			            </li>
+			        </ul>
+			      </div>
+			  </li>
+			</ul>
+		</div>
+        
       </div>
 
       <!-- 删除分组弹层 -->
@@ -128,21 +131,22 @@
 </template>
 
 <script>
+import $ from "jquery"
 export default {
   name: "teachModel",
   data() {
     return {
-      groupIndex:1,                      //分组和全班教学模式的索引
-      groupTitle:'',                    //分组弹层的组title
-      groupTeachData:[],               // 分组教学列表数据
-      lookGroupData : [],             // 查看组的数据
-      tabIndex:-1,                  // 分组列表切换索引
-      allClassMask: false,         // 添加分组弹层
-      chooseGroupMask: false,    // 选择分组弹层
+      groupIndex:1,               //分组和全班教学模式的索引
+      groupTitle:'',             //分组弹层的组title
+      groupTeachData:[],         // 分组教学列表数据
+      lookGroupData : [],        // 查看组的数据
+      tabIndex:-1,              // 分组列表切换索引
+      allClassMask: false,      // 添加分组弹层
+      chooseGroupMask: false,   // 选择分组弹层
       lookGroupMask: false,     // 查看分组弹层
-      deleteGroupMask:false,   // 删除分组
-      deleGroupIndex:-1,      //删除分组列条的索引
-      msg:'',                //分组或全班弹层文字提示
+      deleteGroupMask:false,    // 删除分组
+      deleGroupIndex:-1,       //删除分组列条的索引
+      msg:'',                  //分组或全班弹层文字提示
     };
   },
   //created函数中调用ajax获取页面初始化所需的数据
@@ -166,6 +170,7 @@ export default {
       this.tabList(index);
     },
     lookTeacheModel(index){
+	  this.tabList(index);
       this.lookGroup(index)
     },
     teacheModelBack(){
@@ -182,6 +187,14 @@ export default {
     },
     completeTeacheModel(){
       this.groupList();
+    },
+    groupScroll(data){
+      var conheight = $(".subject .groupClass .groupList").height();
+      $(".subject .groupClass .groupList").scrollTop(data* conheight * 1.1);
+    },
+    grouperListScroll(data){
+      var conheight = $(".maskBox .lookGroup .branchList ul").height();
+      $(".maskBox .lookGroup .branchList").scrollTop(data* conheight);
     }
   },
   methods: {
@@ -239,9 +252,8 @@ export default {
         this.$router.push({
           name: "Index"
         });
-      }, 1000);
+      }, 1500);
       this.$store.dispatch("getPattern",true);
-      console.log(this.$store.state.state.pattern)
     },
     // 分组教学 --- 确认选择
     groupConfirm(){
@@ -253,17 +265,15 @@ export default {
           this.$router.push({
             name: "Index"
           });
-        }, 1000);
+        }, 1500);
         this.$store.dispatch("getPattern",false);
         this.$store.dispatch("getGroupId",this.groupTeachData[this.tabIndex].id);
-        console.log(this.$store.state.state.pattern)
-        console.log(this.groupTeachData[this.tabIndex].id)
       }else{
         this.allClassMask = true;
         this.msg = '请先选择分组';
         setTimeout(() => {
           this.allClassMask = false;
-        }, 1000);
+        }, 1500);
       }
     },
     //分组教学 --- 切换选择分组列表
@@ -342,11 +352,11 @@ export default {
 
 .subject .groupClass .addGroup{width: 18.75rem; height: 15rem; font-size: 1.6rem; background: #fff; border-radius: 5px; margin: 4rem auto 0; box-shadow: 10px 10px 10px #46494a; box-sizing: border-box; padding-top: 4rem;}
 .subject .groupClass i{cursor: pointer; font-size: 70px; color: #4092f4;}
-.subject .groupClass .smallAdd{width: 7rem; height: 7rem; border-radius: 5px; background: #fff; box-sizing: border-box; text-align: center; padding-top: 2.2rem; margin-top: 2rem; cursor: pointer; box-shadow: 0 0 20px #46494a;}
+.subject .groupClass .smallAdd{width: 7rem; height: 7rem; border-radius: 5px; background: #fff; box-sizing: border-box; text-align: center; padding-top: 2.2rem;margin: 2rem 0;cursor: pointer; box-shadow: 0 0 20px #46494a;}
 .subject .groupClass .smallAdd i{font-size: 4rem;}
 .subject .groupClass .addGroup p{cursor: pointer; margin-top: 0.8rem;}
 .subject .groupClass .groupList{box-sizing: border-box; padding:0 5rem;}
-.subject .groupClass .groupList{height: 27rem;overflow-y: auto;}
+.subject .groupClass .groupList{height: 20rem;overflow-y: auto;}
 .subject .groupClass .groupList li{width: 100%; height: 7rem; box-shadow: 0 0 20px #46494a; background: #fff; border-radius: .5rem; margin-top: 2rem;}
 .subject .groupClass .groupList li:first-child{margin-top: 0;}
 .subject .groupClass .groupList li:hover{border:.2rem solid #4092f4;}

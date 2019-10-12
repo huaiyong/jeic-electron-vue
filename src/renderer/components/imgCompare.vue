@@ -34,7 +34,6 @@
 				this.contrastsImg(data);
 			},
 			closeComper(){
-				console.log(2222)
 				this.back();
 			}
 			
@@ -242,6 +241,7 @@
 	}
 	.blocks .block h1>img{
 		width:100%;
+		margin:10px;
 	}
 	
 	.blocks .block .content h2 {

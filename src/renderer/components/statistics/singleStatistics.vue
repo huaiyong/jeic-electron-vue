@@ -47,10 +47,15 @@
 							<div v-if="sttype=='1'" class="zmj_answerType">判断</div>
 							<div v-if="sttype=='2'" class="zmj_answerType">单选</div>
 							<div v-if="sttype=='4'" class="zmj_answerType">多选</div>
-							<p class="wx_tigan" v-html="tigan"></p>
-							<ul class="xuanxianguloption">
-								<li v-if="stlist.text.length!=0" v-for="stlist in stlists" v-html="stlist.text"></li>
-							</ul>
+							<div v-if="testType==1">
+								<p class="wx_tigan" v-html="tigan"></p>
+								<ul class="xuanxianguloption">
+									<li v-if="stlist.text.length!=0" v-for="stlist in stlists" v-html="stlist.text"></li>
+								</ul>
+							</div>
+							<div v-if="testType==3">
+								<img :src="imgUrl" alt="" style="width:800px">
+							</div>
 						</div>
 					</div>
 				</div>
@@ -71,12 +76,13 @@
 </template>
 
 <script>
+	import $ from "jquery";
 	import {
 		mapState
 	} from "vuex";
 
 	export default {
-		name: "AnswerDetails",
+		name: "singleStatistics",
 		data() {
 			return {
 				stlists: [], //试题选项
@@ -115,6 +121,8 @@
 				recordId: state => state.state.recordId,
 				model: state => state.state.model,
 				groupId: state => state.state.groupId,
+				testType: state => state.state.testType,
+				imgUrl: state => state.state.imgUrl
 			})
 		},
 		sockets: {
@@ -176,15 +184,10 @@
 				const that = this;
 				var xdata = [];
 				var ydata = [];
-				console.log(this.model)
-				console.log(this.groupId)
 				// 获取单道试题的答题结果
 				this.$http.get("http://127.0.0.1:3000/jeic/api/answerResult/getDataByQuestionId?recordId=" + this.recordId + "&type="+this.model+"&datamark=" +
 					this.tihao+"&teachinggroupId="+this.groupId).then(function(res) {
-					console.log(that.model+"-----分组类型")
-					console.log(res)
 					that.optionNu = res.data.data.optionNu;
-					console.log(that.optionNu+"选项数量")
 					that.sttype = res.data.data.type;
 					if (that.sttype != "1") {
 						
@@ -221,7 +224,6 @@
 								that.stulistsB=res.data.data.optionInfo.optionB.userList;
 								that.stulistsC=res.data.data.optionInfo.optionC.userList;
 								that.stulistsD=res.data.data.optionInfo.optionD.userList;
-								console.log(that.stulistsA)
 								that.drawLine(xdata, ydata)
 							} else if (that.optionNu == 5) {
 								xdata = ["A", "B", "C", "D", "E"];
@@ -508,7 +510,6 @@
 								that.stulistsB=res.data.data.optionInfo.optionB.usergroupList;
 								that.stulistsC=res.data.data.optionInfo.optionC.usergroupList;
 								that.stulistsD=res.data.data.optionInfo.optionD.usergroupList;
-								console.log(that.stulistsA)
 								that.drawLine(xdata, ydata)
 							} else if (that.optionNu == 5) {
 								xdata = ["A", "B", "C", "D", "E"];
@@ -643,17 +644,28 @@
 					}
 				});
 				
-				// 获取试题
-				this.$http.get(this.configure.resourceIp + '/teacher/import/getQuestionInfo.do?hid=' + this.resourceId + '&sort=' +
+				console.log(this.testType)
+				
+				if(this.testType==1){
+					// 获取试题
+					this.$http.get(this.configure.resourceIp + '/teacher/import/getQuestionInfo.do?hid=' + this.resourceId + '&sort=' +
 					this.tihao).then(
-					function(res) {
-						console.log(res)
-						if (res.data.ret == 200) {
-							that.stlists = res.data.data.data[0].option; //试题选项ABCD....
-							that.tigan = res.data.data.data[0].body; //题干....
-							that.total = res.data.data.total; //总题数
-						};
+						function(res) {
+							if (res.data.ret == 200) {
+								that.stlists = res.data.data.data[0].option; //试题选项ABCD....
+								that.tigan = res.data.data.data[0].body; //题干....
+								that.total = res.data.data.total; //总题数
+							};
 					});
+				}else if(this.testType==3){
+					// 获取单道试题的答题结果
+				// this.$http.get("http://127.0.0.1:3000/jeic/api/answerResult/getDataByQuestionId?recordId=" + this.recordId + "&type="+this.model+"&datamark=" +
+				// 	this.tihao+"&teachinggroupId="+this.groupId).then(function(res) {
+				// 		console.log(res+"------")
+				// 	})
+					
+				}
+				
 			},
 			getParams() {
 				var routerParams = this.$route.params.id; // 取到路由带过来的参数 
@@ -676,7 +688,6 @@
 				this.getResult()
 			},
 			changOption(params){
-				console.log(params)
 				var that = this
 				that.xuanxiang = params
 				that.clickEcharts = true;
@@ -769,7 +780,7 @@
 				// 点击A\B\C\D
 				const that = this;
 				myChart.on('click', function(params) {
-					console.log(params.name)
+	
 					that.changOption(params.name)
 					
 				});

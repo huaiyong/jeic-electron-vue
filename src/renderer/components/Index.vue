@@ -1,6 +1,5 @@
 <template>
 	<div class="zmj_index">
-		<div class="indexHeader"></div>
 		<div class="indexContent">
 			<keep-alive>
 				<router-view v-if="$route.meta.keepAlive"></router-view>
@@ -12,19 +11,19 @@
 				<ul class="indexItem clearfix" ref="indexItem">
 					<li @click="teachModel()" :class="{'active':index==0}">
 						<div>
-							<i class="iconfont icon-heibanblackboard4"></i>
+							<i class="iconfont icon-jiaoxuemoshi"></i>
 							<p>教学模式</p>
 						</div>
 					</li>
 					<li @click="userInfo()" :class="{'active':index==1}">
 						<div>
-							<i class="iconfont icon-yonghu1"></i>
+							<i class="iconfont icon-yonghu"></i>
 							<p>用户</p>
 						</div>
 					</li>
 					<li @click="lookStudent()" :class="{'active':index==2}">
 						<div>
-							<i class="iconfont icon-jilu1"></i>
+							<i class="iconfont icon-yonghu1"></i>
 							<p>成员</p>
 						</div>
 					</li>
@@ -62,12 +61,20 @@
 			</div>
 		</div>
 		<div class="commonTitle"></div>
-		<small-tools v-if="classroomState"></small-tools>
+		<ppt-show v-if="pptHave"></ppt-show>
+		<word-show v-if="wordHave"></word-show>
+		<pdf-show v-if="pdfHave"></pdf-show>
+		<excel-show v-if="excelHave"></excel-show>
+		<small-tools v-show="classroomState"></small-tools>
 	</div>
 </template>
 
 <script>
 	import smallTools from "./resourceDetail/smallTools";
+	import pptShow from "./pptShow";
+	import wordShow from "./wordShow";
+	import pdfShow from "./pdfShow";
+	import excelShow from "./excelShow";
 	import $ from "jquery";
 	import {
 		ipcRenderer
@@ -75,6 +82,7 @@
 	import {
 		mapState
 	} from "vuex";
+	const shell = require('electron').shell;
 	export default {
 		name: "Index",
 		data: function() {
@@ -86,53 +94,61 @@
 			...mapState({
 				classroomState: state => state.state.classroomState,
 				userId: state => state.state.userId,
-				cityId: state => state.state.city
+				cityId: state => state.state.city,
+				pptHave: state => state.state.pptHave,
+				wordHave: state => state.state.wordHave,
+				pdfHave: state => state.state.pdfHave,
+				excelHave: state => state.state.excelHave,
 			})
 		},
 		components: {
-			smallTools
+			smallTools,
+			pptShow,
+			wordShow,
+			pdfShow,
+			excelShow
 		},
 		sockets: {
-			teacherInfo() { 
+			teacherInfo() {
 				this.userInfo();
 			},
-			memberAdmin(){
+			memberAdmin() {
 				this.lookStudent();
 			},
-			ketangjilu(){
+			ketangjilu() {
 				this.teachRecord();
 			},
-			changeClassroomState(){
+			changeClassroomState() {
 				this.changeClassroomState();
 			},
-			resouceAdmin(){
+			resouceAdmin() {
 				this.resources();
 			},
-			pingtai(){ 
+			pingtai() {
 				this.pingtai();
 			},
-			drawclick(){
+			drawclick() {
 				this.draw();
 			},
-			teacheModel(){
+			teacheModel() {
 				this.teachModel();
 			},
-			maximizeTest(){
+			maximizeTest() {
 				this.testMax();
 			},
-			maximizePpt(){
+			maximizePpt() {
 				this.pptMax();
 			},
-			maximizeWord(){
+			maximizeWord() {
 				this.wordMax();
 			},
-			maximizeExcel(){
+			maximizeExcel() {
 				this.excelMax();
 			},
-			maximizeImg(){
+			maximizeImg() {
 				this.imgMax();
 			},
-			maximizePdf(){
+			maximizePdf() {
 				this.pdfMax();
 			}
 		},
@@ -210,25 +226,19 @@
 				});
 			},
 			pingtai() {
-				this.index = 7;
-				const that = this;
-				if (this.classroomState) {
-					// ipcRenderer.send('open-pingtai', this.userId, this.cityId);
-					that.$socket.emit("jeic", {"name": "pingtai","userId":this.userId,"cityId":this.cityId});
-				} else {
-					this.error();
-				};
-
+				shell.openExternal("http://111.207.13.88:8881/jeuc/api/oauth/toClientUrl?clientId=1&userId=" + this.userId +
+					"&areaCode=" + this.cityId)
 			},
 			testMax() { //试题最大化
-					$('#testMax').addClass("active").remove();
-					sessionStorage.removeItem("resourceId");
-					this.$router.push({
-						name: "StudentAnswers",
-						params: {
-							state: true
-						}
-					});
+				$('#testMax').addClass("active").remove();
+				sessionStorage.removeItem("resourceId");
+				sessionStorage.removeItem("paizhaoUrl");
+				this.$router.push({
+					name: "StudentAnswers",
+					params: {
+						state: true
+					}
+				});
 			},
 			imgMax() { //图片最大化
 				$('#imgMax').addClass("active").remove();
@@ -241,42 +251,24 @@
 				});
 			},
 			pdfMax() { //pdf最大化
-					$('#pdfMax').addClass("active").remove();
-					this.$router.push({
-						name: "pdf",
-						params: {
-							resourcePdfId: sessionStorage.getItem("resourcePdfId"),
-							pdfsrc: sessionStorage.getItem("resourcePdfUrl")
-						}
-					});
+				$('#pdfMax').addClass("active").remove();
+				sessionStorage.removeItem("resourcepdfId");
+				this.$store.dispatch("getPdfState",true);
 			},
 			wordMax() { //word最大化
-					$('#wordMax').addClass("active").remove();
-					this.$router.push({
-						name: "word",
-						params: {
-							resourcewordId: sessionStorage.getItem("resourcewordId")
-						}
-					});
+				$('#wordMax').addClass("active").remove();
+				sessionStorage.removeItem("resourcewordId");
+				this.$store.dispatch("getWordState",true);
 			},
 			excelMax() { //excel最大化
-					$("#excelMax").addClass("active").remove();
-					this.$router.push({
-						name: "excel",
-						params: {
-							resourceexcelId: sessionStorage.getItem("resourceexcelId"),
-							showexcelsrc: sessionStorage.getItem("resourceexcelUrl")
-						}
-					});
+				$("#excelMax").addClass("active").remove();
+				sessionStorage.removeItem("resourceexcelId");
+				this.$store.dispatch("getExcelState",true);
 			},
 			pptMax() { //ppt最大化
-					$('#pptMax').addClass("active").remove();
-					this.$router.push({
-						name: "ppt",
-						params: {
-							resourceexcelId: sessionStorage.getItem("resourcepptId")
-						}
-					});
+				$('#pptMax').addClass("active").remove();
+				sessionStorage.removeItem("resourcepptId");
+				this.$store.dispatch("getPptState",true);
 			},
 			error: function() {
 				$(".commonTitle").html("请先上课").show();
@@ -311,7 +303,7 @@
 </script>
 
 <style>
-	.zmj_index .indexContent {
+	.zmj_index,.indexContent {
 		width: 100%;
 		height: 100%;
 		overflow: hidden;

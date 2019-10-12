@@ -11,20 +11,28 @@
 			</div>
 			<div class="zmj_resourceMain">
 				<div class="zmj_resourceType" v-show="sideBarIndex==0">
-					<ul class="clearfix">
+					<ul class="clearfix" v-if="resourceList.length>0">
 						<li v-for="(i,index) in resourceList" :key="index" @click="showResoce(i.resourceId,i.resType)">
 							<span :class="{'wx_video':i.resType==1 || i.resType==8 || i.resType==9,'wx_aduo':i.resType==2,'wx_img':i.resType==3,'wx_pdf':i.resType==4,'wx_ppt':i.resType==5,'wx_doc':i.resType==6,'wx_excel':i.resType==7,'wx_qita':i.resType==null}"></span>
 							<p v-text="i.resourceName"></p>
 						</li>
 					</ul>
+					<div class="pitera" v-if="resourceList.length==0">
+						<img src="../../assets/img/zy.png">
+						<p>暂无资源</p>
+					</div>
 				</div>
 				<div class="zmj_resourceTest" v-show="sideBarIndex==1">
-					<ul class="clearfix">
+					<ul class="clearfix" v-if="questionList.length>0">
 						<li v-for="(i,index) in questionList" :key="index" @click="answer(i.resourceId,i.resourceName)">
 							<span class="wx_shiti"></span>
 							<p v-text="i.resourceName"></p>
 						</li>
 					</ul>
+					<div class="pitera" v-if="questionList.length==0">
+						<img src="../../assets/img/st.png">
+						<p>暂无试题</p>
+					</div>
 				</div>
 			</div>
 		</div>
@@ -66,20 +74,20 @@
 			showSingleResoce(data) {
 				this.showResoce(data[0], data[1]);
 			},
-			closeshowType(){
+			closeshowType() {
 				this.close();
 			},
-			yunziyuanScroll(data){
+			yunziyuanScroll(data) {
 				var conheight = $(".zmj_resourceType").height();
 				$(".zmj_resourceType").scrollTop(data.data * conheight * 1.1);
 			},
-			yunshitiScroll(data){
+			yunshitiScroll(data) {
 				var conheight = $(".zmj_resourceTest").height();
 				$(".zmj_resourceTest").scrollTop(data.data * conheight * 1.1);
 			}
 		},
 		methods: {
-			answer(resourceId,name) {
+			answer(resourceId, name) {
 				if (resourceId == sessionStorage.getItem("resourceId")) {
 					$(this.$parent.$refs.indexItem).find("#testMax").remove();
 					sessionStorage.removeItem("resourceId");
@@ -87,18 +95,18 @@
 						name: 'StudentAnswers',
 						params: {
 							state: true,
-							resourceName:name
+							resourceName: name
 						}
 					});
-				} else if (sessionStorage.getItem("resourceId")) {
+				} else if (sessionStorage.getItem("resourceId") || sessionStorage.getItem("paizhaoUrl")) {
 					this.error("请先关闭最小化试题资源");
 				} else {
 					this.$store.dispatch("getResourceId", resourceId);
-					this.$store.dispatch("getTestType",1);
+					this.$store.dispatch("getTestType", 1);
 					this.$router.push({
 						name: 'StudentAnswers',
-						params:{
-							resourceName:name
+						params: {
+							resourceName: name
 						}
 					});
 				};
@@ -112,7 +120,6 @@
 				this.sideBarIndex = index;
 			},
 			showResoce(resourceId, resType) {
-
 				const that = this;
 				this.$http.get(this.configure.showResourceIp + resourceId).then(function(res) {
 					if (res.data.ret == 200) {
@@ -162,99 +169,52 @@
 							}
 
 						} else if (resType == 4) { //PDF文档
-							
-							if (resourceId == sessionStorage.getItem("resourcePdfId")) {
-								$(that.$parent.$refs.indexItem).find("#pdfMax").remove();
-								sessionStorage.removeItem("resourcePdfId");
-								that.pdfsrc = "static/pdf/web/viewer.html?file=" + res.data.result.downloadUrl;
-								that.$router.push({
-									name: 'pdf',
-									params: {
-										pdfsrc: that.pdfsrc,
-										resourceId: resourceId
-									}
-								})
-							} else if (sessionStorage.getItem("resourcePdfId")) {
-								that.error("请先关闭最小化pdf资源");
-							} else {
-								that.pdfsrc = "static/pdf/web/viewer.html?file=" + res.data.result.downloadUrl;
-								that.$router.push({
-									name: 'pdf',
-									params: {
-										pdfsrc: that.pdfsrc,
-										resourceId: resourceId
-									}
-								})
-							}
-							
+						       that.pdfsrc = "static/pdf/web/viewer.html?file=" + res.data.result.downloadUrl;
+			                    if (that.pdfsrc == sessionStorage.getItem("resourcepdfId")) {
+			                    	$(that.$parent.$refs.indexItem).find("#pdfMax").remove();
+			                    	sessionStorage.removeItem("resourcepdfId");
+			                    	that.$store.dispatch("getPdfState", true);
+			                    } else if (sessionStorage.getItem("resourcepdfId")) {
+			                    	that.error("请先关闭最小化pdf资源");
+			                    } else {
+
+			                    	that.$store.dispatch("getPdfHave", true);
+			                    	that.$store.dispatch("getPdfId", that.pdfsrc);
+			                    };
+								
 						} else if (resType == 5) { //ppt展示
-							sessionStorage.setItem("resourceId", resourceId);
 							if (resourceId == sessionStorage.getItem("resourcepptId")) {
 								$(that.$parent.$refs.indexItem).find("#pptMax").remove();
 								sessionStorage.removeItem("resourcepptId");
-
-								that.$router.push({
-									name: 'ppt',
-									params: {
-										resourceId: resourceId
-									}
-								})
+								that.$store.dispatch("getPptState", true);
 							} else if (sessionStorage.getItem("resourcepptId")) {
 								that.error("请先关闭最小化ppt资源");
 							} else {
-
-								that.$router.push({
-									name: 'ppt',
-									params: {
-										resourceId: resourceId
-									}
-								})
-							}
-
+								that.$store.dispatch("getPptHave", true);
+								that.$store.dispatch("getPptId", resourceId);
+							};
 						} else if (resType == 6) { //word文档 
-							sessionStorage.setItem("resourceWId", resourceId);
 							if (resourceId == sessionStorage.getItem("resourcewordId")) {
 								$(that.$parent.$refs.indexItem).find("#wordMax").remove();
 								sessionStorage.removeItem("resourcewordId");
-
-								that.$router.push({
-									name: 'word',
-									params: {
-										resourceWId: resourceId
-									}
-								});
+								that.$store.dispatch("getWordState", true);
 							} else if (sessionStorage.getItem("resourcewordId")) {
 								that.error("请先关闭最小化word资源");
 							} else {
-								that.$router.push({
-									name: 'word',
-									params: {
-										resourceWId: resourceId
-									}
-								});
-							}
+								that.$store.dispatch("getWordHave", true);
+								that.$store.dispatch("getWordId", resourceId);
+							};
 						} else if (resType == 7) { //excel文档
-							sessionStorage.setItem("resourceEId", resourceId);
 							if (resourceId == sessionStorage.getItem("resourceexcelId")) {
 								$(that.$parent.$refs.indexItem).find("#excelMax").remove();
 								sessionStorage.removeItem("resourceexcelId");
-								that.$router.push({
-									name: 'excel',
-									params: {
-										resourceEId: resourceId
-									}
-								});
+								that.$store.dispatch("getExcelState", true);
 							} else if (sessionStorage.getItem("resourceexcelId")) {
 								that.error("请先关闭最小化excel资源");
 							} else {
-								that.$router.push({
-									name: 'excel',
-									params: {
-										showExcelsrc: that.showExcelsrc,
-										resourceEId: resourceId
-									}
-								});
-							}
+								that.$store.dispatch("getExcelHave", true);
+								that.$store.dispatch("getExcelId", resourceId);
+							};
 						}
 					};
 				});
@@ -296,7 +256,7 @@
 <style scoped="scoped">
 	.zmj_resourceList {
 		width: 80rem;
-		height: 40rem;
+		height: 45rem;
 		background: rgb(137, 137, 137);
 		border: .1 solid rgba(18, 18, 18, 0.3);
 		border-radius: .6rem;
@@ -350,7 +310,7 @@
 
 	.zmj_resourceSidebar {
 		width: 20rem;
-		height: 34.3rem;
+		height: 39.3rem;
 		border-right: .1rem solid #ccc;
 		float: left;
 
@@ -378,7 +338,7 @@
 
 	.zmj_resourceMain {
 		width: 59.9rem;
-		height: 34.3rem;
+		height: 39.3rem;
 		float: right;
 	}
 
@@ -386,6 +346,22 @@
 	.zmj_resourceTest {
 		height: 100%;
 		overflow-y: auto;
+	}
+
+	.zmj_resourceMain .pitera {
+		text-align: center;
+		margin-top: 8rem;
+	}
+
+	.zmj_resourceMain .pitera img {
+		width: 17.6rem;
+		height: 15.6rem;
+	}
+
+	.zmj_resourceMain .pitera p {
+		color: #fff;
+		font-size: 1.6rem;
+		margin-top: 2rem;
 	}
 
 	.zmj_resourceMain ul li {
@@ -413,7 +389,7 @@
 	}
 
 	.zmj_resourceMain ul li p {
-		font-size: 1.6rem;
+		font-size: 1.5rem;
 		color: #fff;
 		margin-top: .6rem;
 		line-height: 1.7rem;

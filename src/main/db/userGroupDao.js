@@ -10,6 +10,14 @@ function findTeachingGroup(teachingGroup,callback) {
     conn.queryData(sql,callback)
 }
 
+//查询临时教学分组列表
+function findTeachingGroupByType(teachingGroup,callback) {
+    var sql = "select * from teachinggroup where del_flag = 0 and type = 1";
+    //var sql = "select * from teachinggroup where class_id = '"+teachingGroup.classId+"' and subject_id = '345';"
+    //logger.info(sql);
+    conn.queryData(sql,callback)
+}
+
 //通过id查询教学组信息
 function findTeachingGroupById(id,callback) {
     var sql = "select * from teachinggroup where del_flag = 0 and id = '"+id+"';";
@@ -42,6 +50,11 @@ function deleteStudentUserGroup(userGroupId,callback) {
     //logger.info(sql);
     conn.executeSql(sql)
 }
+function updateUserGroupById(userGroup,callback){
+	var sql = "update teachinggroup set name = '"+userGroup.name+"' where id = '"+userGroup.id+"';";
+    //logger.info(sql);
+    conn.queryData(sql)
+}
 
 
 
@@ -65,6 +78,8 @@ module.exports.deleteStudentUserGroup = deleteStudentUserGroup
 module.exports.deleteUserGroup = deleteUserGroup
 module.exports.deleteTeachingGroup = deleteTeachingGroup
 module.exports.findTeachingGroupById = findTeachingGroupById
+module.exports.updateUserGroupById = updateUserGroupById
+module.exports.findTeachingGroupByType = findTeachingGroupByType
 
 
 

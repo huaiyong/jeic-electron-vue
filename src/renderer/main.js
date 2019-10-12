@@ -4,7 +4,7 @@ import router from './route';
 import store from './store';
 import echarts from 'echarts';
 import filters from './utils/util';
-import db from './utils/db';
+//import db from './/utils/db';
 import logger from './utils/logger';
 import App from './App.vue';
 import VueSocketIO from 'vue-socket.io';
@@ -58,7 +58,14 @@ for (let i = 0; i < os.networkInterfaces()[netName].length; i++) {
     ip = os.networkInterfaces()[netName][i].address;
   }
 }
-
+var mkdirp = require('mkdirp');
+/**
+ * 创建目录
+ */
+mkdirp('C:/screenCap/', function (err) { 
+    if (err) console.error(err) 
+    else console.log('pow!')
+});
 Vue.use(new VueSocketIO({
   //debug: true,
   connection: 'http://' + ip + ':3000',
@@ -67,7 +74,7 @@ Vue.use(new VueSocketIO({
 Object.keys(filters).forEach(k => Vue.filter(k, filters[k]));
 
 
-Vue.prototype.$db = db;
+//Vue.prototype.$db = db;
 
 Vue.prototype.$logger = logger;
 

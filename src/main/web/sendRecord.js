@@ -12,7 +12,11 @@ const anwerResultDB = require('../db/anwerResultDB');
 const Answer = require('../entity/Answer');
 const PadAnswer = require('../entity/PadAnswer');
 const returnMsgUtil = require('../common/returnMsgUtils');
-
+const httpUtil = require('../utils/httpUtil');
+const usergroupDB = require('../db/userGroupDao');
+const UserGroup = require('../entity/UserGroup');
+const config = require('../config');
+const dateUtil = require('../utils/dateUtil');
 /***************************下发试题********************************/ 
 const ChoiceDan = "0";
 const ChoiceDuo = "1";
@@ -26,8 +30,8 @@ router.post('', function(req, res, next) {
 		returnMsgUtil.returnMsg(res,400,'请传参数！',null)
 	}
 	// 解析 参数
-	var startDate = new Date();
-	var creatuuid= uuid.v1();			//v1 根据时间戳和随机数生成的uuid
+	var startDate = dateUtil.currentTime();
+	var creatuuid = uuid.v1();			//v1 根据时间戳和随机数生成的uuid
     db.serialize(function (err, result) {
         db.run('BEGIN');
         sendRecordDB.insertSendRecord(obj,creatuuid,startDate);	// 添加到下发表中
@@ -41,7 +45,8 @@ router.post('', function(req, res, next) {
 			if(obj.type != "2") {
 				for(var t in trueAnswerList){
 		        	answerType = trueAnswerList[t].type;
-		        	sendRecordDB.insertAnswerResult(obj,userList[i],trueAnswerList[t],creatuuid,startDate);	// 添加到学生答题表中
+		        	var id = uuid.v1();
+		        	sendRecordDB.insertAnswerResult(id,obj,userList[i],trueAnswerList[t],creatuuid,startDate);	// 添加到学生答题表中
 		        	if("2" == answerType) {
 		        		if(i == 0) {
 							flag = initFlag(ChoiceDan,flag);
@@ -61,6 +66,7 @@ router.post('', function(req, res, next) {
 			}
 	        
 		}
+		insertAdmin(creatuuid,obj);
 		var total = obj.titotal;	//判断这个试题的题量
 		var answerStarParam;
 		if(total<=64){
@@ -138,10 +144,14 @@ router.get('/stopAnswer', function(req, res, next) {
 
 function saveAnswer(recordId,answerResultMap,answerMap,flag,res) {
 	//查询该次下发所有的试题信息
+	var creatuuid= uuid.v1();						//v1 根据时间戳和随机数生成的uuid
 	var answerResultParam = new AnswerResult();
 	answerResultParam.recordId = recordId;
+	var dataList = [];
 	anwerResultDB.findAnswerResult(answerResultParam,function (rows) {
 		if(rows.length > 0){
+			var answerResultList = [];
+			var answerList = [];
 			for(var answerResult1 of rows){
 				var datamark = answerResult1.datamark; // 答题数据中的题号
 				if(0 == flag) {
@@ -159,7 +169,13 @@ function saveAnswer(recordId,answerResultMap,answerMap,flag,res) {
 				}
 				ar.type = answerResult1.type;
 				if("1" == ar.type) {
-					ans.data = ar.answer == "A"?"YES":"NO";
+					ans.data = ar.answer
+					if(ar.answer == "A"){
+						ans.data = "YES";
+					}else if(ar.answer == "B"){
+						ans.data = "NO";
+					}
+					
 					if(ans.data == answerResult1.true_answer) {
 						ar.result = "1";
 						ans.result = "1";
@@ -188,14 +204,53 @@ function saveAnswer(recordId,answerResultMap,answerMap,flag,res) {
 						ans.result = "0";
 					}
 				}
-				anwerResultDB.updateAnswerResult(ar,flag);		// 修改学生回答表
-				if(0 == flag) {
-					sendRecordDB.insertAnswer2(ans);			// 添加到答题表
-				}else {
-					sendRecordDB.insertPadAnswer(ans);
-				}
+//				anwerResultDB.updateAnswerResult(ar,flag);		// 修改学生回答表
+//				if(0 == flag) {
+//					sendRecordDB.insertAnswer2(ans);			// 添加到答题表
+//				}else {
+//					sendRecordDB.insertPadAnswer(ans);
+//				}
 				
+				let dataMap = {};
+                dataMap["id"] = creatuuid;
+                dataMap["rId"] = answerResult1.class_record_id;
+                dataMap["sId"] = answerResult1.record_id;
+//              dataMap["score"] = answerResult1.score;
+                dataMap["eId"] = answerResult1.resource_id;
+                dataMap["deviceId"] = answerResult1.device_id;
+                dataMap["qId"] = answerResult1.datamark;
+                dataMap["qusNum"] = answerResult1.datamark;
+                dataMap["answer"] = ar.answer;
+                let resultType = "";
+                if ("1" == answerResult1.result) {
+                    resultType = "1";
+                } else if ("0" == answerResult1.result) {
+                    resultType = "2";
+                } else {
+                    resultType = "3";
+                }
+                dataMap["resultType"] = resultType;
+                dataMap["createBy"] = answerResult1.user_id;
+                dataMap["qusType"] = answerResult1.type; // 题型
+//              dataMap["optionNumber"] = answerResult1.optionNumber; // 选项个数
+                dataMap["rightAnswer"] = answerResult1.true_answer;
+                dataList.push(dataMap);
+                
+                answerResult1.answer = ar.answer;
+                answerResult1.result = ar.result;
+                answerResultList.push(answerResult1);
+                answerList.push(ans);
+//              anwerResultDB.updateAnswerResult1(answerResult1,flag);
 			}
+			
+			if(0 == flag) {
+				sendRecordDB.insertAnswer2(answerList);			// 添加到答题表
+			}else {
+				sendRecordDB.insertPadAnswer(answerList);
+			}
+			
+			anwerResultDB.updateAnswerResult1(answerResultList,flag);
+			syncDataToAdmin(config.adminStuAnswer,dataList);
 		}
 	})
     returnMsgUtil.returnSuccessMsg(res);
@@ -213,14 +268,12 @@ function sortStr(str) {
 		}
 		var resArr = StrList.sort();
 		for(var i=0;i < resArr.length;i++) {
-			console.log(resArr[i]);
 			if(i == 0) {
 				returnStr += resArr[i];
 			}else {
 				returnStr += ","+ resArr[i];
 			}
 		}
-		console.log(resArr);
 		return returnStr;
 }
 
@@ -297,11 +350,10 @@ router.get('/stopResponder', function(req, res, next) {
 router.get('/findClassRecordByRid', function(req, res, next) {
   var classRecordId = req.param('classRecordId');
   var dataMap = {};
-  sendRecordDB.findSendRecord(classRecordId,function (rows) {
+  sendRecordDB.findSendRecord(classRecordId,"",function (rows) {
     if(rows.length > 0){
       for(var i of rows){
         var resultMap = {};
-        console.log(i);
 
         resultMap["id"]= i.id,
           resultMap["name"]= i.name,
@@ -333,21 +385,24 @@ router.get('/findClassRecordByRid', function(req, res, next) {
 router.get('/getAnsweredUser', function(req, res, next) {
   var sendRecordId = req.param('sendRecordId');
   var type = req.param('type');
-  if(type==1){
+  var list = [];
+  if(type==1||type==3){
   	sendRecordDB.getAnsweredUser(sendRecordId,function (rows) {
   		if(rows.length > 0){
-  			res.json({ret:200,data:rows,message:"操作成功"})
-  		}else{
-  			res.json({ret:400,data:rows,message:"操作失败"})
+	  		for(var value of rows){
+	  			list.push(value.user_id)	
+	  		}
   		}
+  		res.json({ret:200,data:list,message:"操作成功"})
   	})
   }else{
   	sendRecordDB.getAnsweredUserBy(sendRecordId,function (rows) {
   		if(rows.length > 0){
-  			res.json({ret:200,data:rows,message:"操作成功"})
-  		}else{
-  			res.json({ret:400,data:rows,message:"操作失败"})
+  			for(var value of rows){
+  				list.push(value.stu_id)
+  			}
   		}
+  		res.json({ret:200,data:list,message:"操作成功"})
   	})
   	
   }
@@ -361,7 +416,108 @@ function callback(result,res){
     })
 }
 
+/**
+ * 向管理端同步数据
+ * @param resultList
+ */
+function syncDataToAdmin(url,resultList){
+    httpUtil.httpPostJSON(url,resultList);
+}
 
+/**
+ * 下发	同步管理端
+ */
+function insertAdmin(id,obj) {
+	//dataMap["teachingGroupId"] = obj.teachingGroupId;	// 教学组id
+    let dataMap = {};
+    var userList = obj.userList;
+    var recordStu = [];
+    recordStu = initUserList(id,userList,obj);
+    dataMap["id"] = id;
+    dataMap["rId"] = obj.classRecordId;
+    dataMap["name"] = obj.resourceName;
+    dataMap["resId"] = obj.resourceId;
+    dataMap["url"] = obj.resourceUrl;
+    dataMap["createBy"] = obj.teacherId;
+    dataMap["recordStu"] = recordStu;
+    dataMap["moudleType"] = obj.answerType;				// 1全班教学 全组作答 2分组教学组长作答3 分组教学全组作答 
+    if(obj.type == 1) {									//2试题3拍照图片4拍照创题
+    	dataMap["type"] = 2;							// 对应管理端试题
+    }else if(obj.type == 2){
+    	dataMap["type"] = 1;							// 对应管理端资源
+    }else if(obj.type == 3){
+    	dataMap["type"] = 3;
+    }
+    if(1 == obj.answerType) {								// 1 全部下发 2小组下发
+	    syncDataToAdmin(config.adminClassRecordSend,dataMap);
+    }else {
+		usergroupDB.findTeachingGroupById(obj.teachingGroupId,function (rows) {
+			if(rows.length > 0){
+				var stuMap = {};
+				
+				var userGroupParam = new UserGroup();
+				userGroupParam.teachinggroupId = obj.teachingGroupId;
+				var teachingGroupType = rows[0].type;
+				var teachingGroupSubjectId = rows[0].subject_id;
+				usergroupDB.findUserGroup(userGroupParam,function (rows) {
+					var userGroupList = [];
+					var listKeyMap = {};//小组id集合
+					if(rows.length > 0){
+						for(var userGroup of rows){
+							listKeyMap[userGroup.id] = userGroup.id;
+						}
+        				for (var key in listKeyMap) {
+        					var userGroupMap = {};
+							var studentList = [];//第一个小组的学生
+							var groupName = "";
+							for(var userGroup of rows){
+								if(userGroup.id==key){
+									groupName = userGroup.name;
+									for(var i=0;i < userList.length;i++) {
+										if(userList[i].userId == userGroup.student_id) {
+											var studentMap = {}; //学生map
+											studentMap["id"] = userGroup.student_id;
+											studentMap["name"] = userGroup.student_name;
+											studentMap["leader_flag"] = userGroup.leader_flag;
+											studentMap["type"] = teachingGroupType;
+											studentMap["class_id"] = userGroup.class_id;
+											studentMap["subject_id"] = teachingGroupSubjectId;
+											studentMap["teacher_id"] = obj.teacherId;
+											studentList.push(studentMap);
+										}
+									}
+								}
+							}
+							if(studentList.length > 0) {
+								userGroupMap["name"] = groupName;	// 添加小组名称
+								userGroupMap["studentList"]=studentList;// 添加list
+								userGroupList.push(userGroupMap);
+							}
+						}
+					}
+					stuMap["userGroupList"] = userGroupList;
+					dataMap["map"] = stuMap;
+				    syncDataToAdmin(config.adminClassRecordSend,dataMap);
+				})
+			}
+		})
+    }
+    
+}
+
+
+function initUserList(id,userList,obj) {
+	var recordStu = [];
+    for(var i = 0;i < userList.length;i++) {
+		var userMap = {};
+		userMap["crsId"] = obj.classRecordId;
+		userMap["stuId"] = userList[i].userId;
+		userMap["sId"] = id;
+		userMap["createBy"] = obj.teacherId;
+		userMap["stuName"] = userList[i].realname;
+		recordStu.push(userMap);
+	}
+    return recordStu;
+}
 
 module.exports = router;
-

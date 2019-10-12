@@ -3,52 +3,95 @@
 	<div class="wrapper">
 		<div class="foundGroup" style="z-index:1">
 			<div class="heads">
-				<i class="iconfont icon-fanhui1" @click="backRouter()"></i>
+				<i class="iconfont icon-fanhui1" @click="backRouter()"   v-if="!jieshu"></i>
 				<em>班级选举</em>
-				<span class="fr">
+				<span class="fr"  v-if="editState">
 					<input type="checkbox" v-model="checked" @click="checkedAll()" :checked="checked">
 					<label for="allcheck">全选</label>
 				</span>
+				<span class="fr"  v-if="!editState">
+					<p v-if="ruleSet==1">每位同学拥有{{count}}票 / 候选人不可投票</p>
+					<p v-if="ruleSet==2">每位同学拥有{{count}}票 / 候选人可投票 / 不可投自己</p>
+					<p v-if="ruleSet==3">每位同学拥有{{count}}票 / 候选人可投票 / 可投自己</p>
+				</span>
 			</div>
 			<div class="mainBox clearfix">
-				<ul class="mainR">
+				<ul class="mainR" v-if="editState">
 					<li class="fl strSingle" :class="{'active':item.active}" v-for="(item,index) in list" :key="index" @click="checkStudent(item,index)">
 						<img :src='"../../assets/img/"+ getImgUrl(item.sex) +".png"' alt="">
 						<p>{{item.name}}</p>
 					</li>
 				</ul>
-
-				<button class="finishcreated" @click="finishcreated">完成创建</button>
-				
+				<ul v-if="!editState" class="checkListStu">
+					<li v-for="(item,index) in checkedstr" :key="index">
+						<span class="strIndex">{{index+1}}</span>
+						<span class="ckeckstate">{{item.name}}</span>
+					</li>
+				</ul>
+				<div class="completeBtn" v-if="!jieshu&&checkedstr.length>0">
+					<button  v-if="editState" class="finishcreated" @click="finishcreated">完成创建</button>
+					<button v-if="!editState" class="finishcreated" @click="beginToupiao">开始投票</button><i class="iconfont icon-bangzhu"  @click="bangzhu"></i>
+				</div>
+				<div class="completeBtn"  v-if="jieshu">
+					<button  class="finishcreated" @click="endVote">结束投票</button>
+				</div>
+			
 				<!-- 弹窗显示 -->
-				<div class="setNum" v-show="complite">
-					<div class="bghui"></div>
-					<div class="setContent">
-						<div class="settitle">
+
+				<div class="mask" v-show="complite">
+					<div class="voteRule">
+						<div class="title clearfix">
 							规则设置
-							<i class="fr iconfont icon-hao closeicon" @click="closeSetNum" style=""></i>
-							</div>
-						<div class="piaoNum">
-							投票数量
-							<span>-</span>
-							<input type="number" value="0">
-							<span>+</span>
+							<i class="iconfont icon-chuyidong" @click="closeSetNum()"></i>
 						</div>
-						<div class="piaoStyle">
-							计票方式
-							<span>匿名</span>
-							<span>实名</span>
-						</div>
-						<div class="guizeSet">
-							规则设置
-							<ul>
-								<li><input type="radio" name="notou" id="radio1"><label for="radio1">候选人不可投票</label></li>
-								<li><input type="radio" name="notou1"  id="radio2"><label for="radio2">候选人可投票/不可投自己</label></li>
-								<li><input type="radio" name="notou2" id="radio3"><label for="radio3">候选人可投票/可投自己</label></li>
-							</ul>
-						</div>
+						<ul>
+							<li>
+								<span>投票数量：</span>
+								<div class="count">
+									<button @click="subCount()" :disabled="count<2">-</button>
+									<span v-text="count"></span>
+									<button @click="addCount()" :disabled="count>checkedstr.length-1">+</button>
+								</div>
+							</li>
+							<li><span>记票方式：</span><div class="mode"><button :class="{'active':model==1}" @click="switchModel(1)">匿名</button><button :class="{'active':model==2}" @click="switchModel(2)">实名</button></div></li>
+							<li>
+								规则设置：
+								<p v-if="isAllCheck">
+									<input type="radio" name="toupiaoType" id="bxzj" value="1" v-model="ruleSet"><label for="bxzj">候选人不可投票</label>
+								</p>
+								<p>
+									<input type="radio" name="toupiaoType" id="xzj1" value="2" v-model="ruleSet"><label for="xzj1">候选人可投票/不可投自己</label>
+								</p>
+								<p>
+									<input type="radio" name="toupiaoType" id="xzj2" value="3" v-model="ruleSet"><label for="xzj2">候选人可投票/可投自己</label>
+								</p>
+								
+							</li>
+						</ul>
+						<button class="sureBtn" @click="sureRule()">确认</button>
 					</div>
 				</div>
+				
+				<!-- 提示 -->
+				<div class="mask" v-if="titleState">
+					<div class="tips">
+						<div class="bg"></div>
+						 <div class="title bottom">
+						   <h4><i class="iconfont icon-icon-vote"></i>若每位同学拥有一票</h4>
+						   <p>学生使用答题器输入选项前的编号，点击ok键即可完成投票</p>
+						 </div>
+						 <div class="title">
+						   <h4><i class="iconfont icon-toupiao3"></i>若每位同学拥有多票</h4>
+						   <p>学生使用答题器输入选项前的编号，点击ok键即可完成第一票，再次输入编号,</p>
+						   <p>点击ok键完成第二次投票，多项操作同上</p>
+						 </div>
+						 <div class="checkBox">
+							<label><input type="checkbox"><i class="iconfont icon-fuxuankuang_weixuanzhong"></i>不再提示</label>
+						 </div>
+						 <button @click="sureTou()">确认</button>
+					</div>
+				</div>
+				
 
 			</div>
 		</div>
@@ -70,63 +113,221 @@
 				list: [], //全班的学生
 				checkedstr: [], //选择的学生
 				checked: false ,//全选按钮默认状态
-				complite:false
+				complite:false,
+				optionList:["","",""],
+				count:1 ,//票数
+				model:1,
+				editState:true,
+				titleState:false,
+				jieshu:false,
+				ruleSet:0,
+				isAllCheck:true,
+				checkToupiaoren:[], //选民，可投票的人
+				voteId:"" //选举的id
 			}
 		},
 		components: {
-
+			
 		},
-		watch: {
-
+		sockets: {
+			endtoupiao(){
+				this.endVote()
+			}
 		},
 		created() {
 			const that = this;
-			that.list = this.remember
+			// 全班学生接口数据
+			this.$http.get('http://127.0.0.1:3000/jeic/api/student?classId=' + this.$store.state.state.classId).then(function(data){
+			    that.list = data.data.data;
+			});
+			
+			
+			var data=this.$route.params.data;
+			if(data){
+				data=JSON.parse(data);
+				this.complite=false;
+				this.editState=false;
+				this.jieshu=true;
+				this.checkedstr=data.candidateList;
+				
+				this.$http.post("http://localhost:3000/jeic/api/votingElections", {jsonData: data}).then(function(res){
+					console.log(res)
+					that.voteId=res.data.data;
+					that.$socket.emit("vote", {
+						"name": "stuXuanju",
+						"data": res.data.data
+					});
+				});
+				
+			}
+			
+			// this.getParams()
+			// 
+			// var routerParams = this.$route.params; // 取到路由带过来的参数
+			// // console.log()
+			// var toupiaoData=JSON.parse(routerParams.data);
+			// console.log(toupiaoData)
+			// var that=this
+			// if(toupiaoData.candidateList!=undefined){
+			// 		this.complite=false;
+			// 		this.editState=false;
+			// 		this.jieshu=true;
+			// 		this.checkedstr=toupiaoData.candidateList;
+			// 		
+			// 		this.$http.post("http://localhost:3000/jeic/api/votingElections", {jsonData: toupiaoData}).then(function(res){
+			// 			console.log(res)
+			// 			that.voteId=res.data.data;
+			// 			that.$socket.emit("vote", {
+			// 				"name": "stuXuanju",
+			// 				"data": res.data.data
+			// 			});
+			// 		});
+			// }
+			
+			
+			
 		},
 		computed: {
 			...mapState({
-				remember: state => state.state.remember,
-				pattern: state => state.state.pattern,
-				groupId: state => state.state.groupId
+				classRecord: state => state.state.classRecord,
+				userId: state => state.state.userId
 			})
 		},
+		// watch: {
+		// 	'$route': 'getParams',// 监测路由变化,只要变化了就调用获取路由参数方法将数据存储本组件即可
+		// },
 		methods: {
+// 			getParams() {
+// 				
+// 
+// 			},
 			// 获取img地址
 			getImgUrl(obj) {
 				return obj == '男' ? 'boy' : 'girl'
 			},
-			checkStudent(item, index) {
-				// console.log(this.checkedstr.length)
-				// console.log(this.list.length)
-				if (item.active) {
+			subCount(){   //投票数量减
+				this.count--;
+			},
+			addCount(){ //投票数量加
+				this.count++;
+			},
+			switchModel(i){ //切换匿名或者实名
+				this.model=i;
+				console.log(this.model)
+			},
+			bangzhu(){
+				this.titleState=true;
+			},
+			sureTou(){
+				this.titleState=false;
+			},
+			sureRule(){ //确认设置规则
+				this.complite=false;
+				this.editState=false;
+				console.log(this.ruleSet)
+				
+				
+				if(this.ruleSet==1){ //候选人不可投票
+					for(var i=0;i<this.checkedstr.length;i++){
+						this.list.splice(this.list.indexOf(this.checkedstr[i]),1);
+					}
+					this.checkToupiaoren=this.list
+				}else{ //候选人可投票
+					this.checkToupiaoren=this.list
+				}
+				
+				console.log(this.checkToupiaoren)
+			},
+			sureToupiao(){ //开始投票
+				
+				this.jieshu=true;
+
+				var candidateList=[] //被选中的投票对象
+				for(var i=0;i<this.checkedstr.length;i++){
+					var jsonCandidateList={}
+					jsonCandidateList.name=this.checkedstr[i].name;
+					jsonCandidateList.id=this.checkedstr[i].id;
+					jsonCandidateList.no=i+1;
+					candidateList.push(jsonCandidateList)
+				}
+				
+				var toupiaoData = {
+					"candidateList":candidateList, //候选项
+					"userList": this.checkToupiaoren, //投票的人
+					"name": "班级选举",
+					"type": 2, //1自定义2班级选举
+					"candidate_no": this.checkedstr.length, //候选项个数
+					"anonymous": this.model,//1匿名2实名
+					"voting_rules": this.ruleSet, //投票规则 分别对应图上的123
+					"vote_number":this.count, //可投票数
+					"class_record_id": this.classRecord, //课堂记录id
+					"user_id": this.userId //教师id
+				};
+				
+				console.log(toupiaoData)
+				var that=this
+				// var stringstuinfodata = JSON.stringify(stuinfodata);
+				this.$http.post("http://localhost:3000/jeic/api/votingElections", {jsonData: toupiaoData}).then(function(res){
+					that.voteId=res.data.data;
+					that.$socket.emit("vote", {
+						"name": "stuXuanju",
+						"data": res.data.data
+					});
+				});
+			},
+			endVote(){  //结束投票
+			    this.$http.get("http://localhost:3000/jeic/api/votingElections/stopVote?voteId="+this.voteId).then(res=>{
+					console.log(res)
+					this.$router.push({name:"echartResult",query:{voteId:this.voteId,type:2}});
+					
+				});
+				this.$socket.emit("jeic", {
+					"name": "getVoteId",
+					"data": this.voteId
+				});
+			},
+			beginToupiao(){
+				// this.titleState=true; //提示弹窗显示
+				this.sureToupiao()
+			},
+			checkStudent(item, index) { //选择被选举的学生
+				var that=this;
+				if (item.active) { //取消选中状态
 					Vue.set(item, 'active', false); //为item添加不存在的属性，需要使用vue提供的Vue.set( object, key, value )方法。 
 					var pos = this.checkedstr.indexOf(item);
-					this.checkedstr.splice(pos,1)
-				} else {
+					if(this.checkedstr===this.list){
+						// this.isAllCheck=false;
+						this.checkedstr.splice(pos,1)
+					}else{
+						this.checkedstr.splice(pos,1)
+					}
+					
+				} else { //添加选中状态
 					Vue.set(item, 'active', true);
 					if(this.checkedstr.indexOf(item)==-1){
 						this.checkedstr.push(item)
 					}
 				}
-				
-				if (this.checkedstr.length == this.list.length) {
+				//判断是否全选了
+				if (this.checkedstr.length == this.list.length) { 
 					this.checked = true;
 				} else {
 					this.checked = false;
 				}
-				console.log(this.checkedstr)
 			},
-			checkedAll() {  //全选
-				if (this.checked) {
+			checkedAll() {//全选和全不选
+				if (this.checked) { //全不选
 					for (var i = 0; i < this.list.length; i++) {
 						Vue.set(this.list[i], 'active', false);
 						this.checkedstr=[]
 					}
-				} else {
+					this.isAllCheck=true;
+				} else { //全选
 					for (var i = 0; i < this.list.length; i++) {
 						Vue.set(this.list[i], 'active', true);
-						this.checkedstr=this.list
+						this.checkedstr = this.list.concat();
 					}
+					this.isAllCheck=false;
 				}
 			},
 			finishcreated(){ //点击完成创建 设置弹窗显示
@@ -138,6 +339,10 @@
 				this.complite=false;
 			},
 			backRouter(){   //返回路由
+				for (var i = 0; i < this.list.length; i++) {
+					Vue.set(this.list[i], 'active', false);
+					this.checkedstr=this.list
+				}
 				this.$router.back();
 			},
 		}
@@ -151,7 +356,52 @@
 		width: 100%;
 		height: 100%;
 	}
-
+	
+	.voteRule ul>li>p{
+		margin:10px 0
+	}
+	
+	.completeBtn {
+		text-align: center;
+	}
+	
+	.completeBtn button{
+		width: 20rem;
+		height: 4rem;
+		color: #fff;
+		border: none;
+		outline: none;
+		border-radius: 2rem;
+		background: #229cfa;
+		cursor: pointer;
+		display: inline-block;
+	}
+	.completeBtn .iconfont{
+		font-size: 2.4rem;
+		color:#feaa26;
+		vertical-align: middle;
+		cursor: pointer;
+	}
+	.checkListStu{
+		margin: 2rem 0;
+	}
+	.checkListStu li{
+		display: inline-block;
+		height: 3rem;
+		margin-left: 2rem;
+		width: 10rem;
+	}
+	.ckeckstate{
+		padding:2px 5px;
+		background: #219cfa;
+		border-radius: 8px;
+		color:#fff;
+	}
+	.strIndex{
+		width:2rem;
+		display: inline-block;
+		text-align: center;
+	}
 	.strSingle {
 		opacity: 0.5;
 	}
@@ -441,6 +691,9 @@
 		margin-top: 1rem;
 		cursor: pointer;
 		list-style: none;
+		width: 6rem;
+		text-align: center;
+		overflow: hidden;
 	}
 
 	.foundGroup .mainBox .mainR li img {
@@ -462,4 +715,170 @@
 		opacity: 0.5;
 		background: #c8ebfb;
 	}
+	
+	
+	.mask{
+		position: absolute;
+		top: 0;
+		left: 0;
+		right:0;
+		bottom:0;
+		background: rgba(0,0,0,0.4);
+		margin: auto;
+	}
+	.mask .voteRule{
+		width: 31rem;
+		height: 45rem;
+		background: #fff;
+		border-radius: .5rem;
+		margin: 6.4rem auto;
+		overflow: hidden;
+	}
+	.mask .voteRule .title{
+		height: 4.4rem;
+		line-height: 4.4rem;
+		color: #fff;
+		font-size: 1.6rem;
+		text-align: center;
+		background: #4092f4;
+	}
+	.mask .voteRule .title .iconfont{
+		font-size: 1.6rem;
+		float:right;
+		cursor: pointer;
+	}
+	.mask .voteRule ul li{
+		font-size: 1.4rem;
+		padding-left: 3.8rem;
+		margin-top: 4rem;
+	}	
+	.mask .voteRule ul li div{
+		/* margin-left: 2.2rem; */
+		display: inline-block;
+	}
+	.mask .voteRule ul li:first-child >span{
+		vertical-align: 1.2rem;
+	}
+	.mask .voteRule ul li .count{
+		width: 16rem;
+		height: 3rem;
+		border:.1rem solid #eee;
+		overflow: hidden;
+	}
+	.mask .voteRule ul li .count button{
+		width:3rem;
+		height: 100%;
+		font-size: 2rem;
+		border: none;
+		outline: none;
+		background: #fff;
+		cursor: pointer;
+	}
+	.mask .voteRule ul li .count span{
+		width: 8rem;
+		height:3.4rem;
+		text-align: center;
+		line-height: 3.4rem;
+		border-left:.1rem solid #eee;
+		border-right:.1rem solid #eee;
+		display: inline-block;
+	}
+	.mask .voteRule ul li .mode button{
+		width:6rem;
+		height: 3rem;
+		font-size: 1.4rem;
+		background: #fff;
+		border: .1rem solid #eeeeee;
+		border-radius: .2rem;
+		outline: none;
+		cursor: pointer;
+	}
+	.mask .voteRule ul li .mode button:last-child{
+		margin-left: 3.4rem;
+	}
+	.mask .voteRule ul li .mode button.active{
+		background: #4092f4;
+		border-color: #4092f4;
+		color: #fff;
+	}
+	.mask .voteRule .sureBtn{
+		width: 20rem;
+		height: 4rem;
+		color: #fff;
+		font-size: 1.4rem;
+		background:#229cfa;
+		border-radius: 2rem;
+		outline: none;
+		border: none;
+		margin: 4.5rem auto;
+		display: block;
+		cursor: pointer;
+	}
+	.mask .tips{
+		width: 70rem;
+		height: 43rem;
+		background: #fff;
+		border-radius: .5rem;
+		overflow: hidden;
+		margin: 5rem auto;
+	}
+	.mask .tips .bg{
+		height: 10rem;
+		background: url("../../assets/img/tishi.png") no-repeat;
+		background-size:100%;
+	}
+	.mask .tips .title{
+		margin:0 1.6rem 0 3.4rem;
+		padding-bottom: 2rem;
+	}
+	.mask .tips h4{
+		font-size: 1.6rem;
+		margin:1rem 0;
+	}
+	.mask .tips h4 .iconfont{
+		font-size: 3.6rem;
+		color: #3d8bd1;
+		margin-right: 2rem;
+	}
+	.mask .tips .bottom{
+		border-bottom: .1rem solid #ccc;
+	}
+	.mask .tips .bottom h4 .iconfont{
+		color: #feaa26;
+	}
+	.mask .tips p{
+		font-size: 1.4rem;
+		color: #acacac;
+		line-height:2.8rem;
+		padding-left: 5.6rem;
+		
+	}
+	.mask .tips .checkBox{
+		text-align: center;
+		font-size: 1.4rem;
+	}
+	.mask .tips .checkBox input{
+		visibility: hidden;
+	}
+	.mask .tips .checkBox .iconfont{
+		font-size: 1.4rem;
+		color: #ccc;
+	}
+	.mask .tips .checkBox input[type=checkbox]:checked+.iconfont{
+		color: #4092f4;
+	}
+	.mask .tips button{
+		width: 20rem;
+		height: 4rem;
+		color: #fff;
+		font-size: 1.4rem;
+		border: none;
+		outline: none;
+		border-radius: 2rem;
+		background: #229cfa;
+		margin:1.6rem auto;
+		display: block;
+		cursor: pointer;
+	}
+	
 </style>

@@ -10,6 +10,16 @@ function updateVoteResult(voteResult,callback) {
     logger.info(sql);
     conn.queryData(sql,callback);
 }
+function updateVoteResultStuPad(voteResult,callback) {
+    var sql = "update vote_result set result = '"+voteResult.result+"' WHERE vote_id = '"+voteResult.voteId+"' and user_id = '"+voteResult.userId+"' and ticket_number = '"+voteResult.ticketNumber+"'";
+    logger.info(sql);
+    conn.queryData(sql,callback);
+}
+function updateVoteStuPad(voteId,callback) {
+    var sql = "update vote set stop_vote = 1 WHERE id = '"+voteId+"'";
+    logger.info(sql);
+    conn.queryData(sql,callback);
+}
 
 function findCandidateList(voteId,callback){
     var sql = "SELECT * FROM candidate WHERE vote_id='"+voteId+"'";
@@ -41,12 +51,23 @@ async function findOneCandidateCount(voteResult) {
     //conn.queryData(sql,callback);
     return await conn.asyncRun(sql);
 }
+async function findVoteResultByVoteId (voteResult) {
+	var sql = " SELECT * FROM vote_result WHERE vote_id = '"+voteResult.voteId+"' and result = '"+voteResult.optionNumber+"' GROUP BY realname";
+    logger.info(sql);
+    return await conn.asyncRun(sql);
+}
 async function findVoteById(voteId) {
     var sql = "SELECT * FROM vote WHERE id='"+voteId+"'";
     logger.info(sql);
     return await conn.asyncRun(sql);
     //conn.queryData(sql,callback);
 }
+function findVoteByIdStuPad(voteId,callback){
+	var sql = "SELECT * FROM vote WHERE id='"+voteId+"'";
+    logger.info(sql);
+    conn.queryData(sql,callback);
+}
+
 function deleteVoteResult(voteResult,callback) {
     var sql = "delete FROM vote vote_result where vote_id='"+voteResult.voteId+"' and realname = '"+voteResult.realname+"'";
     logger.info(sql);
@@ -74,7 +95,9 @@ async function findZongVote(voteId){
 
 
 
+
 module.exports.updateVoteResult = updateVoteResult
+module.exports.updateVoteResultStuPad = updateVoteResultStuPad
 module.exports.findCandidateList = findCandidateList
 module.exports.findCandidateList1 = findCandidateList1
 module.exports.findOneCandidateCount = findOneCandidateCount
@@ -84,5 +107,9 @@ module.exports.deleteVoteResult = deleteVoteResult
 module.exports.findVoteResultByName = findVoteResultByName
 module.exports.findZongVote = findZongVote
 module.exports.findVoteOwn = findVoteOwn
+
+module.exports.findVoteResultByVoteId = findVoteResultByVoteId
+module.exports.findVoteByIdStuPad = findVoteByIdStuPad
+module.exports.updateVoteStuPad = updateVoteStuPad
 
 

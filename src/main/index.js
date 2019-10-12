@@ -7,6 +7,8 @@ import {
 import {
 	autoUpdater
 } from 'electron-updater';
+
+import db from './utils/db';
 var  Menu=electron.Menu;
 var  newwin=null;
 var  pingtai=null;
@@ -50,6 +52,20 @@ function createWindow() {
 
 	// mainWindow.webContents.openDevTools({ detach: true });
 }
+// 主进程只运行一个
+let myWindow = null;
+const shouldQuit = app.makeSingleInstance((commandLine, workingDirectory) => {
+	// Someone tried to run a second instance, we should focus our window.
+	if (myWindow) {
+		if (myWindow.isMinimized()) myWindow.restore()
+		myWindow.focus()
+	}
+})
+
+if (shouldQuit) {
+	app.quit()
+}
+
 
 app.on('ready', () => {
 	if (process.env.NODE_ENV === 'production') autoUpdater.checkForUpdatesAndNotify();
@@ -88,32 +104,6 @@ ipcMain.on('max-window', () => {
 // 关闭
 ipcMain.on('close-window', () => {
 	mainWindow.close();
-});
-ipcMain.on('open-baidu', () => {
-	Menu.setApplicationMenu(null);
-    newwin = new BrowserWindow({
-        width: 600, 
-        height: 400,
-        parent: mainWindow, //win是主窗口
-		webPreferences:{
-		        nodeIntegration:false
-		  }
-    })
-    newwin.loadURL("https://www.baidu.com/"); //new.html是新开窗口的渲染进程
-    newwin.on('closed',()=>{newwin = null});
-});
-ipcMain.on('open-pingtai', ($even,userId,cityId) => {
-	Menu.setApplicationMenu(null);
-    pingtai = new BrowserWindow({
-        width: 800, 
-        height: 400,
-        parent: mainWindow, //win是主窗口
-		webPreferences:{
-		        nodeIntegration:false
-		}
-    })
-    pingtai.loadURL("http://edu.jetsen.cn:9001/jeuc/api/oauth/toClientUrl?clientId=1&userId="+userId+"&areaCode="+cityId); //new.html是新开窗口的渲染进程
-    pingtai.on('closed',()=>{newwin = null});
 });
 
 /**

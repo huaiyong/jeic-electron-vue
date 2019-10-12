@@ -9,7 +9,6 @@ class httpUtils{
      * @param body
      */
     static httpPostJSON(url,body) {
-    	
         var bodyString = JSON.stringify(body);
 		
         var headers = {
@@ -25,24 +24,19 @@ class httpUtils{
         };
 
         var req=http.request(options,function(res){
-
             res.setEncoding('utf-8');
-
             var responseString = '';
 
             res.on('data', function(data) {
                 responseString += data;
-                console.log(data);
             });
 
             res.on('end', function(res) {
                 //这里接收的参数是字符串形式,需要格式化成json格式使用
                 //var resultObject = JSON.parse(responseString);
-                console.log(res);
             });
 
             req.on('error', function(e) {
-                // TODO: handle error.
                 console.log('-----error-------',e);
             });
         });

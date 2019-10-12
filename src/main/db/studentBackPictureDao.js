@@ -9,8 +9,8 @@ var logger = log4js.getLogger();
  * @param {Object} callback
  */
 function getStudentBackPicture(classRecordId,sendRecordId,stuId,callback) {
-	var sql="SELECT * FROM student_back_picture a WHERE 1=1 AND a.class_record_id = '"+classRecordId+"' ORDER BY a.create_time DESC;"
-	if(sendRecordId!=""&&stuId!=""){
+	var sql="SELECT * FROM student_back_picture a WHERE 1=1 AND a.class_record_id = '"+classRecordId+"' and stu_id = '"+stuId+"' ORDER BY a.create_time DESC;"
+	if(sendRecordId!= undefined){
 		sql="SELECT * FROM student_back_picture a WHERE 1=1 AND a.class_record_id = '"+classRecordId+"' and send_record_id = '"+sendRecordId+"' and stu_id = '"+stuId+"' ORDER BY a.create_time DESC;"
 	}
 	logger.info(sql);

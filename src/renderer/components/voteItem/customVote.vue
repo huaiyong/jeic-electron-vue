@@ -1,5 +1,5 @@
 <template>
-<div>
+<div class="vote">
 	<div class="customVote" v-if="!editState">
 		<div class="header">
 			<i class="iconfont icon-fanhui1" @click="backRouter()"></i>
@@ -9,11 +9,11 @@
 			<div class="option clearfix" v-for="(i,index) in optionList">
 				<div class="optionText">
 					<span v-text="index+1"></span>
-					<input type="text" v-model="optionList[index]"  placeholder="选项" @focus="focus(index)" @blur="blur(index)">
+					<input type="text" v-model="optionList[index]"  placeholder="选项" @focus="focus(index)" @blur="blur(index)" maxlength="10">
 				</div>
 				<i class="iconfont icon-shanchu1" @click="deleteOption(index)"></i>
 			</div>
-			<div class="option clearfix" @click="addOption()">
+			<div class="option clearfix" @click="addOption()" v-if="optionList.length<10">
 				<div class="optionText add">
 					<i class="iconfont icon-jiahao"></i>
 					新建选项
@@ -31,7 +31,7 @@
 				<i class="iconfont icon-chuyidong" @click="closeRule()"></i>
 			</div>
 			<ul>
-				<li><span>投票数量：</span><div class="count"><button @click="subCount()" :disabled="count<2">-</button><span v-text="count"></span><button @click="addCount()" :disabled="count>optionList.length-1">+</button></div></li>
+				<li><span>投票数量：</span><div class="count"><button @click="subCount()" :disabled="count<2">-</button><span v-text="count"></span><button @click="addCount()" :disabled="count>optionList.length-2">+</button></div></li>
 				<li><span>记票方式：</span><div class="mode"><button :class="{'active':model==1}" @click="switchModel(1)">匿名</button><button :class="{'active':model==2}" @click="switchModel(2)">实名</button></div></li>
 			</ul>
 			<button class="sureBtn" @click="sureRule()">确认</button>
@@ -39,7 +39,7 @@
 	</div>
 	<div class="customVote" v-if="editState">
 		<div class="header clearfix">
-			<i class="iconfont icon-fanhui1" @click="back()"></i>
+			<i class="iconfont icon-fanhui1" @click="back()" v-if="backState"></i>
 			 投票
 			 <span class="fr">每位同学拥有<i v-text="count"></i>票</span>
 		</div>
@@ -53,7 +53,7 @@
 		</div>
 		<div class="completeBtn" v-if="btnState">
 			  <button @click="startVote()">开始投票</button>
-			  <i class="iconfont icon-bangzhu"></i>
+			  <i class="iconfont icon-bangzhu" @click="showTile()"></i>
 		</div>
 		<div class="completeBtn" v-if="!btnState">
 			  <button @click="endVote()">结束投票</button>
@@ -70,9 +70,6 @@
 				   <p>学生使用答题器输入选项前的编号，点击ok键即可完成第一票，再次输入编号,</p>
 				   <p>点击ok键完成第二次投票，多项操作同上</p>
 				 </div>
-				 <div class="checkBox">
-					<label><input type="checkbox"><i class="iconfont icon-fuxuankuang_weixuanzhong"></i>不再提示</label>
-				 </div>
 				 <button @click="sureTitle()">确认</button>
 			</div>
 		</div>
@@ -81,7 +78,10 @@
 </template>
 
 <script>
-	import $ from "jquery"
+	import $ from "jquery";
+	import {
+		mapState
+	} from "vuex";
 	export default{
 		name:"chooseCategory",
 		data(){
@@ -92,7 +92,26 @@
 				model:1,
 				editState:false,  //是否完成创建
 				btnState:true,//开始投票,
-				titleState:false //提示框
+				titleState:false, //提示框
+				voteId:"",//投票id，
+				backState:true //投票返回按钮
+				
+			}
+		},
+		
+		computed:{
+			...mapState({
+				userId: state => state.state.userId,
+				remember: state => state.state.remember,
+				classRecord: state => state.state.classRecord
+			})
+		},
+		sockets:{
+			endtoupiao(){
+				this.endVote();
+			},
+			closetoupiao(){
+				this.backRouter();
 			}
 		},
 		methods:{
@@ -102,6 +121,8 @@
 			back(){  //改变状态
 				this.editState=false;
 				this.btnState=true;
+				this.count=1;
+				this.model=1;
 			},
 			deleteOption(index){ //删除选项
 				if(this.optionList.length>1){
@@ -155,19 +176,84 @@
 			},
 			startVote(){  //开始投票
 				this.btnState=false;
-				this.titleState=true;
+				this.backState=false;
+			    var candidateList=[];
+				this.optionList.forEach(function(i,index){
+					var obj={};
+					obj.name=i;
+					obj.no=index+1;
+					obj.id="";
+				    candidateList.push(obj);
+				});
+				var data={
+					"candidateList":candidateList,
+					"userList":this.remember, //投票的人
+					 "name": "投票",
+					 "type": 1, //1自定义2班级选举
+					 "candidate_no":this.optionList.length, //候选项个数
+					 "anonymous": this.model,
+					 "voting_rules":0,
+					 "vote_number":this.count,
+					 "class_record_id":this.classRecord,
+					 "user_id":this.userId
+				};
+				this.$http.post("http://localhost:3000/jeic/api/votingElections",{jsonData:data}).then(res=>{
+					 if(res.data.ret==200){
+						 this.voteId=res.data.data;
+						 this.$socket.emit("vote", {"name":"stuToupiao","data":this.voteId });  //学生端投票
+
+					 };
+				});
+
+
 			},
 			endVote(){  //结束投票
-			
+			    this.backState=true;
+			    this.$http.get("http://localhost:3000/jeic/api/votingElections/stopVote?voteId="+this.voteId).then(res=>{
+				});
+				this.$socket.emit("jeic", {
+					"name": "getVoteId",
+					"data": this.voteId
+				});
+		
+				this.$router.push({name:"echartResult",query:{voteId:this.voteId,type:1}});
 			},
 			sureTitle(){   //提示确认后
 				this.titleState=false;
 			},
+			showTile(){ //点击？
+				this.titleState=true;
+			}
+		},
+		created(){
+			var data=this.$route.params.data;
+			if(data){
+				data=JSON.parse(data);
+				this.editState=true;
+				this.btnState=false;
+				var arr=[];
+				data.candidateList.forEach(function(i){
+					arr.push(i.name);
+				});
+				this.optionList=arr;
+				this.count=data.vote_number;
+				this.$http.post("http://localhost:3000/jeic/api/votingElections",{jsonData:data}).then(res=>{
+					 if(res.data.ret==200){
+						 this.voteId=res.data.data;
+						 this.$socket.emit("vote", {"name":"stuToupiao","data":this.voteId });  //学生端投票
+					 };
+				});
+				
+			}
 		}
 	}
 </script>
 
 <style scoped="scoped">
+	.vote{
+		width: 100%;
+		height: 100%;
+	}
 	.customVote{
 		width: 100%;
 		height: 100%;
@@ -189,6 +275,12 @@
 	}
 	.customVote .optionList{
 		padding: 0 4.8rem;
+		position: absolute;
+		bottom:9rem;
+		top: 6rem;
+		left: 0;
+		right: 0;
+		overflow-y: auto;
 	}
 	.customVote .optionList  .option{
 		margin-top: 2.5rem;

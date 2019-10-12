@@ -1,5 +1,5 @@
 <template>
-<div>
+<div class="zmj_studentList">
 	<div class="zmj_remember" v-if="pattern">
 		<div class="zmj_rememberTitle">
 			<span>成员管理</span><span @click="close()"><img src="../assets/img/close.svg" alt=""></span>
@@ -8,10 +8,11 @@
 			未签到:<span><i v-text="remember.length-signRemember.length"></i>人</span></div>
 		<div class="zmj_rememberList">
 			<ul class="clearfix">
-				<li v-for="(item,index) in remember" :key="index" :class="{'active':signRemember.indexOf(item.device)!=-1}">
+				<li v-for="(item,index) in remember" @click="studentFile(item.id,$event)" :key="index" :class="{'active':signRemember.indexOf(item.device)!=-1 || signRemember.indexOf(item.id)!=-1 }">
 					<img v-if="item.sex=='男'" src="../assets/img/boy.png" alt="">
 					<img v-if="item.sex=='女'" src="../assets/img/girl.png" alt="">
 					<p v-text="item.name"></p>
+					<span v-if="stuUpLoadFileId.indexOf(item.id)!=-1" class="num">{{stuUpLoadFile[stuUpLoadFileId.indexOf(item.id)].stuCount}}</span>
 				</li>
 			</ul>
 		</div>
@@ -25,17 +26,19 @@
 					<p><span v-text="i.name"></span> (<span v-text="i.studentList.length+1"></span>人)</p>
 					<div class="clearfix">
 						<ol class="fl clearfix">
-							<li :class="{'active':signRemember.indexOf(i.groupLeader.device)!=-1}">
+							<li :class="{'active':signRemember.indexOf(i.groupLeader.device)!=-1 || signRemember.indexOf(i.groupLeader.id)!=-1}">
 								<img v-if="i.groupLeader.sex=='男'" src="../assets/img/boy.png" alt="">
 								<img v-if="i.groupLeader.sex=='女'" src="../assets/img/girl.png" alt="">
 								<p v-text="i.groupLeader.name"></p>
+								<span v-if="stuUpLoadFileId.indexOf(i.id)!=-1" class="num">{{stuUpLoadFile[stuUpLoadFileId.indexOf(i.id)].stuCount}}</span>
 							</li>
 						</ol>
 						<ul class=" fl clearfix">
-							<li v-for="item in i.studentList" :key="item.id" :class="{'active':signRemember.indexOf(item.device)!=-1}" >
+							<li v-for="item in i.studentList" :key="item.id" :class="{'active':signRemember.indexOf(item.device)!=-1 || signRemember.indexOf(item.id)!=-1}" >
 								<img v-if="item.sex=='男'" src="../assets/img/boy.png" alt="">
 								<img v-if="item.sex=='女'" src="../assets/img/girl.png" alt="">
 								<p v-text="item.name"></p>
+								<span v-if="stuUpLoadFileId.indexOf(item.id)!=-1" class="num">{{stuUpLoadFile[stuUpLoadFileId.indexOf(item.id)].stuCount}}</span>
 							</li>
 						</ul>
 					</div>
@@ -57,7 +60,9 @@
 				signRemember: [], //签到学生
 				timer: "", //定时器
 				groupStudent:[] ,// 分组学生,
-				groupName:""  //组名
+				groupName:"",  //组名
+				stuUpLoadFileId:[],
+				stuUpLoadFile:[]
 			}
 		},
 		sockets:{
@@ -71,6 +76,9 @@
 		  chengyuangroupScroll(data){
 			  var conheight = $(".zmj_groupStudent").height();
 			  $(".zmj_groupStudent").scrollTop(data* conheight * 1.1);
+		  },
+		  clickStuPicture(data){
+			  this.studentFileEvents(data)
 		  }
 			
 		},
@@ -82,31 +90,52 @@
 				});
 			},
 			getGroupStudent(){
-				var that=this;
-				this.$http.get("http://127.0.0.1:3000/jeic/api/teachingGroup/"+this.groupId).then(function(
-						res) {
+				this.$http.get("http://127.0.0.1:3000/jeic/api/teachingGroup/"+this.groupId).then((
+						res)=>{
 						if (res.data.ret == 200) {
-							that.groupStudent = res.data.data.userGrouplist;
-							that.groupName= res.data.data.name;
+							this.groupStudent = res.data.data.userGrouplist;
+							this.groupName= res.data.data.name;
 						};
 					});
 				
 				
 			},
 			signIn() { //请求签到学生
-				const that = this;
-			   this.timer = setInterval(function() {
-				 that.$http.get("http://localhost:3000/jeic/api/signin/getSignin").then(function(res) {
+			   this.timer = setInterval(()=>{
+				 this.$http.get("http://localhost:3000/jeic/api/signin/getSignin").then((res)=>{
 					if (res.data.ret == 200) {
-						that.signRemember = res.data.data;
-						console.log(that.signRemember)
-						that.$socket.emit('jeic', {
+						this.signRemember = res.data.data;
+						this.$socket.emit('jeic', {
 							'name': "qiandao",
 							'data': res.data.data
 						});
+	
+						this.$http.get("http://localhost:3000/jeic/api/studentPad/findClassStuUploadCount?classRecordId="+this.classRecord).then((res)=>{
+							for (var i = 0; i < res.data.data.length; i++) {
+								if (res.data.data[i].stu_id) {
+									this.stuUpLoadFileId.push(res.data.data[i].stu_id);
+								};
+							};
+							this.stuUpLoadFile=res.data.data
+						})
+						
 					};
 				});
 			}, 1000);
+		},
+		studentFile(id,event){
+			if(event.target.querySelector("span")!=null){
+				this.studentFileEvents(id);
+			};
+		},
+		studentFileEvents(id){
+			this.$router.push({
+				"path":"/studentUploadImg/:id:classRecordId",
+				 query: {
+						id: id,
+						classRecordId:this.classRecord
+				 }
+			});
 		}
 		
 
@@ -115,7 +144,8 @@
 			...mapState({
 				remember: state => state.state.remember,
 				pattern:state => state.state.pattern,
-				groupId:state => state.state.groupId
+				groupId:state => state.state.groupId,
+				classRecord: state => state.state.classRecord
 			})
 		},
 		
@@ -126,7 +156,6 @@
 			this.signIn();
 		},
 		beforeRouteLeave(to, from , next){
-			console.log(this.timer)
 			clearInterval(this.timer);
 			next();
 		}
@@ -144,6 +173,20 @@
 		margin: 2rem auto 0;
 		overflow: hidden;
 	}
+	
+	.num {
+		position: absolute;
+		top: 0;
+		right:0px;
+		display: block;
+		width: 1.8rem;
+		height: 1.8rem;
+		line-height: 1.8rem;
+		font-size: 1.4rem;
+		border-radius: 50%;
+		background: rgba(18, 150, 219, .75);
+		text-align: center;
+	}
 
 	.zmj_rememberTitle {
 		height: 5.6rem;
@@ -160,7 +203,6 @@
 		border: .1rem solid #a3a1a4;
 		border-radius: .8rem;
 		background: #fff;
-
 	}
 
 	.zmj_rememberTitle span:last-child {
@@ -215,6 +257,7 @@
 		text-overflow: ellipsis;
 		display: inline-block;
 		opacity: 0.3;
+		cursor: pointer;
 	}
 
 	.zmj_rememberList ul li.active {
@@ -250,6 +293,7 @@
 		margin-top: 1.8rem;
 		float: left;
 		opacity: 0.3;
+		position: relative;
 	}
 	
 	.zmj_groupStudent li.active {
@@ -258,9 +302,8 @@
 	}
 	
 	.zmj_groupStudent li img {
-		width: 4.5rem;
-		height: 4.5rem;
-		pointer-events: none;
+		width: 7rem;
+		height: 7rem;
 	}
 	
 	.zmj_groupStudent li p {
